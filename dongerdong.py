@@ -49,44 +49,44 @@ def health(guy,damage):
 def fight(attacker,defender):
   if attacker == defender:
     fighting = False
-    ircsock.send("PRIVMSG "+ channel +" :ARE YOU RETARDED?\n")
+    say("ARE YOU RETARDED?")
     kick(attacker,"STOP HITTING YOURSELF")
     time.sleep(1)
-    ircsock.send("PRIVMSG "+ channel +" :Seriously though fuck that guy.\n")
+    say("Seriously though fuck that guy.")
   elif defender == botnick:
     fighting = False
-    ircsock.send("PRIVMSG "+ channel +" :FUCK YOU\n")
+    say("FUCK YOU")
     ascii("rekt")
     kick(attacker,"LOL REALLY")
     time.sleep(1)
-    ircsock.send("PRIVMSG "+ channel +" :Seriously though fuck that guy.\n")
+    say("Seriously though fuck that guy.\n")
   else:
     fighting = True
     lastturn=defender
     attackermuted=0
     defendermuted=0
-    ircsock.send("MODE "+ channel +" +m\n")
+    setmode("+m")
     time.sleep(2)
     reset("all")
     ascii("fight")
   
-    ircsock.send("PRIVMSG "+ channel +" :"+ attacker.upper() +" V. "+ defender.upper() +"\n")
+    say(attacker.upper() +" V. "+ defender.upper() +"")
     time.sleep(2)
-    ircsock.send("PRIVMSG "+ channel +" :RULES:\n")
+    say("RULES:")
     time.sleep(1)
-    ircsock.send("PRIVMSG "+ channel +" :1. Wait your turn. One person at a time.\n")
+    say("1. Wait your turn. One person at a time.")
     time.sleep(1)
-    ircsock.send("PRIVMSG "+ channel +" :2. That's it.\n")
+    say("2. That's it.")
     time.sleep(1)
-    ircsock.send("PRIVMSG "+ channel +" :.\n")
+    say(".")
     time.sleep(1)
-    ircsock.send("PRIVMSG "+ channel +" :Use !hit to strike the other player.\n")
-    ircsock.send("PRIVMSG "+ channel +" :Use !heal to heal yourself.\n")
+    say("Use !hit to strike the other player.")
+    say("Use !heal to heal yourself.")
     time.sleep(2)
-    ircsock.send("MODE "+ channel +" +v "+ attacker +"\n")
-    ircsock.send("MODE "+ channel +" +v "+ defender +"\n")
+    setmode("+v",attacker)
+    setmode("+v",defender)
     time.sleep(.300)
-    ircsock.send("PRIVMSG "+ channel +" :"+ attacker +", you're up first.\n")
+    say(attacker +", you're up first.")
 
   while fighting:
     ircmsg = ircsock.recv(2048) # receive data from the server
@@ -121,32 +121,32 @@ def fight(attacker,defender):
         if firstguy==defender:
           defendermuted+=1
         if defendermuted > 2:
-          ircsock.send("PRIVMSG "+ channel +" :FUCK YOU\n")
+          say("FUCK YOU")
           time.sleep(1)
           finish(attacker,defender,attacker)
           time.sleep(1)
-          ircsock.send("PRIVMSG "+ channel +" :Seriously though fuck that guy.\n")
+          say("Seriously though fuck that guy.")
           fighting = False
         elif attackermuted > 2:
-          ircsock.send("PRIVMSG "+ channel +" :FUCK YOU\n")
+          say("FUCK YOU")
           time.sleep(1)
           finish(attacker,defender,defender)
           time.sleep(1)
-          ircsock.send("PRIVMSG "+ channel +" :Seriously though fuck that guy.\n")
+          say("Seriously though fuck that guy.")
           fighting = False
         else:
-          ircsock.send("PRIVMSG "+ channel +" :Wait your fucking turn or I'll kill you.\n")
+          say("Wait your fucking turn or I'll kill you.")
       else:
         healroll=random.randint(18,44)
         health(firstguy,-healroll)
-        ircsock.send("PRIVMSG "+ channel +" :"+ firstguy +" heals for "+ str(healroll) +"HP\n")
+        say(firstguy +" heals for "+ str(healroll) +"HP")
         lastturn=firstguy
       
     if ircmsg.find("PRIVMSG "+ channel + " :!quit") != -1:
       fighting = False
-      ircsock.send("MODE "+ channel +" -v "+ attacker +"\n")
-      ircsock.send("MODE "+ channel +" -v "+ defender +"\n")
-      ircsock.send("MODE "+ channel +" -m\n")
+      setmode("-v",attacker)
+      setmode("-v",defender)
+      setmode("-m")
 
     if ircmsg.find("PRIVMSG "+ channel + " :!hit") != -1:
       firstguy=ircmsg.split("!")[0]
@@ -161,18 +161,18 @@ def fight(attacker,defender):
         if firstguy==defender:
           defendermuted+=1
         if defendermuted > 2:
-          ircsock.send("PRIVMSG "+ channel +" :FUCK YOU\n")
+          say("FUCK YOU")
           time.sleep(1)
           finish(attacker,defender,attacker)
-          ircsock.send("PRIVMSG "+ channel +" :Seriously though fuck that guy.\n")
+          say("Seriously though fuck that guy.")
           fighting = False
         elif attackermuted > 2:
-          ircsock.send("PRIVMSG "+ channel +" :FUCK YOU\n")
+          say("FUCK YOU")
           time.sleep(1)
           finish(attacker,defender,defender)
-          ircsock.send("PRIVMSG "+ channel +" :Seriously though fuck that guy.\n")
+          say("Seriously though fuck that guy.")
           fighting = False
-        ircsock.send("PRIVMSG "+ channel +" :Wait your fucking turn or I'll kill you.\n")
+        say("Wait your fucking turn or I'll kill you.")
       else:
         damageroll=random.randint(18,39)
         criticalroll=random.randint(1,9)
@@ -180,32 +180,32 @@ def fight(attacker,defender):
         instaroll=random.randint(1,40)
         if instaroll==1:
           #ascii("instakill")
-          ircsock.send("PRIVMSG "+ channel +" :INSTAKILL!\n")
+          say("INSTAKILL!")
           health(secondguy,1000)
         elif criticalroll==1:
           ascii("critical")
           damage=damageroll*modifier
           secondguyhealth = health(secondguy,damage)
           firstguyhealth=healthAsString(firstguy)
-          ircsock.send("PRIVMSG "+ channel +" :"+ firstguy +" ("+ firstguyhealth +"HP) deals "+ str(damage) +" to "+ secondguy +" ("+ healthAsString(secondguy) +"HP)!\n")
+          say(firstguy +" ("+ firstguyhealth +"HP) deals "+ str(damage) +" to "+ secondguy +" ("+ healthAsString(secondguy) +"HP)!")
         else:
           damage=damageroll
           secondguyhealth = health(secondguy,damage)
           firstguyhealth=healthAsString(firstguy)
-          ircsock.send("PRIVMSG "+ channel +" :"+ firstguy +" ("+ firstguyhealth +"HP) deals "+ str(damage) +" to "+ secondguy +" ("+ healthAsString(secondguy) +"HP)!\n")
+          say(firstguy +" ("+ firstguyhealth +"HP) deals "+ str(damage) +" to "+ secondguy +" ("+ healthAsString(secondguy) +"HP)!")
       if health(secondguy,0)<1:
         ascii("rekt")
-        ircsock.send("PRIVMSG "+ channel +" :"+ firstguy +" REKT "+ secondguy +"!\n")
+        say(firstguy +" REKT "+ secondguy +"!")
         finish(attacker,defender,firstguy)
         fighting = False
-#      ircsock.send("PRIVMSG "+ channel +" :"+ lastturn +", your turn.\n")
+#      say(lastturn +", your turn.")
       lastturn=firstguy
 
 
 def finish(attacker,defender,winner):
-  ircsock.send("MODE "+ channel +" -v "+ attacker +"\n")
-  ircsock.send("MODE "+ channel +" -v "+ defender +"\n")
-  ircsock.send("MODE "+ channel +" -m\n")
+  setmode("-v",attacker)
+  setmode("-v",defender)
+  setmode("-m")
   if winner == attacker:
     kick(defender,"REKT")
   else:
@@ -215,34 +215,39 @@ def finish(attacker,defender,winner):
 #  page = response.read()
   fighting = False
 
+def setmode(mode,user="no"):
+  if "user"=="no": #Assume it's a channel mode
+    ircsock.send("MODE "+ channel +" "+ mode +" \n")
+  else: #Otherwise, apply to user
+    ircsock.send("MODE "+ channel +" "+ mode +" "+ user +" \n")
 
 def ascii(key):
   if key=="rekt":
-    ircsock.send("PRIVMSG "+ channel +" :   ___  ______ ________\n")
+    say("   ___  ______ ________")
     time.sleep(.400)
-    ircsock.send("PRIVMSG "+ channel +" :  / _ \/ __/ //_/_  __/\n")
+    say("  / _ \/ __/ //_/_  __/")
     time.sleep(.400)
-    ircsock.send("PRIVMSG "+ channel +" : / , _/ _// ,<   / /   \n")
+    say(" / , _/ _// ,<   / /   ")
     time.sleep(.400)
-    ircsock.send("PRIVMSG "+ channel +" :/_/|_/___/_/|_| /_/    \n")
+    say("/_/|_/___/_/|_| /_/    ")
   elif key=="fight":
-    ircsock.send("PRIVMSG "+ channel +" :   _______________ ________\n")
+    say("   _______________ ________")
     time.sleep(.400)
-    ircsock.send("PRIVMSG "+ channel +" :  / __/  _/ ___/ // /_  __/\n")
+    say("  / __/  _/ ___/ // /_  __/")
     time.sleep(.400)
-    ircsock.send("PRIVMSG "+ channel +" : / _/_/ // (_ / _  / / /   \n")
+    say(" / _/_/ // (_ / _  / / /   ")
     time.sleep(.400)
-    ircsock.send("PRIVMSG "+ channel +" :/_/ /___/\___/_//_/ /_/    \n")
+    say("/_/ /___/\___/_//_/ /_/    ")
   elif key=="critical":
-    ircsock.send("PRIVMSG "+ channel +" :  ________  ______________________   __ \n")
+    say("  ________  ______________________   __ ")
     time.sleep(.400)
-    ircsock.send("PRIVMSG "+ channel +" : / ___/ _ \/  _/_  __/  _/ ___/ _ | / / \n")
+    say(" / ___/ _ \/  _/_  __/  _/ ___/ _ | / / ")
     time.sleep(.400)
-    ircsock.send("PRIVMSG "+ channel +" :/ /__/ , _// /  / / _/ // /__/ __ |/ /__\n")
+    say("/ /__/ , _// /  / / _/ // /__/ __ |/ /__")
     time.sleep(.400)
-    ircsock.send("PRIVMSG "+ channel +" :\___/_/|_/___/ /_/ /___/\___/_/ |_/____/\n")
+    say("\___/_/|_/___/ /_/ /___/\___/_/ |_/____/")
   else:
-    ircsock.send("PRIVMSG "+ channel +" :ascii "+ key +"!\n")
+    say("ascii "+ key +"!")
 
 def identify():
   ircsock.send("PRIVMSG nickserv :IDENTIFY "+ password +" \n")
@@ -257,24 +262,17 @@ def joinchan(chan): # This function is used to join channels.
   ircsock.send("JOIN "+ chan +"\n")
 
 def hello(): # This function responds to a user that inputs "Hello Mybot"
-  ircsock.send("PRIVMSG "+ channel +" :Hello!\n")
+  say("Hello!")
 
 def fuckyou(msg):
   firstguy=msg.split("!")[0]
   firstguy=firstguy.split(":")[1]
-  ircsock.send("PRIVMSG "+ channel +" :Fuck you, "+ firstguy +".\n")
-
-def crudebutt():
-  firstguy="crudebutt"
-  ircsock.send("PRIVMSG "+ channel +" :Fuck you, crudebutt. You're an awful bot.")
+  say("Fuck you, "+ firstguy +".")
 
 def bang(msg):
   firstguy=msg.split("!")[0]
   firstguy=firstguy.split(":")[1]
   say(firstguy +"!")
-
-def loop():
-  ircsock.send("PRIVMSG "+ channel +" :crudebutt!\n")
 
 def healthAsString(guy):
   try:
@@ -296,7 +294,7 @@ def attack(msg):
     lastattacker=firstguy
   else:
     if lastattacker==firstguy:
-      ircsock.send("PRIVMSG "+ channel +" :Wait your turn, "+ firstguy +".\n")
+      say("Wait your turn, "+ firstguy +".")
 
   roll=random.randint(1,10)
   if roll==10:
@@ -322,28 +320,28 @@ def attack(msg):
     over=1
     roll=str(roll)
     damage=str(damage)
-    ircsock.send("PRIVMSG "+ channel +" :"+ firstguy +"["+ firstguyhealth +"] rolls "+ roll +", INSTANTLY KILLING "+ secondguy +"!\n")
+    say(firstguy +"["+ firstguyhealth +"] rolls "+ roll +", INSTANTLY KILLING "+ secondguy +"!")
     reset(secondguy)
   elif secondguyhealth==0:
     over=1
     roll=str(roll)
     damage=str(damage)
-    ircsock.send("PRIVMSG "+ channel +" :"+ firstguy +"["+ firstguyhealth +"] rolls "+ roll +", killing "+ secondguy +"!\n")
+    say(firstguy +"["+ firstguyhealth +"] rolls "+ roll +", killing "+ secondguy +"!")
     reset(secondguy)
   elif damage==0:
     roll=str(roll)
     secondguyhealth=str(secondguyhealth)
-    ircsock.send("PRIVMSG "+ channel +" :"+ firstguy +"["+ firstguyhealth +"] rolls "+ roll +", missing "+ secondguy +"!\n")
+    say(firstguy +"["+ firstguyhealth +"] rolls "+ roll +", missing "+ secondguy +"!")
   else:
     secondguyhealth=str(secondguyhealth)
     roll=str(roll)
     damage=str(damage)
-    ircsock.send("PRIVMSG "+ channel +" :"+ firstguy +"["+ firstguyhealth +"] rolls "+ roll +", "+ modifier +" "+ secondguy +"!\n")
+    say(firstguy +"["+ firstguyhealth +"] rolls "+ roll +", "+ modifier +" "+ secondguy +"!")
 
 def reset(user):
   if user=="all":
     healthtable.clear()
-    #ircsock.send("PRIVMSG "+ channel +" :k.\n")
+    #say("k.")
   else:
     try:
       healthtable[user]=100
@@ -354,13 +352,8 @@ def reset(user):
 def fuckyou(msg):
   name=msg.split("!")[0]
   name=name.split(":")[1]
-  ircsock.send("PRIVMSG "+ channel +" :fuck you, "+ name +".\n")
+  say("fuck you, "+ name +".")
 
-def penis():
-  ircsock.send("PRIVMSG "+ channel +" :penis.\n")
-
-def andthen():
-  ircsock.send("PRIVMSG "+ channel +" :And then??.\n")
 
 
 ircsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -386,17 +379,17 @@ while 1: # Be careful with these! it might send you to an infinite loop
     firstguy=ircmsg.split("!")[0]
     attacker=firstguy.split(":")[1]
     secondguy=ircmsg.split("fight ")[1]
-    if secondguy == botnick:
+    if secondguy.find(botnick) != -1:
       fighting = False
-      ircsock.send("PRIVMSG "+ channel +" :FUCK YOU\n")
+      say("FUCK YOU")
       ascii("rekt")
       kick(attacker,"DON'T FUCK WITH ME")
       time.sleep(1)
-      ircsock.send("PRIVMSG "+ channel +" :Seriously though fuck that guy.\n")
+      say("Seriously though fuck that guy.")
     else:
       defender=secondguy
       pending[attacker]=secondguy
-      ircsock.send("PRIVMSG "+ channel +" :"+ defender +": "+ attacker +" has challenged you. To accept, use '!accept "+ attacker +"'.\n")
+      say(defender +": "+ attacker +" has challenged you. To accept, use '!accept "+ attacker +"'.")
 
   if ircmsg.find(":!accept ") != -1:
     firstguy=ircmsg.split("!")[0]
@@ -410,15 +403,11 @@ while 1: # Be careful with these! it might send you to an infinite loop
           fight(firstguy,secondguy)
         fighting = False
       else:
-        ircsock.send("PRIVMSG "+ channel +" :They didn't challenge you. You can challenge them if you want.\n")
+        say("They didn't challenge you. You can challenge them if you want.")
     except IndexError:
-       ircsock.send("PRIVMSG "+ channel +" :No one has challenged you, "+ defender +".\n")
+       say("No one has challenged you, "+ defender +".")
     except KeyError:
-       ircsock.send("PRIVMSG "+ channel +" :They didn't challenge you. You can challenge them if you want (KeyError).\n")
-    
-       
-
-
+       say("They didn't challenge you. You can challenge them if you want (KeyError).")
       
   if ircmsg.find(" :!attack ") != -1:
     if ircmsg.find("dongerdong") != -1:
@@ -431,17 +420,14 @@ while 1: # Be careful with these! it might send you to an infinite loop
 
   if ircmsg.find(" :!health ") != -1:
     secondguy=ircmsg.split("health ")[1]
-    ircsock.send("PRIVMSG "+ channel +" :Their health is "+ healthAsString(secondguy) +".\n")    
+    say("Their health is "+ healthAsString(secondguy) +".")    
   elif ircmsg.find(" :!health") != -1:
     firstguy=ircmsg.split("!")[0]
     firstguy=firstguy.split(":")[1]
-    ircsock.send("PRIVMSG "+ channel +" :Your health is "+ healthAsString(firstguy) +".\n")
+    say("Your health is "+ healthAsString(firstguy) +".")
 
   if ircmsg.find(" :!help") != -1:
-    ircsock.send("PRIVMSG "+ channel +" :!fight <nick> to initiate fight; !quit to bail out of a fight of someone leaves; !hit to hit, !heal to heal. !reset resets the health stats (done automagically after a fight ends anyway)\n")
-
-  if ircmsg.find(" :!floodchaniremovedthisel") != -1:
-    loop()
+    say("!fight <nick> to initiate fight; !quit to bail out of a fight of someone leaves; !hit to hit, !heal to heal. !reset resets the health stats (done automagically after a fight ends anyway)")
 
   if ircmsg.find(" :"+ botnick +"!") != -1:
     bang(ircmsg)

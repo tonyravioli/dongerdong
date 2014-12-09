@@ -65,7 +65,7 @@ def fight(attacker,defender):
     lastturn=defender
     attackermuted=0
     defendermuted=0
-    ircsock.send("MODE "+ channel +" +m\n")
+    setmode("+m")
     time.sleep(2)
     reset("all")
     ascii("fight")
@@ -83,8 +83,8 @@ def fight(attacker,defender):
     say("Use !hit to strike the other player.")
     say("Use !heal to heal yourself.")
     time.sleep(2)
-    ircsock.send("MODE "+ channel +" +v "+ attacker +"\n")
-    ircsock.send("MODE "+ channel +" +v "+ defender +"\n")
+    setmode("+v",attacker)
+    setmode("+v",defender)
     time.sleep(.300)
     say(attacker +", you're up first.")
 
@@ -144,9 +144,9 @@ def fight(attacker,defender):
       
     if ircmsg.find("PRIVMSG "+ channel + " :!quit") != -1:
       fighting = False
-      ircsock.send("MODE "+ channel +" -v "+ attacker +"\n")
-      ircsock.send("MODE "+ channel +" -v "+ defender +"\n")
-      ircsock.send("MODE "+ channel +" -m\n")
+      setmode("-v",attacker)
+      setmode("-v",defender)
+      setmode("-m")
 
     if ircmsg.find("PRIVMSG "+ channel + " :!hit") != -1:
       firstguy=ircmsg.split("!")[0]
@@ -203,9 +203,9 @@ def fight(attacker,defender):
 
 
 def finish(attacker,defender,winner):
-  ircsock.send("MODE "+ channel +" -v "+ attacker +"\n")
-  ircsock.send("MODE "+ channel +" -v "+ defender +"\n")
-  ircsock.send("MODE "+ channel +" -m\n")
+  setmode("-v",attacker)
+  setmode("-v",defender)
+  setmode("-m")
   if winner == attacker:
     kick(defender,"REKT")
   else:
@@ -215,6 +215,11 @@ def finish(attacker,defender,winner):
 #  page = response.read()
   fighting = False
 
+def setmode(mode,user="no"):
+  if "user"=="no": #Assume it's a channel mode
+    ircsock.send("MODE "+ channel +" "+ mode +" \n")
+  else: #Otherwise, apply to user
+    ircsock.send("MODE "+ channel +" "+ mode +" "+ user +" \n")
 
 def ascii(key):
   if key=="rekt":
