@@ -1,3 +1,13 @@
+#
+# DongerDong IRC Fight Bot. Adapted from http://wiki.shellium.org/w/Writing_an_IRC_bot_in_Python
+#
+# Creator: ravioli (freenode)
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+# or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+# for more details.
+
 # Import some necessary libraries.
 import socket 
 import time
