@@ -25,7 +25,12 @@ pending = {}
 
 try:
   password=sys.argv[1]
-  print("Password set to "+ password)
+  if password=="test":
+    channel=channel +"test"
+    botnick=botnick +"test"
+    print("In test mode.")
+  else:
+    print("Password set to "+ password)
 except:
   password="wrong"
   print("Password not set.")
