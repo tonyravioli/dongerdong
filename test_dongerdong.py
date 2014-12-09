@@ -374,7 +374,7 @@ while 1: # Be careful with these! it might send you to an infinite loop
     firstguy=ircmsg.split("!")[0]
     attacker=firstguy.split(":")[1]
     secondguy=ircmsg.split("fight ")[1]
-    if secondguy == botnick:
+    if secondguy.find(botnick) != -1:
       fighting = False
       say("FUCK YOU")
       ascii("rekt")
