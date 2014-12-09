@@ -18,7 +18,7 @@ import sys
 
 # Some basic variables used to configure the bot        
 server = "irc.freenode.net" # Server
-channel = "#dongertest" # Channel
+channel = "#donger" # Channel
 botnick = "dongerdong" # Your bots nick
 healthtable = {}
 pending = {}
