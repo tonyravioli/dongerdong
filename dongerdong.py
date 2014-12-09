@@ -23,15 +23,18 @@ botnick = "dongerdong" # Your bots nick
 healthtable = {}
 pending = {}
 
-if len(sys.argv) > 0:
+try:
   password=sys.argv[1]
   print("Password set to "+ password)
-else:
+except:
   password="wrong"
   print("Password not set.")
 
 def ping(): # This is our first function! It will respond to server Pings.
   ircsock.send("PONG :pingis\n")  
+
+def say(message):
+  ircsock.send("PRIVMSG "+ channel +" :"+ message +"\n")
 
 def health(guy,damage):
   try:
@@ -268,7 +271,7 @@ def crudebutt():
 def bang(msg):
   firstguy=msg.split("!")[0]
   firstguy=firstguy.split(":")[1]
-  ircsock.send("PRIVMSG "+ channel +" :"+ firstguy +"!\n")
+  say(firstguy +"!")
 
 def loop():
   ircsock.send("PRIVMSG "+ channel +" :crudebutt!\n")
