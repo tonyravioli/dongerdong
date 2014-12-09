@@ -264,17 +264,10 @@ def fuckyou(msg):
   firstguy=firstguy.split(":")[1]
   say("Fuck you, "+ firstguy +".")
 
-def crudebutt():
-  firstguy="crudebutt"
-  say("Fuck you, crudebutt. You're an awful bot.")
-
 def bang(msg):
   firstguy=msg.split("!")[0]
   firstguy=firstguy.split(":")[1]
   say(firstguy +"!")
-
-def loop():
-  say("crudebutt!")
 
 def healthAsString(guy):
   try:
@@ -356,11 +349,6 @@ def fuckyou(msg):
   name=name.split(":")[1]
   say("fuck you, "+ name +".")
 
-def penis():
-  say("penis.")
-
-def andthen():
-  say("And then??.")
 
 
 ircsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -415,10 +403,6 @@ while 1: # Be careful with these! it might send you to an infinite loop
        say("No one has challenged you, "+ defender +".")
     except KeyError:
        say("They didn't challenge you. You can challenge them if you want (KeyError).")
-    
-       
-
-
       
   if ircmsg.find(" :!attack ") != -1:
     if ircmsg.find("dongerdong") != -1:
@@ -439,9 +423,6 @@ while 1: # Be careful with these! it might send you to an infinite loop
 
   if ircmsg.find(" :!help") != -1:
     say("!fight <nick> to initiate fight; !quit to bail out of a fight of someone leaves; !hit to hit, !heal to heal. !reset resets the health stats (done automagically after a fight ends anyway)")
-
-  if ircmsg.find(" :!floodchaniremovedthisel") != -1:
-    loop()
 
   if ircmsg.find(" :"+ botnick +"!") != -1:
     bang(ircmsg)
