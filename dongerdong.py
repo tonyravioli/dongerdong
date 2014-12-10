@@ -217,8 +217,11 @@ def finish(attacker,defender,winner):
   else:
     kick(attacker,"REKT")
   reset("all")
-#  response=urllib2.urlopen("http://ravio.li/donger/dongerstats.php?attacker="+ attacker +"&defender=" + defender +"&winner=" + winner)
-#  page = response.read()
+  try:
+    response=urllib2.urlopen("http://ravio.li/donger/dongerstats.php?attacker="+ attacker +"&defender=" + defender +"&winner=" + winner)
+    page = response.read()
+  except:
+    say("Tell ravioli the stats thing failed.")
   fighting = False
 
 def setmode(mode,user="no"):
