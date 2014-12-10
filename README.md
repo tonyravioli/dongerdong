@@ -8,5 +8,4 @@ Renewed is donger that was broken,
 Donger dong dong, donger dong."
 -J.R.R. Tolkien
 
-"He who learns but does not think, is lost! He who thinks but does not learn is the great 
-Donger." - Confucius
+"He who learns but does not think, is lost! He who dongs dongs, dongs dongs!" - Confucius
