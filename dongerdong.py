@@ -181,7 +181,7 @@ def fight(attacker,defender):
       else:
         damageroll=random.randint(18,39)
         criticalroll=random.randint(1,9)
-        modifier=random.randint(2,3)
+        modifier=2
         instaroll=random.randint(1,40)
         if instaroll==1:
           #ascii("instakill")
