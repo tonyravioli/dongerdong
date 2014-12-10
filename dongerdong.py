@@ -372,8 +372,13 @@ time.sleep(2)
 joinchan(channel) # Join the channel using the functions we previously defined
 
 while 1: # Be careful with these! it might send you to an infinite loop
-  ircmsg = ircsock.recv(2048) # receive data from the server
-  ircmsg = ircmsg.strip('\n\r') # removing any unnecessary linebreaks.
+  try:
+    ircmsg = ircsock.recv(2048) # receive data from the server
+    ircmsg = ircmsg.strip('\n\r') # removing any unnecessary linebreaks.
+  except KeyboardInterrupt:
+    say("FLY, YOU FOOLS!")
+    print("Exiting due to keyboard interrupt")
+    sys.exit(0)
   print(ircmsg) # Here we print what's coming from the server
 
   if ircmsg.find(":Hello "+ botnick) != -1: # If we can find "Hello Mybot" it will call the function hello()
