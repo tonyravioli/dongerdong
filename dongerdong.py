@@ -45,10 +45,15 @@ def say(message):
 def health(guy,damage):
   try:
     health=healthtable[guy]
-    healthtable[guy]=health-damage
+    newhealth=health-damage
+    if newhealth > 100:
+      newhealth = 100
+    healthtable[guy]=newhealth
     health=healthtable[guy]
   except KeyError:
     health=100-damage
+    if health > 100:
+      health = 100
     healthtable[guy]=health
   return health
 
@@ -143,9 +148,12 @@ def fight(attacker,defender):
         else:
           say("Wait your fucking turn or I'll kill you.")
       else:
-        healroll=random.randint(18,44)
-        health(firstguy,-healroll)
-        say(firstguy +" heals for "+ str(healroll) +"HP")
+        healroll=random.randint(22,44)
+        newhealth=health(firstguy,-healroll)
+        if newhealth > 99:
+          say(firstguy +" heals for "+ str(healroll) +"HP, bringing them back to 100HP.")
+        else:
+          say(firstguy +" heals for "+ str(healroll) +"HP, bringing them to "+ str(newhealth) +"HP.")
         lastturn=firstguy
       
     if ircmsg.find("PRIVMSG "+ channel + " :!quit") != -1:
