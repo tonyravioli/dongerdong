@@ -58,6 +58,7 @@ def health(guy,damage):
   return health
 
 def fight(attacker,defender):
+  lastMessageTime=time.time() + 60
   if attacker == defender:
     fighting = False
     say("ARE YOU RETARDED?")
@@ -99,14 +100,22 @@ def fight(attacker,defender):
     time.sleep(.300)
     say(attacker +", you're up first.")
 
+    invalid = False
+
   while fighting:
     ircmsg = ircsock.recv(2048) # receive data from the server
     ircmsg = ircmsg.strip('\n\r') # removing any unnecessary linebreaks.
     print("While fighting: " +ircmsg) # Here we print what's coming from the server whle fighting
 
+    if time.time() > lastMessageTime+60:
+      finish(attacker,defender,lastturn)
+      fighting = False
+      say("Timeout occurred. "+ lastturn +" wins.")
+
     if ircmsg.find("PRIVMSG dongerdong :") != -1:
       userhost=ircmsg.split(":")[1]
       userhost=userhost.split(" ")[0]
+      invalid = True
       #ircsock.send("MODE "+ channel +" +b "+ userhost  +"\n")
 
     if (ircmsg.find(" PART "+ channel +" :") != -1) or (ircmsg.find(" QUIT :") != -1):
@@ -123,7 +132,7 @@ def fight(attacker,defender):
     if ircmsg.find("PING :") != -1: # if the server pings us then we've got to respond!
       ping()
 
-    if ircmsg.find("PRIVMSG "+ channel +" :!heal") != -1:
+    if(ircmsg.find("PRIVMSG "+ channel +" :!heal") != -1) and not invalid:
       firstguy=ircmsg.split("!")[0]
       firstguy=firstguy.split(":")[1]
       if firstguy==lastturn:
@@ -157,12 +166,12 @@ def fight(attacker,defender):
         lastturn=firstguy
       
     if ircmsg.find("PRIVMSG "+ channel + " :!quit") != -1:
-      fighting = False
+      '''fighting = False
       setmode("-v",attacker)
       setmode("-v",defender)
-      setmode("-m")
+      setmode("-m")'''
 
-    if ircmsg.find("PRIVMSG "+ channel + " :!hit") != -1:
+    if (ircmsg.find("PRIVMSG "+ channel + " :!hit") != -1) and not invalid:
       firstguy=ircmsg.split("!")[0]
       firstguy=firstguy.split(":")[1]
       if firstguy==attacker:
@@ -214,7 +223,7 @@ def fight(attacker,defender):
         fighting = False
 #      say(lastturn +", your turn.")
       lastturn=firstguy
-
+      invalid = False
 
 def finish(attacker,defender,winner):
   setmode("-v",attacker)
@@ -298,6 +307,7 @@ def healthAsString(guy):
   except KeyError:
     health=100
     health=str(health)
+  lastActionTime=time.time()
   return health
 
 def attack(msg):
@@ -388,7 +398,7 @@ while 1: # Be careful with these! it might send you to an infinite loop
     ircmsg = ircsock.recv(2048) # receive data from the server
     ircmsg = ircmsg.strip('\n\r') # removing any unnecessary linebreaks.
   except KeyboardInterrupt:
-    say("FLY, YOU FOOLS!")
+    say("NOT ALL THOSE WHO DONGER ARE LOST")
     print("Exiting due to keyboard interrupt")
     sys.exit(0)
   print(ircmsg) # Here we print what's coming from the server
@@ -396,11 +406,17 @@ while 1: # Be careful with these! it might send you to an infinite loop
   if ircmsg.find(":Hello "+ botnick) != -1: # If we can find "Hello Mybot" it will call the function hello()
     hello()
 
+  if ircmsg.find("PRIVMSG dongerdong :") != -1:
+    userhost=ircmsg.split(":")[1]
+    userhost=userhost.split(" ")[0]
+    #ircsock.send("MODE "+ channel +" +b "+ userhost  +"\n")
+
 
   if ircmsg.find(":!fight ") != -1:
     firstguy=ircmsg.split("!")[0]
     attacker=firstguy.split(":")[1]
     secondguy=ircmsg.split("fight ")[1]
+    secondguy=secondguy.strip()
     if secondguy.find(botnick) != -1:
       fighting = False
       say("FUCK YOU")
@@ -410,15 +426,16 @@ while 1: # Be careful with these! it might send you to an infinite loop
       say("Seriously though fuck that guy.")
     else:
       defender=secondguy
-      pending[attacker]=secondguy
+      pending[attacker.lower()]=secondguy.lower()
       say(defender +": "+ attacker +" has challenged you. To accept, use '!accept "+ attacker +"'.")
 
   if ircmsg.find(":!accept ") != -1:
     firstguy=ircmsg.split("!")[0]
     firstguy=firstguy.split(":")[1]
     secondguy=ircmsg.split("accept ")[1]
+    secondguy=secondguy.strip()
     try:
-      if pending[secondguy]==firstguy:
+      if pending[secondguy.lower()]==firstguy.lower():
         if random.randint(1,2)==1:
           fight(secondguy,firstguy)
         else:
