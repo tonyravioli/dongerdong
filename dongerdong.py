@@ -24,6 +24,7 @@ class Donger(object):
         self.gamerunning = False
         self.turn = ""
         self._turnleft = []
+        self.aliveplayers = []
         
         # Load the config..
         self.config = json.loads(open("config.json").read())
@@ -42,6 +43,8 @@ class Donger(object):
         self.irc.addhandler("authenticate", self._auth) # for SASL!!!1
         self.irc.addhandler("welcome", self._welcome) # For the autojoin
         self.irc.addhandler("pubmsg", self._pubmsg) # For commands
+        self.irc.addhandler("part", self._coward) # Coward extermination
+        self.irc.addhandler("quit", self._coward) # ^
         
         # Connect to the IRC
         self.irc.connect()
@@ -49,6 +52,10 @@ class Donger(object):
     def _pubmsg(self, cli, ev):
         # Processing commands here
         if ev.splitd[0] == "!fight":
+            if self.gamerunning:
+                cli.privmsg(self.chan, "WAIT TILL THIS FUCKING GAME ENDS")
+                return
+                
             if len(ev.splitd) == 1: # I hate you
                 cli.privmsg(self.chan, "Sorry, bro... But the right syntax is !fight <nick>")
                 return
@@ -73,6 +80,10 @@ class Donger(object):
             self.pending[ev.source.lower()] = cli.channels[self.chan].users[ev.splitd[1]].nick
             cli.privmsg(self.chan, "{1}: {0} has challenged you. To accept, use '!accept {0}'".format(ev.source, cli.channels[self.chan].users[ev.splitd[1]].nick))
         elif ev.splitd[0] == "!accept":
+            if self.gamerunning:
+                cli.privmsg(self.chan, "WAIT TILL THIS FUCKING GAME ENDS")
+                return
+                
             if len(ev.splitd) == 1: # I hate you
                 cli.privmsg(self.chan, "Sorry, bro... But the right syntax is !accept <nick>")
                 return
@@ -95,17 +106,30 @@ class Donger(object):
             self.fight(cli, [self.pending[ev.splitd[1]], cli.channels[self.chan].users[ev.splitd[1]].nick])
             del self.pending[ev.splitd[1]]
         elif ev.splitd[0] == "!hit":
+            if not self.gamerunning:
+                cli.privmsg(self.chan, "THE FUCKING GAME IS NOT RUNNING")
+                return
+                
             if self.turn != ev.source.lower():
                 cli.privmsg(self.chan, "Wait your fucking turn or I'll kill you.")
                 return
-                
-            if len(ev.splitd) != 1:
+            
+            if ev.source.lower() not in self.aliveplayers:
+                cli.privmsg(self.chan, "GET OUT OR I'LL KILL YOU! INTRUDER INTRUDER INTRUDER")
+            
+            if len(ev.splitd) != 1: 
+                if ev.splitd[1] not in self.aliveplayers and ev.splitd[1] in list(self.health):
+                    cli.privmsg(self.chan, "WHAT?! Do you REALLY want to hit a corpse?!")
+                    return
+                elif ev.splitd[1] not in self.aliveplayers:
+                    cli.privmsg(self.chan, "WHA?! \002{0}\002 is not playing!".format(ev.splitd[1]))
+                    return
                 nick = ev.splitd[1]
             else:
                 allplayers = copy.deepcopy(self.health)
                 del allplayers[ev.source.lower()]
                 nick = random.choice(list(allplayers))
-            damage = random.randint(18, 39)
+            damage = random.randint(18, 35)
             criticalroll = random.randint(1, 16)
             instaroll = random.randint(1, 50)
             if instaroll == 1:
@@ -114,6 +138,7 @@ class Donger(object):
                 cli.privmsg(self.chan, "{0} REKT {1}!".format(ev.source, nick))
                 #self.win(ev.source, self.health)
                 self.health[nick.lower()] = -1
+                self.aliveplayers.remove(nick.lower())
                 self.getturn()
                 return
             elif criticalroll == 1:
@@ -126,10 +151,45 @@ class Donger(object):
             if self.health[nick] <= 0:
                 self.ascii("rekt")
                 cli.privmsg(self.chan, "{0} REKT {1}!".format(ev.source, nick))
+                self.aliveplayers.remove(nick.lower())
                 cli.mode(self.chan, "-v " + nick)
             
             self.getturn()
+        elif ev.splitd[0] == "!heal":
+            if not self.gamerunning:
+                cli.privmsg(self.chan, "THE FUCKING GAME IS NOT RUNNING")
+                return
+                
+            if self.turn != ev.source.lower():
+                cli.privmsg(self.chan, "Wait your fucking turn or I'll kill you.")
+                return
             
+            if ev.source.lower() not in self.aliveplayers:
+                cli.privmsg(self.chan, "GET OUT OR I'LL KILL YOU! INTRUDER INTRUDER INTRUDER")
+            
+            healing = random.randint(22, 44)
+            self.health[ev.source.lower()] += healing
+            if self.health[ev.source.lower()] > 100:
+                self.health[ev.source.lower()] = 100
+                cli.privmsg(self.chan, "\002{0}\002 heals for \002{1}HP\002, bringing them to \002100HP\002".format(ev.source, healing))
+            else:
+                cli.privmsg(self.chan, "\002{0}\002 heals for \002{1}HP\002, bringing them to \002{2}HP\002".format(ev.source, healing, self.health[ev.source.lower()]))
+            self.getturn()
+            
+    def _coward(self, cli, ev):
+        if self.gamerunning:
+            if ev.source2.nick.lower() in self.aliveplayers:
+                self.ascii("coward")
+                self.privmsg(self.channel, "The coward is dead!")
+                self.aliveplayers.remove(ev.source2.nick.lower())
+                self.health[ev.source2.nick.lower()] = -1
+                try:
+                    self._turnleft.remove(ev.source2.nick.lower())
+                except:
+                    pass
+                if self.turn == ev.source2.nick.lower():
+                    getturn()
+    
     def fight(self, cli, fighters):
         cli.mode(self.chan, "+m")
         self.ascii("fight")
@@ -141,28 +201,19 @@ class Donger(object):
         cli.privmsg(self.chan, "Use !hit to strike the other player.")
         cli.privmsg(self.chan, "Use !heal to heal yourself.")
         for i in fighters:
-            print(i)
-            print(fighters)
             cli.mode(self.chan, "+v " + i)
             self.health[i.lower()] = 100
-        print(self.health)
+            self.aliveplayers.append(i.lower())
         self.gamerunning = True
         self.getturn()
         
     def getturn(self):
         if self._turnleft == []:
-            for i in self.health:
-                if self.health[i] > 0:
-                    self._turnleft.append(i)
+            self._turnleft = copy.copy(self.aliveplayers)
         
-        if len(self._turnleft) == 1:
-            alivecount = 0
-            for i in self.health:
-                if self.health[i] > 0:
-                    alivecount += 1
-            if alivecount == 1:
-                self.win(self._turnleft[0])
-                return
+        if len(self.aliveplayers) == 1:
+            self.win(self.aliveplayers[0])
+            return
             
         self.turn = random.choice(self._turnleft)
         self._turnleft.remove(self.turn)
@@ -171,10 +222,13 @@ class Donger(object):
     def win(self, winner):
         self.irc.mode(self.chan, "-m")
         self.irc.mode(self.chan, "-v " + winner)
-        self.irc.privmsg(self.chan, "{0} REKT {1}!".format(ev.source, self._dusers(winner)))
-
-            
-        pass  # TODO: Stats
+        if len(list(self.health)) > 2:
+            self.irc.privmsg(self.chan, "{0} REKT {1}!".format(winner, self._dusers(winner)))
+        self.aliveplayers = []
+        self.health = {}
+        self._turnleft = []
+        self.gamerunning = False
+        # TODO: Stats
     
     def ascii(self, key):
         cli = self.irc # >_>
