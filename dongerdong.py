@@ -7,6 +7,7 @@ import time
 import logging
 import random
 import copy
+import _thread
 
 # This is for debugging. It vomits on the screen all the irc stuff
 logging.getLogger(None).setLevel(logging.DEBUG)
@@ -21,6 +22,10 @@ class Donger(object):
         self.turn = ""
         self._turnleft = []
         self.aliveplayers = []
+        self.roundstart = 0
+        
+        # thread for timeouts
+        _thread.start_new_thread(self._timeouts, ())
         
         # Load the config..
         self.config = json.loads(open("config.json").read())
@@ -231,7 +236,8 @@ class Donger(object):
             
         self.turn = random.choice(self._turnleft)
         self._turnleft.remove(self.turn)
-        self.irc.privmsg(self.chan, "It is \002{0}\002's turn".format(self.turn))
+        self.roundstart = time.time()
+        self.irc.privmsg(self.chan, "It is \002{0}\002's turn".format(self.irc.channels[self.chan].users[self.turn].nick))
     
     def win(self, winner, stats=True):
         self.irc.mode(self.chan, "-m")
@@ -242,6 +248,8 @@ class Donger(object):
         self.health = {}
         self._turnleft = []
         self.gamerunning = False
+        self.turn = 0
+        self.roundstart = 0
         if stats is True:
             pass # TODO: stats
     
@@ -296,6 +304,17 @@ class Donger(object):
     
     def _welcome(self, cli, ev):
         cli.join(self.config['channel'])
+    
+    def _timeouts(self):
+        while True:
+            time.sleep(5)
+            if self.gamerunning and self.turn != "":
+                if time.time() - self.roundstart > 60:
+                    self.irc.privmsg(self.chan, "Looks like \002{0}\002 is a dirty idler. DIE DIE DIEEEEE".format(self.turn))
+                    self.irc.mode(self.chan, "-v " + self.turn)
+                    self.aliveplayers.remove(self.turn)
+                    self.health[self.turn] = -1
+                    self.getturn()
         
 
 # Start donging
