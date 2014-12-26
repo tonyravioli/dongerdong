@@ -52,7 +52,7 @@ class Donger(object):
                 cli.privmsg(self.chan, "WAIT TILL THIS FUCKING GAME ENDS")
                 return
                 
-            if len(ev.splitd) == 1: # I hate you
+            if len(ev.splitd) == 1 or ev.splitd[1] == "": # I hate you
                 cli.privmsg(self.chan, "Sorry, bro... But the right syntax is !fight <nick>")
                 return
             ev.splitd[1] = ev.splitd[1].lower()
@@ -80,7 +80,7 @@ class Donger(object):
                 cli.privmsg(self.chan, "WAIT TILL THIS FUCKING GAME ENDS")
                 return
                 
-            if len(ev.splitd) == 1: # I hate you
+            if len(ev.splitd) == 1 or ev.splitd[1] == "": # I hate you
                 cli.privmsg(self.chan, "Sorry, bro... But the right syntax is !accept <nick>")
                 return
             ev.splitd[1] = ev.splitd[1].lower()
@@ -113,7 +113,7 @@ class Donger(object):
             if ev.source.lower() not in self.aliveplayers:
                 cli.privmsg(self.chan, "GET OUT OR I'LL KILL YOU! INTRUDER INTRUDER INTRUDER")
             
-            if len(ev.splitd) != 1: 
+            if len(ev.splitd) != 1 and ev.splitd[1] != "":
                 if ev.splitd[1] not in self.aliveplayers and ev.splitd[1] in list(self.health):
                     cli.privmsg(self.chan, "WHAT?! Do you REALLY want to hit a corpse?!")
                     return
@@ -171,6 +171,21 @@ class Donger(object):
             else:
                 cli.privmsg(self.chan, "\002{0}\002 heals for \002{1}HP\002, bringing them to \002{2}HP\002".format(ev.source, healing, self.health[ev.source.lower()]))
             self.getturn()
+        elif ev.splitd[0] == cli.nickname + "!":
+            cli.privmsg(self.chan, ev.source + "!")
+        elif ev.splitd[0] == "!help":
+            cli.privmsg(self.chan, "!fight <nick> to initiate fight; !quit to bail out of a fight; !hit to hit, !heal to heal.")
+        elif ev.splitd[0] == "!ping":
+            cli.privmsg(self.chan, "pong!")
+        elif ev.splitd[0] == "!health":
+            if not self.gamerunning:
+                cli.privmsg(self.chan, "THE FUCKING GAME IS NOT RUNNING")
+                return
+            if len(ev.splitd[0]) > 1 or ev.splitd[1] == "":
+                ev.splitd[1] = ev.source
+            cli.privmsg(self.chan, "\002{0}\002's has \002{1}\002HP".format(ev.splitd[1], self.health[ev.splitd[1].lower()]))
+        elif ev.splitd[0] == "!quit":
+            self._coward(cli, ev)
             
     def _coward(self, cli, ev):
         if self.gamerunning:
