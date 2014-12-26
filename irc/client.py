@@ -343,7 +343,7 @@ class IRCClient:
             self.channels[event.target] = Channel(self, event.target)
         else:
             #print(self.channels)
-            self.channels[event.target].users[event.source.nick] = User(
+            self.channels[event.target].users[event.source.nick.lower()] = User(
                 event.source.nick, event.source.user, event.source.host,
                 "", "")
 
@@ -364,17 +364,17 @@ class IRCClient:
         self.channels[event.arguments[0]].addUser(event)
 
     def _on_whoisaccount(self, myself, event):
-        self.users[event.arguments[0]].account = event.arguments[1]
+        self.users[event.arguments[0].lower()].account = event.arguments[1]
         for i in self.channels:
             try:
-                self.channels[i].users[event.arguments[1]].account = \
+                self.channels[i].users[event.arguments[1].lower()].account = \
                                                              event.arguments[1]
             except:
                 pass
 
     def _on_whox(self, myself, e):
         if e.arguments[0] == "08":
-            self.channels[e.arguments[1]].users[e.arguments[4]] = User(
+            self.channels[e.arguments[1]].users[e.arguments[4].lower()] = User(
                     e.arguments[4],
                     e.arguments[2],
                     e.arguments[3],
@@ -404,10 +404,10 @@ class IRCClient:
                 status = "-"
             elif i == "v":
                 if status == "-":
-                    self.channels[event.target].users[event.arguments[number]] \
+                    self.channels[event.target].users[event.arguments[number].lower()] \
                     .voice = False
                 else:
-                    self.channels[event.target].users[event.arguments[number]] \
+                    self.channels[event.target].users[event.arguments[number].lower()] \
                     .voice = True
             elif i == "b":
                 if status == "+":
@@ -423,23 +423,23 @@ class IRCClient:
                     self.channels[event.target].quiets.remove(ban)
             elif i in prefixes:
                 if status == "-":
-                    self.channels[event.target].users[event.arguments[number]] \
+                    self.channels[event.target].users[event.arguments[number].lower()] \
                     .op = False
                 else:
-                    self.channels[event.target].users[event.arguments[number]] \
+                    self.channels[event.target].users[event.arguments[number].lower()] \
                     .op = True
     
     def _on_part(self, myself, event):
         if event.source.nick == self.nickname:
             del self.channels[event.target]
         else:
-            del self.channels[event.target].users[event.source.nick]
+            del self.channels[event.target].users[event.source.nick.lower()]
         
     def _on_quit(self, myself, event):
         #del self.users[event.source.nick]
         for i in self.channels:
             try:
-                del self.channels[i].users[event.source.nick]
+                del self.channels[i].users[event.source.nick.lower()]
                 self._fire_event(Event("cquit", event.source, i, event.arguments))
             except:
                 pass
@@ -447,14 +447,14 @@ class IRCClient:
     def _on_nick(self, myself, event):
         for i in self.channels:
             try:
-                self.channels[i].users[event.target] = self.channels[i].users[event.source.nick]
-                del self.channels[i].users[event.source.nick]
+                self.channels[i].users[event.target.lower()] = self.channels[i].users[event.source.nick.lower()]
+                del self.channels[i].users[event.source.nick.lower()]
             except:
                 pass
 
     def _on_kick(self, myself, event):
         if event.arguments[0] != self.nickname:
-            del self.channels[event.target].users[event.arguments[0]]
+            del self.channels[event.target].users[event.arguments[0].lower()]
     
     def _on_banlist(self, myself, event):
         ban = Ban(event.arguments[1], event.arguments[3])
@@ -494,7 +494,7 @@ class Channel(object):
 
     def addUser(self, e):
         if e.arguments[0] == "08":
-            self.users[e.arguments[4]] = User(
+            self.users[e.arguments[4].lower()] = User(
                     e.arguments[4],
                     e.arguments[2],
                     e.arguments[3],
@@ -503,7 +503,7 @@ class Channel(object):
                     e.arguments[6]
                 )
         else:
-            self.users[e.arguments[4]] = User(
+            self.users[e.arguments[4].lower()] = User(
                     e.arguments[4],
                     e.arguments[1],
                     e.arguments[2],
