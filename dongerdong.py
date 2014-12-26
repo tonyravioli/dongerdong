@@ -12,10 +12,6 @@ import copy
 logging.getLogger(None).setLevel(logging.DEBUG)
 logging.basicConfig()
 
-# TODO: Fights
-# TODO: Fight commands
-# TODO: Fight stats
-
 class Donger(object):
     def __init__(self):
         # For future usage™
@@ -180,15 +176,18 @@ class Donger(object):
         if self.gamerunning:
             if ev.source2.nick.lower() in self.aliveplayers:
                 self.ascii("coward")
-                self.privmsg(self.channel, "The coward is dead!")
+                self.irc.privmsg(self.chan, "The coward is dead!")
                 self.aliveplayers.remove(ev.source2.nick.lower())
                 self.health[ev.source2.nick.lower()] = -1
                 try:
                     self._turnleft.remove(ev.source2.nick.lower())
                 except:
                     pass
-                if self.turn == ev.source2.nick.lower():
-                    getturn()
+                    
+                if len(self.aliveplayers) == 1:
+                    self.win(self.aliveplayers[0], stats=False)
+                elif self.turn == ev.source2.nick.lower():
+                    self.getturn()
     
     def fight(self, cli, fighters):
         cli.mode(self.chan, "+m")
@@ -219,7 +218,7 @@ class Donger(object):
         self._turnleft.remove(self.turn)
         self.irc.privmsg(self.chan, "It is \002{0}\002's turn".format(self.turn))
     
-    def win(self, winner):
+    def win(self, winner, stats=True):
         self.irc.mode(self.chan, "-m")
         self.irc.mode(self.chan, "-v " + winner)
         if len(list(self.health)) > 2:
@@ -228,7 +227,8 @@ class Donger(object):
         self.health = {}
         self._turnleft = []
         self.gamerunning = False
-        # TODO: Stats
+        if stats is True:
+            pass # TODO: stats
     
     def ascii(self, key):
         cli = self.irc # >_>
@@ -247,6 +247,13 @@ class Donger(object):
             cli.privmsg(self.chan, " / ___/ _ \/  _/_  __/  _/ ___/ _ | / / ")
             cli.privmsg(self.chan, "/ /__/ , _// /  / / _/ // /__/ __ |/ /__")
             cli.privmsg(self.chan, "\___/_/|_/___/ /_/ /___/\___/_/ |_/____/")
+        elif key == "coward":
+            cli.privmsg(self.chan, "   __________ _       _____    ____  ____ ")
+            cli.privmsg(self.chan, "  / ____/ __ \ |     / /   |  / __ \/ __ \\") 
+            cli.privmsg(self.chan, " / /   / / / / | /| / / /| | / /_/ / / / /")
+            cli.privmsg(self.chan, "/ /___/ /_/ /| |/ |/ / ___ |/ _, _/ /_/ / ")
+            cli.privmsg(self.chan, "\____/\____/ |__/|__/_/  |_/_/ |_/_____/  ")
+                                          
         else:
             cli.privmsg(self.chan, "ascii "+ key +"!")
     
