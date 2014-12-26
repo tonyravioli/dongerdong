@@ -390,7 +390,7 @@ ircsock.send("NICK "+ botnick +"\n") # here we actually assign the nick to the b
 
 time.sleep(3)
 identify()
-time.sleep(10)
+time.sleep(15)
 joinchan(channel) # Join the channel using the functions we previously defined
 
 while 1: # Be careful with these! it might send you to an infinite loop
