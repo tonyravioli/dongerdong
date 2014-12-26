@@ -50,6 +50,8 @@ class Donger(object):
                 cli.privmsg(self.chan, "Sorry, bro... But the right syntax is !fight <nick>")
                 return
             ev.splitd[1] = ev.splitd[1].lower()
+            
+            # TODO: #2, fight with the bot
             if ev.splitd[1] == cli.nickname.lower():
                 cli.privmsg(self.chan, "DON'T FUCK WITH ME")
                 return
@@ -68,7 +70,25 @@ class Donger(object):
             self.pending[ev.source2.host] = cli.channels[self.chan].users[ev.splitd[1]].host
             cli.privmsg(self.chan, "{1}: {0} has challenged you. To accept, use '!accept {0}'".format(ev.source, cli.channels[self.chan].users[ev.splitd[1]].nick))
         elif ev.splitd[0] == "!accept":
-            cli.privmsg(self.chan, "NOT DONE YET")
+            if len(ev.splitd) == 1: # I hate you
+                cli.privmsg(self.chan, "Sorry, bro... But the right syntax is !accept <nick>")
+                return
+            ev.splitd[1] = ev.splitd[1].lower()
+            try:
+                self.pending[ev.splitd[1]]
+            except:
+                cli.privmsg(self.chan, "Err... Maybe you meant to say !fight {0} ? That guy never challenged you.".format(ev.splitd[1]))
+                
+            try: # Check if the challenged user is on the channel..
+                cli.channels[self.chan].users[ev.splitd[1]]
+            except:
+                cli.privmsg(self.chan, "Well... That guy is a coward! YOU WIN")
+                del self.pending[ev.splitd[1]]
+                return
+            
+            del self.pending[ev.splitd[1]]
+            # Start the fight!!!
+            # TODO
 
     # For the record: cli = client and ev = event
     def _connect(self, cli, ev):
