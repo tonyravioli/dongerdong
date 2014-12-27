@@ -79,7 +79,7 @@ class Donger(object):
             
             # All checks OK, put this fight with the pending ones
             self.pending[ev.source.lower()] = cli.channels[self.chan].users[ev.splitd[1]].nick
-            cli.privmsg(self.chan, "{1}: {0} has challenged you. To accept, use '!accept {0}'".format(ev.source, cli.channels[self.chan].users[ev.splitd[1]].nick))
+            cli.privmsg(self.chan, "{1}: \002{0}\002 has challenged you. To accept, use '!accept {0}'".format(ev.source, cli.channels[self.chan].users[ev.splitd[1]].nick))
         elif ev.splitd[0] == "!accept":
             if self.gamerunning:
                 cli.privmsg(self.chan, "WAIT TILL THIS FUCKING GAME ENDS")
@@ -94,7 +94,7 @@ class Donger(object):
                 if self.pending[ev.splitd[1]] != ev.source:
                     raise  # two in one
             except:
-                cli.privmsg(self.chan, "Err... Maybe you meant to say !fight {0} ? They never challenged you.".format(ev.splitd[1]))
+                cli.privmsg(self.chan, "Err... Maybe you meant to say \002!fight {0}\002? They never challenged you.".format(ev.splitd[1]))
                 
             try: # Check if the challenged user is on the channel..
                 cli.channels[self.chan].users[ev.splitd[1]]
@@ -134,9 +134,9 @@ class Donger(object):
             criticalroll = random.randint(1, 16)
             instaroll = random.randint(1, 50)
             if instaroll == 1:
-                cli.privmsg(self.chan, "INSTAKILL")
+                cli.privmsg(self.chan, "\002INSTAKILL\002")
                 self.ascii("rekt")
-                cli.privmsg(self.chan, "{0} REKT {1}!".format(ev.source, nick))
+                cli.privmsg(self.chan, "\002{0}\002 REKT {1}!".format(ev.source, nick))
                 #self.win(ev.source, self.health)
                 self.health[nick.lower()] = -1
                 self.aliveplayers.remove(nick.lower())
@@ -147,11 +147,11 @@ class Donger(object):
                 damage = damage * 2
             
             self.health[nick.lower()] -= damage
-            cli.privmsg(self.chan, "{0} ({1}HP) deals {2} to {3} ({4}HP)".format(ev.source, str(self.health[ev.source.lower()]), str(damage), nick, str(self.health[nick.lower()])))
+            cli.privmsg(self.chan, "\002{0}\002 (\002{1}\002HP) deals \002{2}\002 to \002{3}\002 (\002{4}\002HP)".format(ev.source, str(self.health[ev.source.lower()]), str(damage), nick, str(self.health[nick.lower()])))
 
             if self.health[nick] <= 0:
                 self.ascii("rekt")
-                cli.privmsg(self.chan, "{0} REKT {1}!".format(ev.source, nick))
+                cli.privmsg(self.chan, "\002{0}\002 REKT {1}!".format(ev.source, nick))
                 self.aliveplayers.remove(nick.lower())
                 cli.mode(self.chan, "-v " + nick)
             
