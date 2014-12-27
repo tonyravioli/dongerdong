@@ -1,0 +1,3 @@
+[submodule "peewee"]
+	path = peewee
+	url = https://github.com/coleifer/peewee.git
