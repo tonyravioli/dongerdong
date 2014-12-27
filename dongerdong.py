@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from irc import client
+from peewee import peewee
 import json
 import base64
 import time
@@ -131,7 +132,7 @@ class Donger(object):
                 del allplayers[ev.source.lower()]
                 nick = random.choice(list(allplayers))
             damage = random.randint(18, 35)
-            criticalroll = random.randint(1, 16)
+            criticalroll = random.randint(1, 12)
             instaroll = random.randint(1, 50)
             if instaroll == 1:
                 cli.privmsg(self.chan, "\002INSTAKILL\002")
@@ -141,6 +142,7 @@ class Donger(object):
                 self.health[nick.lower()] = -1
                 self.aliveplayers.remove(nick.lower())
                 self.getturn()
+                self.countstat(nick, "loss")
                 return
             elif criticalroll == 1:
                 self.ascii("critical")
@@ -153,6 +155,7 @@ class Donger(object):
                 self.ascii("rekt")
                 cli.privmsg(self.chan, "\002{0}\002 REKT {1}!".format(ev.source, nick))
                 self.aliveplayers.remove(nick.lower())
+                self.countstat(nick, "loss")
                 cli.mode(self.chan, "-v " + nick)
             
             self.getturn()
@@ -191,7 +194,14 @@ class Donger(object):
             cli.privmsg(self.chan, "\002{0}\002's has \002{1}\002HP".format(ev.splitd[1], self.health[ev.splitd[1].lower()]))
         elif ev.splitd[0] == "!quit":
             self._coward(cli, ev)
+        elif ev.splitd[0] == "!leaderboard" or ev.splitd[0] == "!top":
+            players = Stats.select().order_by(Stats.wins.desc()).limit(3)
+            c = 1
+            for player in players:
+                cli.privmsg(self.chan, "{0} - \002{1}\002 (\002{2}\002)".format(c, player.nick.upper(), player.wins))
+                c += 1
             
+    # Here we handle ragequits
     def _coward(self, cli, ev):
         if self.gamerunning:
             if ev.source2.nick.lower() in self.aliveplayers:
@@ -208,6 +218,23 @@ class Donger(object):
                     self.win(self.aliveplayers[0], stats=False)
                 elif self.turn == ev.source2.nick.lower():
                     self.getturn()
+                
+                self.countstat(ev.source2.nick, "quit")
+    
+    # Adds something on the stats
+    # ctype = win/loss/quit
+    def countstat(self, nick, ctype):
+        try:
+            stat = Stats.get(Stats.nick == nick.lower())
+        except:
+            stat = Stats.create(nick=nick.lower(), losses=0, quits=0, wins=0)
+        if ctype == "win":
+            stat.wins += 1
+        elif ctype == "loss":
+            stat.losses += 1
+        elif ctyle == "quit":
+            stat.quits += 1
+        stat.save()
     
     def fight(self, cli, fighters):
         cli.mode(self.chan, "+m")
@@ -251,7 +278,7 @@ class Donger(object):
         self.turn = 0
         self.roundstart = 0
         if stats is True:
-            pass # TODO: stats
+            self.countstat(winner, "win")
     
     def ascii(self, key):
         cli = self.irc # >_>
@@ -316,6 +343,23 @@ class Donger(object):
                     self.health[self.turn] = -1
                     self.getturn()
         
+
+# Database stuff
+database = peewee.SqliteDatabase('dongerdong.db')
+database.connect()
+
+class BaseModel(peewee.Model):
+    class Meta:
+        database = database
+
+# Stats table
+class Stats(BaseModel):
+    nick = peewee.CharField()  # Nickname of the player
+    wins = peewee.IntegerField() # Number of REKTs
+    losses = peewee.IntegerField() # Number of loses
+    quits = peewee.IntegerField() # Number of coward quits
+    
+Stats.create_table(True) # Here we create the table
 
 # Start donging
 dongerdong = Donger()
