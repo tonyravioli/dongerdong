@@ -1,0 +1,7 @@
+{
+    "server": "irc.freenode.net",
+    "nick": "dongtester",
+    "channel": "#donger-test",
+    "nickserv-user": "dongy",
+    "nickserv-pass": "dongitydong"
+}
