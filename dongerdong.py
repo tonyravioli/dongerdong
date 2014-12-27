@@ -137,25 +137,25 @@ class Donger(object):
             if instaroll == 1:
                 cli.privmsg(self.chan, "\002INSTAKILL\002")
                 self.ascii("rekt")
-                cli.privmsg(self.chan, "\002{0}\002 REKT {1}!".format(ev.source, nick))
+                cli.privmsg(self.chan, "\002{0}\002 REKT {1}!".format(ev.source, cli.channels[self.chan].users[nick.lower()].nick))
                 #self.win(ev.source, self.health)
                 self.health[nick.lower()] = -1
                 self.aliveplayers.remove(nick.lower())
                 self.getturn()
-                self.countstat(nick, "loss")
+                self.countstat(cli.channels[self.chan].users[nick.lower()].nick, "loss")
                 return
             elif criticalroll == 1:
                 self.ascii("critical")
                 damage = damage * 2
             
             self.health[nick.lower()] -= damage
-            cli.privmsg(self.chan, "\002{0}\002 (\002{1}\002HP) deals \002{2}\002 to \002{3}\002 (\002{4}\002HP)".format(ev.source, str(self.health[ev.source.lower()]), str(damage), nick, str(self.health[nick.lower()])))
+            cli.privmsg(self.chan, "\002{0}\002 (\002{1}\002HP) deals \002{2}\002 to \002{3}\002 (\002{4}\002HP)".format(ev.source, str(self.health[ev.source.lower()]), str(damage), cli.channels[self.chan].users[nick.lower()].nick, str(self.health[nick.lower()])))
 
-            if self.health[nick] <= 0:
+            if self.health[nick.lower()] <= 0:
                 self.ascii("rekt")
                 cli.privmsg(self.chan, "\002{0}\002 REKT {1}!".format(ev.source, nick))
                 self.aliveplayers.remove(nick.lower())
-                self.countstat(nick, "loss")
+                self.countstat(cli.channels[self.chan].users[nick.lower()].nick, "loss")
                 cli.mode(self.chan, "-v " + nick)
             
             self.getturn()
@@ -200,7 +200,17 @@ class Donger(object):
             for player in players:
                 cli.privmsg(self.chan, "{0} - \002{1}\002 (\002{2}\002)".format(c, player.nick.upper(), player.wins))
                 c += 1
-            
+        elif ev.splitd[0] == "!mystats" or ev.splitd[0] == "!stats":
+            if len(ev.splitd) != 1:
+                nick = ev.splitd[1]
+            else:
+                nick = ev.source
+            try:
+                player = Stats.get(Stats.nick == nick.lower())
+                cli.privmsg(self.chan, "\002{0}\002's stats: \002{1}\002 wins, \002{2}\002 losses, and \002{3}\002 coward quits".format(
+                                        player.realnick, player.wins, player.losses, player.quits))
+            except:
+                cli.privmsg(self.chan, "There are no registered stats for \002{0}\002".format(nick))            
     # Here we handle ragequits
     def _coward(self, cli, ev):
         if self.gamerunning:
@@ -227,7 +237,7 @@ class Donger(object):
         try:
             stat = Stats.get(Stats.nick == nick.lower())
         except:
-            stat = Stats.create(nick=nick.lower(), losses=0, quits=0, wins=0)
+            stat = Stats.create(nick=nick.lower(), losses=0, quits=0, wins=0, realnick=nick)
         if ctype == "win":
             stat.wins += 1
         elif ctype == "loss":
@@ -267,6 +277,7 @@ class Donger(object):
         self.irc.privmsg(self.chan, "It is \002{0}\002's turn".format(self.irc.channels[self.chan].users[self.turn].nick))
     
     def win(self, winner, stats=True):
+        
         self.irc.mode(self.chan, "-m")
         self.irc.mode(self.chan, "-v " + winner)
         if len(list(self.health)) > 2:
@@ -278,7 +289,7 @@ class Donger(object):
         self.turn = 0
         self.roundstart = 0
         if stats is True:
-            self.countstat(winner, "win")
+            self.countstat(self.irc.channels[self.chan].users[winner.lower()].nick, "win")
     
     def ascii(self, key):
         cli = self.irc # >_>
@@ -355,6 +366,7 @@ class BaseModel(peewee.Model):
 # Stats table
 class Stats(BaseModel):
     nick = peewee.CharField()  # Nickname of the player
+    realnick = peewee.CharField()  # Nickname of the player (not lowercased :P)
     wins = peewee.IntegerField() # Number of REKTs
     losses = peewee.IntegerField() # Number of loses
     quits = peewee.IntegerField() # Number of coward quits
