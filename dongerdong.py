@@ -36,6 +36,13 @@ except:
   password="wrong"
   print("Password not set.")
 
+try:
+  v=sys.argv[2]
+  if v=="verbose":
+    verbose = True
+except:
+  verbose = False 
+
 def ping(): # This is our first function! It will respond to server Pings.
   ircsock.send("PONG :pingis\n")  
 
@@ -198,9 +205,11 @@ def fight(attacker,defender):
         say("Wait your fucking turn or I'll kill you.")
       else:
         damageroll=random.randint(18,39)
-        criticalroll=random.randint(1,9)
+        criticalroll=random.randint(1,15)
         modifier=2
         instaroll=random.randint(1,40)
+        if verbose == True:
+          say("Damage roll is "+ str(damageroll) +", criticalroll (needs to be 1 for crit) is "+ str(criticalroll) +".")
         if instaroll==1:
           #ascii("instakill")
           say("INSTAKILL!")
