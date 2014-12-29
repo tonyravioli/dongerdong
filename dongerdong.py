@@ -1,484 +1,381 @@
-#!/usr/bin/env python
-#
-# DongerDong IRC Fight Bot. Adapted from http://wiki.shellium.org/w/Writing_an_IRC_bot_in_Python
-#
-# Creator: ravioli (freenode)
-#
-# This program is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-# or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
-# for more details.
+#!/usr/bin/env python3
 
-# Import some necessary libraries.
-import socket 
+from irc import client
+from peewee import peewee
+import json
+import base64
 import time
+import logging
 import random
-import urllib
-import urllib2
-import sys
+import copy
+import _thread
 
-# Some basic variables used to configure the bot        
-server = "irc.freenode.net" # Server
-channel = "#donger" # Channel
-botnick = "dongerdong" # Your bots nick
-healthtable = {}
-pending = {}
+# This is for debugging. It vomits on the screen all the irc stuff
+logging.getLogger(None).setLevel(logging.DEBUG)
+logging.basicConfig()
 
-try:
-  password=sys.argv[1]
-  if password=="test":
-    channel=channel +"test"
-    botnick=botnick +"test"
-    print("In test mode.")
-  else:
-    print("Password set to "+ password)
-except:
-  password="wrong"
-  print("Password not set.")
+class Donger(object):
+    def __init__(self):
+        # For future usageâ„¢
+        self.pending = {} # pending['Polsaker'] = 'ravioli'
+        self.health = {} # health['ravioli'] = 69
+        self.gamerunning = False
+        self.turn = ""
+        self._turnleft = []
+        self.aliveplayers = []
+        self.roundstart = 0
+        
+        # thread for timeouts
+        _thread.start_new_thread(self._timeouts, ())
+        
+        # Load the config..
+        self.config = json.loads(open("config.json").read())
+        
+        # We will use this a lot, and I hate long variables
+        self.chan = self.config['channel']
+        
+        # Create the irc object
+        self.irc = client.IRCClient("donger")
+        self.irc.configure(server = self.config['server'],
+                           nick = self.config['nick'],
+                           ident = self.config['nick'],
+                           gecos = "The supreme donger")
+        # Create handlers and F U N stuff
+        self.irc.addhandler("connect", self._connect) # for SASL
+        self.irc.addhandler("authenticate", self._auth) # for SASL!!!1
+        self.irc.addhandler("welcome", self._welcome) # For the autojoin
+        self.irc.addhandler("pubmsg", self._pubmsg) # For commands
+        self.irc.addhandler("part", self._coward) # Coward extermination
+        self.irc.addhandler("quit", self._coward) # ^
+        
+        # Connect to the IRC
+        self.irc.connect()
+    
+    def _pubmsg(self, cli, ev):
+        # Processing commands here
+        if ev.splitd[0] == "!fight":
+            if self.gamerunning:
+                cli.privmsg(self.chan, "WAIT TILL THIS FUCKING GAME ENDS")
+                return
+                
+            if len(ev.splitd) == 1 or ev.splitd[1] == "": # I hate you
+                cli.privmsg(self.chan, "Sorry, bro... But the right syntax is !fight <nick>")
+                return
+            ev.splitd[1] = ev.splitd[1].lower()
+            
+            # TODO: #2, fight with the bot
+            if ev.splitd[1] == cli.nickname.lower():
+                cli.privmsg(self.chan, "DON'T FUCK WITH ME")
+                return
+                        
+            try: # Check if the challenged user is on the channel..
+                cli.channels[self.chan].users[ev.splitd[1]]
+            except:
+                cli.privmsg(self.chan, "You're high? Because that guy is not on this channel")
+                return
+            
+            if cli.channels[self.chan].users[ev.splitd[1]].host == ev.source2.host:
+                cli.privmsg(self.chan, "I THINK YOU'RE TRYING TO HIT YOURSELF")
+                return
+            
+            # All checks OK, put this fight with the pending ones
+            self.pending[ev.source.lower()] = cli.channels[self.chan].users[ev.splitd[1]].nick
+            cli.privmsg(self.chan, "{1}: \002{0}\002 has challenged you. To accept, use '!accept {0}'".format(ev.source, cli.channels[self.chan].users[ev.splitd[1]].nick))
+        elif ev.splitd[0] == "!accept":
+            if self.gamerunning:
+                cli.privmsg(self.chan, "WAIT TILL THIS FUCKING GAME ENDS")
+                return
+                
+            if len(ev.splitd) == 1 or ev.splitd[1] == "": # I hate you
+                cli.privmsg(self.chan, "Sorry, bro... But the right syntax is !accept <nick>")
+                return
+            ev.splitd[1] = ev.splitd[1].lower()
+            
+            try:
+                if self.pending[ev.splitd[1]] != ev.source:
+                    raise  # two in one
+            except:
+                cli.privmsg(self.chan, "Err... Maybe you meant to say \002!fight {0}\002? They never challenged you.".format(ev.splitd[1]))
+                
+            try: # Check if the challenged user is on the channel..
+                cli.channels[self.chan].users[ev.splitd[1]]
+            except:
+                cli.privmsg(self.chan, "Well... They were cowards... YOU WIN")
+                del self.pending[ev.splitd[1]]
+                return
+            
+            # Start the fight!!!
+            self.fight(cli, [self.pending[ev.splitd[1]], cli.channels[self.chan].users[ev.splitd[1]].nick])
+            del self.pending[ev.splitd[1]]
+        elif ev.splitd[0] == "!hit":
+            if not self.gamerunning:
+                cli.privmsg(self.chan, "THE FUCKING GAME IS NOT RUNNING")
+                return
+                
+            if self.turn != ev.source.lower():
+                cli.privmsg(self.chan, "Wait your fucking turn or I'll kill you.")
+                return
+            
+            if ev.source.lower() not in self.aliveplayers:
+                cli.privmsg(self.chan, "GET OUT OR I'LL KILL YOU! INTRUDER INTRUDER INTRUDER")
+            
+            if len(ev.splitd) != 1 and ev.splitd[1] != "":
+                if ev.splitd[1] not in self.aliveplayers and ev.splitd[1] in list(self.health):
+                    cli.privmsg(self.chan, "WHAT?! Do you REALLY want to hit a corpse?!")
+                    return
+                elif ev.splitd[1] not in self.aliveplayers:
+                    cli.privmsg(self.chan, "WHA?! \002{0}\002 is not playing!".format(ev.splitd[1]))
+                    return
+                nick = ev.splitd[1]
+            else:
+                allplayers = copy.deepcopy(self.health)
+                del allplayers[ev.source.lower()]
+                nick = random.choice(list(allplayers))
+            damage = random.randint(18, 35)
+            criticalroll = random.randint(1, 12)
+            instaroll = random.randint(1, 50)
+            if instaroll == 1:
+                cli.privmsg(self.chan, "\002INSTAKILL\002")
+                self.ascii("rekt")
+                cli.privmsg(self.chan, "\002{0}\002 REKT {1}!".format(ev.source, cli.channels[self.chan].users[nick.lower()].nick))
+                #self.win(ev.source, self.health)
+                self.health[nick.lower()] = -1
+                self.aliveplayers.remove(nick.lower())
+                self.getturn()
+                self.countstat(cli.channels[self.chan].users[nick.lower()].nick, "loss")
+                return
+            elif criticalroll == 1:
+                self.ascii("critical")
+                damage = damage * 2
+            
+            self.health[nick.lower()] -= damage
+            cli.privmsg(self.chan, "\002{0}\002 (\002{1}\002HP) deals \002{2}\002 to \002{3}\002 (\002{4}\002HP)".format(ev.source, str(self.health[ev.source.lower()]), str(damage), cli.channels[self.chan].users[nick.lower()].nick, str(self.health[nick.lower()])))
 
-try:
-  v=sys.argv[2]
-  if v=="verbose":
-    verbose = True
-except:
-  verbose = False 
-
-def ping(): # This is our first function! It will respond to server Pings.
-  ircsock.send("PONG :pingis\n")  
-
-def say(message):
-  ircsock.send("PRIVMSG "+ channel +" :"+ message +"\n")
-
-def health(guy,damage):
-  try:
-    health=healthtable[guy]
-    newhealth=health-damage
-    if newhealth > 100:
-      newhealth = 100
-    healthtable[guy]=newhealth
-    health=healthtable[guy]
-  except KeyError:
-    health=100-damage
-    if health > 100:
-      health = 100
-    healthtable[guy]=health
-  return health
-
-def fight(attacker,defender):
-  lastMessageTime=time.time() + 60
-  if attacker == defender:
-    fighting = False
-    say("ARE YOU RETARDED?")
-    kick(attacker,"STOP HITTING YOURSELF")
-    time.sleep(1)
-    say("Seriously though fuck that guy.")
-  elif defender == botnick:
-    fighting = False
-    say("FUCK YOU")
-    ascii("rekt")
-    kick(attacker,"LOL REALLY")
-    time.sleep(1)
-    say("Seriously though fuck that guy.\n")
-  else:
-    fighting = True
-    lastturn=defender
-    attackermuted=0
-    defendermuted=0
-    setmode("+m")
-    time.sleep(2)
-    reset("all")
-    ascii("fight")
-  
-    say(attacker.upper() +" V. "+ defender.upper() +"")
-    time.sleep(2)
-    say("RULES:")
-    time.sleep(1)
-    say("1. Wait your turn. One person at a time.")
-    time.sleep(1)
-    say("2. That's it.")
-    time.sleep(1)
-    say(".")
-    time.sleep(1)
-    say("Use !hit to strike the other player.")
-    say("Use !heal to heal yourself.")
-    time.sleep(2)
-    setmode("+v",attacker)
-    setmode("+v",defender)
-    time.sleep(.300)
-    say(attacker +", you're up first.")
-
-    invalid = False
-
-  while fighting:
-    ircmsg = ircsock.recv(2048) # receive data from the server
-    ircmsg = ircmsg.strip('\n\r') # removing any unnecessary linebreaks.
-    print("While fighting: " +ircmsg) # Here we print what's coming from the server whle fighting
-
-    if time.time() > lastMessageTime+60:
-      finish(attacker,defender,lastturn)
-      fighting = False
-      say("Timeout occurred. "+ lastturn +" wins.")
-
-    if ircmsg.find("PRIVMSG dongerdong :") != -1:
-      userhost=ircmsg.split(":")[1]
-      userhost=userhost.split(" ")[0]
-      invalid = True
-      #ircsock.send("MODE "+ channel +" +b "+ userhost  +"\n")
-
-    if (ircmsg.find(" PART "+ channel +" :") != -1) or (ircmsg.find(" QUIT :") != -1):
-      firstguy=ircmsg.split("!")[0]
-      firstguy=firstguy.split(":")[1]
-      if firstguy==attacker:
-        finish(attacker,defender,defender)
-        fighting = False
-      elif firstguy==defender:
-        finish(attacker,defender,attacker)
-        fighting = False
-
-
-    if ircmsg.find("PING :") != -1: # if the server pings us then we've got to respond!
-      ping()
-
-    if(ircmsg.find("PRIVMSG "+ channel +" :!heal") != -1) and not invalid:
-      firstguy=ircmsg.split("!")[0]
-      firstguy=firstguy.split(":")[1]
-      if firstguy==lastturn:
-        if firstguy==attacker:
-          attackermuted+=1
-        if firstguy==defender:
-          defendermuted+=1
-        if defendermuted > 2:
-          say("FUCK YOU")
-          time.sleep(1)
-          finish(attacker,defender,attacker)
-          time.sleep(1)
-          say("Seriously though fuck that guy.")
-          fighting = False
-        elif attackermuted > 2:
-          say("FUCK YOU")
-          time.sleep(1)
-          finish(attacker,defender,defender)
-          time.sleep(1)
-          say("Seriously though fuck that guy.")
-          fighting = False
+            if self.health[nick.lower()] <= 0:
+                self.ascii("rekt")
+                cli.privmsg(self.chan, "\002{0}\002 REKT {1}!".format(ev.source, nick))
+                self.aliveplayers.remove(nick.lower())
+                self.countstat(cli.channels[self.chan].users[nick.lower()].nick, "loss")
+                cli.mode(self.chan, "-v " + nick)
+            
+            self.getturn()
+        elif ev.splitd[0] == "!heal":
+            if not self.gamerunning:
+                cli.privmsg(self.chan, "THE FUCKING GAME IS NOT RUNNING")
+                return
+                
+            if self.turn != ev.source.lower():
+                cli.privmsg(self.chan, "Wait your fucking turn or I'll kill you.")
+                return
+            
+            if ev.source.lower() not in self.aliveplayers:
+                cli.privmsg(self.chan, "GET OUT OR I'LL KILL YOU! INTRUDER INTRUDER INTRUDER")
+            
+            healing = random.randint(22, 44)
+            self.health[ev.source.lower()] += healing
+            if self.health[ev.source.lower()] > 100:
+                self.health[ev.source.lower()] = 100
+                cli.privmsg(self.chan, "\002{0}\002 heals for \002{1}HP\002, bringing them to \002100HP\002".format(ev.source, healing))
+            else:
+                cli.privmsg(self.chan, "\002{0}\002 heals for \002{1}HP\002, bringing them to \002{2}HP\002".format(ev.source, healing, self.health[ev.source.lower()]))
+            self.getturn()
+        elif ev.splitd[0] == cli.nickname + "!":
+            cli.privmsg(self.chan, ev.source + "!")
+        elif ev.splitd[0] == "!help":
+            cli.privmsg(self.chan, "!fight <nick> to initiate fight; !quit to bail out of a fight; !hit to hit, !heal to heal.")
+        elif ev.splitd[0] == "!ping":
+            cli.privmsg(self.chan, "pong!")
+        elif ev.splitd[0] == "!health":
+            if not self.gamerunning:
+                cli.privmsg(self.chan, "THE FUCKING GAME IS NOT RUNNING")
+                return
+            if len(ev.splitd[0]) > 1 or ev.splitd[1] == "":
+                ev.splitd[1] = ev.source
+            cli.privmsg(self.chan, "\002{0}\002's has \002{1}\002HP".format(ev.splitd[1], self.health[ev.splitd[1].lower()]))
+        elif ev.splitd[0] == "!quit":
+            self._coward(cli, ev)
+        elif ev.splitd[0] == "!leaderboard" or ev.splitd[0] == "!top":
+            players = Stats.select().order_by(Stats.wins.desc()).limit(3)
+            c = 1
+            for player in players:
+                cli.privmsg(self.chan, "{0} - \002{1}\002 (\002{2}\002)".format(c, player.nick.upper(), player.wins))
+                c += 1
+        elif ev.splitd[0] == "!mystats" or ev.splitd[0] == "!stats":
+            if len(ev.splitd) != 1:
+                nick = ev.splitd[1]
+            else:
+                nick = ev.source
+            try:
+                player = Stats.get(Stats.nick == nick.lower())
+                cli.privmsg(self.chan, "\002{0}\002's stats: \002{1}\002 wins, \002{2}\002 losses, and \002{3}\002 coward quits".format(
+                                        player.realnick, player.wins, player.losses, player.quits))
+            except:
+                cli.privmsg(self.chan, "There are no registered stats for \002{0}\002".format(nick))            
+    # Here we handle ragequits
+    def _coward(self, cli, ev):
+        if self.gamerunning:
+            if ev.source2.nick.lower() in self.aliveplayers:
+                self.ascii("coward")
+                self.irc.privmsg(self.chan, "The coward is dead!")
+                self.aliveplayers.remove(ev.source2.nick.lower())
+                self.health[ev.source2.nick.lower()] = -1
+                try:
+                    self._turnleft.remove(ev.source2.nick.lower())
+                except:
+                    pass
+                    
+                if len(self.aliveplayers) == 1:
+                    self.win(self.aliveplayers[0], stats=False)
+                elif self.turn == ev.source2.nick.lower():
+                    self.getturn()
+                
+                self.countstat(ev.source2.nick, "quit")
+    
+    # Adds something on the stats
+    # ctype = win/loss/quit
+    def countstat(self, nick, ctype):
+        try:
+            stat = Stats.get(Stats.nick == nick.lower())
+        except:
+            stat = Stats.create(nick=nick.lower(), losses=0, quits=0, wins=0, realnick=nick)
+        if ctype == "win":
+            stat.wins += 1
+        elif ctype == "loss":
+            stat.losses += 1
+        elif ctyle == "quit":
+            stat.quits += 1
+        stat.save()
+    
+    def fight(self, cli, fighters):
+        cli.mode(self.chan, "+m")
+        self.ascii("fight")
+        cli.privmsg(self.chan, " V. ".join(fighters).upper())
+        cli.privmsg(self.chan, "RULES:")
+        cli.privmsg(self.chan, "1. Wait your turn. One person at a time.")
+        cli.privmsg(self.chan, "2. That's it")
+        cli.privmsg(self.chan, ".")
+        cli.privmsg(self.chan, "Use !hit to strike the other player.")
+        cli.privmsg(self.chan, "Use !heal to heal yourself.")
+        for i in fighters:
+            cli.mode(self.chan, "+v " + i)
+            self.health[i.lower()] = 100
+            self.aliveplayers.append(i.lower())
+        self.gamerunning = True
+        self.getturn()
+        
+    def getturn(self):
+        if self._turnleft == []:
+            self._turnleft = copy.copy(self.aliveplayers)
+        
+        if len(self.aliveplayers) == 1:
+            self.win(self.aliveplayers[0])
+            return
+            
+        self.turn = random.choice(self._turnleft)
+        self._turnleft.remove(self.turn)
+        self.roundstart = time.time()
+        self.irc.privmsg(self.chan, "It is \002{0}\002's turn".format(self.irc.channels[self.chan].users[self.turn].nick))
+    
+    def win(self, winner, stats=True):
+        
+        self.irc.mode(self.chan, "-m")
+        self.irc.mode(self.chan, "-v " + winner)
+        if len(list(self.health)) > 2:
+            self.irc.privmsg(self.chan, "{0} REKT {1}!".format(winner, self._dusers(winner)))
+        self.aliveplayers = []
+        self.health = {}
+        self._turnleft = []
+        self.gamerunning = False
+        self.turn = 0
+        self.roundstart = 0
+        if stats is True:
+            self.countstat(self.irc.channels[self.chan].users[winner.lower()].nick, "win")
+    
+    def ascii(self, key):
+        cli = self.irc # >_>
+        if key=="rekt":
+            cli.privmsg(self.chan, "   ___  ______ ________")
+            cli.privmsg(self.chan, "  / _ \/ __/ //_/_  __/")
+            cli.privmsg(self.chan, " / , _/ _// ,<   / /   ")
+            cli.privmsg(self.chan, "/_/|_/___/_/|_| /_/    ")
+        elif key=="fight":
+            cli.privmsg(self.chan, "   _______________ ________")
+            cli.privmsg(self.chan, "  / __/  _/ ___/ // /_  __/")
+            cli.privmsg(self.chan, " / _/_/ // (_ / _  / / /   ")
+            cli.privmsg(self.chan, "/_/ /___/\___/_//_/ /_/    ")
+        elif key=="critical":
+            cli.privmsg(self.chan, "  ________  ______________________   __ ")
+            cli.privmsg(self.chan, " / ___/ _ \/  _/_  __/  _/ ___/ _ | / / ")
+            cli.privmsg(self.chan, "/ /__/ , _// /  / / _/ // /__/ __ |/ /__")
+            cli.privmsg(self.chan, "\___/_/|_/___/ /_/ /___/\___/_/ |_/____/")
+        elif key == "coward":
+            cli.privmsg(self.chan, "   __________ _       _____    ____  ____ ")
+            cli.privmsg(self.chan, "  / ____/ __ \ |     / /   |  / __ \/ __ \\") 
+            cli.privmsg(self.chan, " / /   / / / / | /| / / /| | / /_/ / / / /")
+            cli.privmsg(self.chan, "/ /___/ /_/ /| |/ |/ / ___ |/ _, _/ /_/ / ")
+            cli.privmsg(self.chan, "\____/\____/ |__/|__/_/  |_/_/ |_/_____/  ")
+                                          
+>>>>>>> dev
         else:
-          say("Wait your fucking turn or I'll kill you.")
-      else:
-        healroll=random.randint(22,44)
-        newhealth=health(firstguy,-healroll)
-        if newhealth > 99:
-          say(firstguy +" heals for "+ str(healroll) +"HP, bringing them back to 100HP.")
-        else:
-          say(firstguy +" heals for "+ str(healroll) +"HP, bringing them to "+ str(newhealth) +"HP.")
-        lastturn=firstguy
-      
-    if ircmsg.find("PRIVMSG "+ channel + " :!quit") != -1:
-      '''fighting = False
-      setmode("-v",attacker)
-      setmode("-v",defender)
-      setmode("-m")'''
+            cli.privmsg(self.chan, "ascii "+ key +"!")
+    
+    # For the record: cli = client and ev = event
+    def _connect(self, cli, ev):
+        # Starting with the SASL authentication
+        # Note: If services are down, the bot won't connect
+        cli.send("CAP REQ :sasl")
+        cli.send("AUTHENTICATE PLAIN")
+    
+    def _dusers(self, skip):
+        players = self.health
+        del players[skip]
+        players = list(self.health)
+        last = players[-1]
+        del players[-1]
+        return ", ".join(players) + " and " + last
+        
+    def _auth(self, cli, ev):
+        cli.send("AUTHENTICATE {0}".format(
+        base64.b64encode("{0}\0{0}\0{1}".format(self.config['nickserv-user'],
+                                                self.config['nickserv-pass'])
+                                                .encode()).decode()))
+        cli.send("CAP END")
+    
+    def _welcome(self, cli, ev):
+        cli.join(self.config['channel'])
+    
+    def _timeouts(self):
+        while True:
+            time.sleep(5)
+            if self.gamerunning and self.turn != "":
+                if time.time() - self.roundstart > 60:
+                    self.irc.privmsg(self.chan, "Looks like \002{0}\002 is a dirty idler. DIE DIE DIEEEEE".format(self.turn))
+                    self.irc.mode(self.chan, "-v " + self.turn)
+                    self.aliveplayers.remove(self.turn)
+                    self.health[self.turn] = -1
+                    self.getturn()
+        
 
-    if (ircmsg.find("PRIVMSG "+ channel + " :!hit") != -1) and not invalid:
-      firstguy=ircmsg.split("!")[0]
-      firstguy=firstguy.split(":")[1]
-      if firstguy==attacker:
-        secondguy=defender
-      else:
-        secondguy=attacker
-      if firstguy==lastturn:
-        if firstguy==attacker:
-          attackermuted+=1
-        if firstguy==defender:
-          defendermuted+=1
-        if defendermuted > 2:
-          say("FUCK YOU")
-          time.sleep(1)
-          finish(attacker,defender,attacker)
-          say("Seriously though fuck that guy.")
-          fighting = False
-        elif attackermuted > 2:
-          say("FUCK YOU")
-          time.sleep(1)
-          finish(attacker,defender,defender)
-          say("Seriously though fuck that guy.")
-          fighting = False
-        say("Wait your fucking turn or I'll kill you.")
-      else:
-        damageroll=random.randint(18,39)
-        criticalroll=random.randint(1,15)
-        modifier=2
-        instaroll=random.randint(1,40)
-        if verbose == True:
-          say("Damage roll is "+ str(damageroll) +", criticalroll (needs to be 1 for crit) is "+ str(criticalroll) +".")
-        if instaroll==1:
-          #ascii("instakill")
-          say("INSTAKILL!")
-          health(secondguy,1000)
-        elif criticalroll==1:
-          ascii("critical")
-          damage=damageroll*modifier
-          secondguyhealth = health(secondguy,damage)
-          firstguyhealth=healthAsString(firstguy)
-          say(firstguy +" ("+ firstguyhealth +"HP) deals "+ str(damage) +" to "+ secondguy +" ("+ healthAsString(secondguy) +"HP)!")
-        else:
-          damage=damageroll
-          secondguyhealth = health(secondguy,damage)
-          firstguyhealth=healthAsString(firstguy)
-          say(firstguy +" ("+ firstguyhealth +"HP) deals "+ str(damage) +" to "+ secondguy +" ("+ healthAsString(secondguy) +"HP)!")
-      if health(secondguy,0)<1:
-        ascii("rekt")
-        say(firstguy +" REKT "+ secondguy +"!")
-        finish(attacker,defender,firstguy)
-        fighting = False
-#      say(lastturn +", your turn.")
-      lastturn=firstguy
-      invalid = False
+# Database stuff
+database = peewee.SqliteDatabase('dongerdong.db')
+database.connect()
 
-def finish(attacker,defender,winner):
-  setmode("-v",attacker)
-  setmode("-v",defender)
-  setmode("-m")
-  if winner == attacker:
-    kick(defender,"REKT")
-  else:
-    kick(attacker,"REKT")
-  reset("all")
-  try:
-    response=urllib2.urlopen("http://ravio.li/donger/dongerstats.php?attacker="+ attacker +"&defender=" + defender +"&winner=" + winner)
-    page = response.read()
-  except:
-    say("Tell ravioli the stats thing failed.")
-  fighting = False
+class BaseModel(peewee.Model):
+    class Meta:
+        database = database
 
-def setmode(mode,user="no"):
-  if "user"=="no": #Assume it's a channel mode
-    ircsock.send("MODE "+ channel +" "+ mode +" \n")
-  else: #Otherwise, apply to user
-    ircsock.send("MODE "+ channel +" "+ mode +" "+ user +" \n")
+# Stats table
+class Stats(BaseModel):
+    nick = peewee.CharField()  # Nickname of the player
+    realnick = peewee.CharField()  # Nickname of the player (not lowercased :P)
+    wins = peewee.IntegerField() # Number of REKTs
+    losses = peewee.IntegerField() # Number of loses
+    quits = peewee.IntegerField() # Number of coward quits
+    
+Stats.create_table(True) # Here we create the table
 
-def ascii(key):
-  if key=="rekt":
-    say("   ___  ______ ________")
-    time.sleep(.400)
-    say("  / _ \/ __/ //_/_  __/")
-    time.sleep(.400)
-    say(" / , _/ _// ,<   / /   ")
-    time.sleep(.400)
-    say("/_/|_/___/_/|_| /_/    ")
-  elif key=="fight":
-    say("   _______________ ________")
-    time.sleep(.400)
-    say("  / __/  _/ ___/ // /_  __/")
-    time.sleep(.400)
-    say(" / _/_/ // (_ / _  / / /   ")
-    time.sleep(.400)
-    say("/_/ /___/\___/_//_/ /_/    ")
-  elif key=="critical":
-    say("  ________  ______________________   __ ")
-    time.sleep(.400)
-    say(" / ___/ _ \/  _/_  __/  _/ ___/ _ | / / ")
-    time.sleep(.400)
-    say("/ /__/ , _// /  / / _/ // /__/ __ |/ /__")
-    time.sleep(.400)
-    say("\___/_/|_/___/ /_/ /___/\___/_/ |_/____/")
-  else:
-    say("ascii "+ key +"!")
+# Start donging
+dongerdong = Donger()
 
-def identify():
-  ircsock.send("PRIVMSG nickserv :IDENTIFY "+ password +" \n")
-
-def kick(asshole,kickmsg):
-  ircsock.send("KICK "+ channel +" "+ asshole +" :"+ kickmsg +"\n")
-
-def sendmsg(chan , msg): # This is the send message function, it simply sends messages to the channel.
-  ircsock.send("PRIVMSG "+ chan +" :"+ msg +"\n") 
-
-def joinchan(chan): # This function is used to join channels.
-  ircsock.send("JOIN "+ chan +"\n")
-
-def hello(): # This function responds to a user that inputs "Hello Mybot"
-  say("Hello!")
-
-def fuckyou(msg):
-  firstguy=msg.split("!")[0]
-  firstguy=firstguy.split(":")[1]
-  say("Fuck you, "+ firstguy +".")
-
-def bang(msg):
-  firstguy=msg.split("!")[0]
-  firstguy=firstguy.split(":")[1]
-  say(firstguy +"!")
-
-def healthAsString(guy):
-  try:
-    health=healthtable[guy]
-    health=str(health)
-  except KeyError:
-    health=100
-    health=str(health)
-  lastActionTime=time.time()
-  return health
-
-def attack(msg):
-  firstguy=msg.split("!")[0]
-  firstguy=firstguy.split(":")[1]
-  secondguy=msg.split("attack ")[1]
-
-  try:
-    lastattacker
-  except NameError:
-    lastattacker=firstguy
-  else:
-    if lastattacker==firstguy:
-      say("Wait your turn, "+ firstguy +".")
-
-  roll=random.randint(1,10)
-  if roll==10:
-    damage=100
-    modifier="INSTANTLY KILLING"
-  elif roll==8 or roll==9:
-    damage=50
-    modifier="a critical hit, dealing 50 damage to"
-  elif roll > 4:
-    damage=25
-    modifier="dealing 25 damage to"
-  else:
-    damage=0
-    modifier=""
-
-  secondguyhealth=health(secondguy,damage)
-  if secondguyhealth < 1:
-    secondguyhealth=0
-
-  firstguyhealth=health(firstguy,0)
-  firstguyhealth=str(firstguyhealth)
-  if roll==10:
-    over=1
-    roll=str(roll)
-    damage=str(damage)
-    say(firstguy +"["+ firstguyhealth +"] rolls "+ roll +", INSTANTLY KILLING "+ secondguy +"!")
-    reset(secondguy)
-  elif secondguyhealth==0:
-    over=1
-    roll=str(roll)
-    damage=str(damage)
-    say(firstguy +"["+ firstguyhealth +"] rolls "+ roll +", killing "+ secondguy +"!")
-    reset(secondguy)
-  elif damage==0:
-    roll=str(roll)
-    secondguyhealth=str(secondguyhealth)
-    say(firstguy +"["+ firstguyhealth +"] rolls "+ roll +", missing "+ secondguy +"!")
-  else:
-    secondguyhealth=str(secondguyhealth)
-    roll=str(roll)
-    damage=str(damage)
-    say(firstguy +"["+ firstguyhealth +"] rolls "+ roll +", "+ modifier +" "+ secondguy +"!")
-
-def reset(user):
-  if user=="all":
-    healthtable.clear()
-    #say("k.")
-  else:
-    try:
-      healthtable[user]=100
-    except KeyError:
-      print "uhh..."
-
-
-def fuckyou(msg):
-  name=msg.split("!")[0]
-  name=name.split(":")[1]
-  say("fuck you, "+ name +".")
-
-
-
-ircsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-ircsock.connect((server, 6667)) # Here we connect to the server using the port 6667
-ircsock.send("USER "+ botnick +" "+ botnick +" "+ botnick +" :This bot is a result of a tutoral covered on http://shellium.org/wiki.\n") # user authentication
-ircsock.send("NICK "+ botnick +"\n") # here we actually assign the nick to the bot
-
-time.sleep(3)
-identify()
-time.sleep(15)
-joinchan(channel) # Join the channel using the functions we previously defined
-
-while 1: # Be careful with these! it might send you to an infinite loop
-  try:
-    ircmsg = ircsock.recv(2048) # receive data from the server
-    ircmsg = ircmsg.strip('\n\r') # removing any unnecessary linebreaks.
-  except KeyboardInterrupt:
-    say("NOT ALL THOSE WHO DONGER ARE LOST")
-    print("Exiting due to keyboard interrupt")
-    sys.exit(0)
-  print(ircmsg) # Here we print what's coming from the server
-
-  if ircmsg.find(":Hello "+ botnick) != -1: # If we can find "Hello Mybot" it will call the function hello()
-    hello()
-
-  if ircmsg.find("PRIVMSG dongerdong :") != -1:
-    userhost=ircmsg.split(":")[1]
-    userhost=userhost.split(" ")[0]
-    #ircsock.send("MODE "+ channel +" +b "+ userhost  +"\n")
-
-
-  if ircmsg.find(":!fight ") != -1:
-    firstguy=ircmsg.split("!")[0]
-    attacker=firstguy.split(":")[1]
-    secondguy=ircmsg.split("fight ")[1]
-    secondguy=secondguy.strip()
-    if secondguy.find(botnick) != -1:
-      fighting = False
-      say("FUCK YOU")
-      ascii("rekt")
-      kick(attacker,"DON'T FUCK WITH ME")
-      time.sleep(1)
-      say("Seriously though fuck that guy.")
-    else:
-      defender=secondguy
-      pending[attacker.lower()]=secondguy.lower()
-      say(defender +": "+ attacker +" has challenged you. To accept, use '!accept "+ attacker +"'.")
-
-  if ircmsg.find(":!accept ") != -1:
-    firstguy=ircmsg.split("!")[0]
-    firstguy=firstguy.split(":")[1]
-    secondguy=ircmsg.split("accept ")[1]
-    secondguy=secondguy.strip()
-    try:
-      if pending[secondguy.lower()]==firstguy.lower():
-        if random.randint(1,2)==1:
-          fight(secondguy,firstguy)
-        else:
-          fight(firstguy,secondguy)
-        fighting = False
-      else:
-        say("They didn't challenge you. You can challenge them if you want.")
-    except IndexError:
-       say("No one has challenged you, "+ defender +".")
-    except KeyError:
-       say("They didn't challenge you. You can challenge them if you want (KeyError).")
-      
-  if ircmsg.find(" :!attack ") != -1:
-    if ircmsg.find("dongerdong") != -1:
-      fuckyou(ircmsg)
-    else:
-      attack(ircmsg)
-
-  if ircmsg.find(" :!reset") != -1:
-    reset("all")
-
-  if ircmsg.find(" :!health ") != -1:
-    secondguy=ircmsg.split("health ")[1]
-    say("Their health is "+ healthAsString(secondguy) +".")    
-  elif ircmsg.find(" :!health") != -1:
-    firstguy=ircmsg.split("!")[0]
-    firstguy=firstguy.split(":")[1]
-    say("Your health is "+ healthAsString(firstguy) +".")
-
-  if ircmsg.find(" :!help") != -1:
-    say("!fight <nick> to initiate fight; !quit to bail out of a fight of someone leaves; !hit to hit, !heal to heal. !reset resets the health stats (done automagically after a fight ends anyway)")
-
-  if ircmsg.find(" :"+ botnick +"!") != -1:
-    bang(ircmsg)
-
-  if ircmsg.find("PING :") != -1: # if the server pings us then we've got to respond!
-    ping()
+while dongerdong.irc.connected == True:
+    time.sleep(1) # Infinite loop of awesomeness

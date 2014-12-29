@@ -1,0 +1,9 @@
+include CHANGELOG.md
+include LICENSE
+include README.rst
+include TODO.rst
+include runtests.py
+include tests.py
+include playhouse/berkeley_build.sh
+recursive-include examples *
+recursive-include docs *
