@@ -315,7 +315,6 @@ class Donger(object):
             cli.privmsg(self.chan, "/ /___/ /_/ /| |/ |/ / ___ |/ _, _/ /_/ / ")
             cli.privmsg(self.chan, "\____/\____/ |__/|__/_/  |_/_/ |_/_____/  ")
                                           
->>>>>>> dev
         else:
             cli.privmsg(self.chan, "ascii "+ key +"!")
     
