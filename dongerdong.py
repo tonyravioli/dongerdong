@@ -162,6 +162,7 @@ class Donger(object):
             cli.privmsg(self.chan, "\002{0}\002's has \002{1}\002HP".format(ev.splitd[1], self.health[ev.splitd[1].lower()]))
         elif ev.splitd[0] == "!quit":
             self._coward(cli, ev)
+            cli.mode(self.channel, "-v " + ev.source)
         elif ev.splitd[0] == "!leaderboard" or ev.splitd[0] == "!top":
             players = Stats.select().order_by(Stats.wins.desc()).limit(3)
             c = 1
