@@ -334,6 +334,9 @@ class IRCClient:
 
     def whois(self, targets):
         self.send("WHOIS " + targets)
+        
+    def kick(self, channel, target, reason=""):
+        self.send("KICK {0} {1} :{2}".format(channel, target, reason))
 
     # Internal handlers
 
