@@ -63,9 +63,9 @@ class Donger(object):
                 return
             ev.splitd[1] = ev.splitd[1].lower()
             
-            # TODO: #2, fight with the bot
             if ev.splitd[1] == cli.nickname.lower():
-                cli.privmsg(self.chan, "DON'T FUCK WITH ME")
+                cli.privmsg(self.chan, "YOU WILL SEE")
+                self.fight(cli, [ev.source.lower(), cli.nickname])
                 return
                         
             try: # Check if the challenged user is on the channel..
@@ -131,34 +131,8 @@ class Donger(object):
                 allplayers = copy.deepcopy(self.health)
                 del allplayers[ev.source.lower()]
                 nick = random.choice(list(allplayers))
-            damage = random.randint(18, 35)
-            criticalroll = random.randint(1, 12)
-            instaroll = random.randint(1, 50)
-            if instaroll == 1:
-                cli.privmsg(self.chan, "\002INSTAKILL\002")
-                self.ascii("rekt")
-                cli.privmsg(self.chan, "\002{0}\002 REKT {1}!".format(ev.source, cli.channels[self.chan].users[nick.lower()].nick))
-                #self.win(ev.source, self.health)
-                self.health[nick.lower()] = -1
-                self.aliveplayers.remove(nick.lower())
-                self.getturn()
-                self.countstat(cli.channels[self.chan].users[nick.lower()].nick, "loss")
-                return
-            elif criticalroll == 1:
-                self.ascii("critical")
-                damage = damage * 2
-            
-            self.health[nick.lower()] -= damage
-            cli.privmsg(self.chan, "\002{0}\002 (\002{1}\002HP) deals \002{2}\002 to \002{3}\002 (\002{4}\002HP)".format(ev.source, str(self.health[ev.source.lower()]), str(damage), cli.channels[self.chan].users[nick.lower()].nick, str(self.health[nick.lower()])))
-
-            if self.health[nick.lower()] <= 0:
-                self.ascii("rekt")
-                cli.privmsg(self.chan, "\002{0}\002 REKT {1}!".format(ev.source, nick))
-                self.aliveplayers.remove(nick.lower())
-                self.countstat(cli.channels[self.chan].users[nick.lower()].nick, "loss")
-                cli.mode(self.chan, "-v " + nick)
-            
-            self.getturn()
+                
+            self.hit(ev.source.lower(), nick)
         elif ev.splitd[0] == "!heal":
             if not self.gamerunning:
                 cli.privmsg(self.chan, "THE FUCKING GAME IS NOT RUNNING")
@@ -171,14 +145,8 @@ class Donger(object):
             if ev.source.lower() not in self.aliveplayers:
                 cli.privmsg(self.chan, "GET OUT OR I'LL KILL YOU! INTRUDER INTRUDER INTRUDER")
             
-            healing = random.randint(22, 44)
-            self.health[ev.source.lower()] += healing
-            if self.health[ev.source.lower()] > 100:
-                self.health[ev.source.lower()] = 100
-                cli.privmsg(self.chan, "\002{0}\002 heals for \002{1}HP\002, bringing them to \002100HP\002".format(ev.source, healing))
-            else:
-                cli.privmsg(self.chan, "\002{0}\002 heals for \002{1}HP\002, bringing them to \002{2}HP\002".format(ev.source, healing, self.health[ev.source.lower()]))
-            self.getturn()
+            self.heal(ev.source)
+            
         elif ev.splitd[0] == cli.nickname + "!":
             cli.privmsg(self.chan, ev.source + "!")
         elif ev.splitd[0] == "!help":
@@ -210,7 +178,51 @@ class Donger(object):
                 cli.privmsg(self.chan, "\002{0}\002's stats: \002{1}\002 wins, \002{2}\002 losses, and \002{3}\002 coward quits".format(
                                         player.realnick, player.wins, player.losses, player.quits))
             except:
-                cli.privmsg(self.chan, "There are no registered stats for \002{0}\002".format(nick))            
+                cli.privmsg(self.chan, "There are no registered stats for \002{0}\002".format(nick))   
+    
+    def hit(self, hfrom, to):
+        damage = random.randint(18, 35)
+        criticalroll = random.randint(1, 12)
+        instaroll = random.randint(1, 50)
+        if instaroll == 1:
+            self.irc.privmsg(self.chan, "\002INSTAKILL\002")
+            self.ascii("rekt")
+            self.irc.privmsg(self.chan, "\002{0}\002 REKT {1}!".format(hfrom, self.irc.channels[self.chan].users[to.lower()].nick))
+            #self.win(ev.source, self.health)
+            self.health[to.lower()] = -1
+            self.aliveplayers.remove(to.lower())
+            self.getturn()
+            self.countstat(self.irc.channels[self.chan].users[to.lower()].nick, "loss")
+            self.irc.mode(self.chan, "-v " + to)
+            return
+        elif criticalroll == 1:
+            self.ascii("critical")
+            damage = damage * 2
+        
+        self.health[to.lower()] -= damage
+        self.irc.privmsg(self.chan, "\002{0}\002 (\002{1}\002HP) deals \002{2}\002 to \002{3}\002 (\002{4}\002HP)".format(hfrom,
+                                    str(self.health[hfrom.lower()]), str(damage), self.irc.channels[self.chan].users[to.lower()].nick, str(self.health[to.lower()])))
+
+        if self.health[to.lower()] <= 0:
+            self.ascii("rekt")
+            self.irc.privmsg(self.chan, "\002{0}\002 REKT {1}!".format(hfrom, to))
+            self.aliveplayers.remove(to.lower())
+            self.countstat(self.irc.channels[self.chan].users[to.lower()].nick, "loss")
+            self.irc.mode(self.chan, "-v " + to)
+        
+        self.getturn()
+    
+    def heal(self, nick):
+        healing = random.randint(22, 44)
+        self.health[nick.lower()] += healing
+        if self.health[nick.lower()] > 100:
+            self.health[nick.lower()] = 100
+            self.irc.privmsg(self.chan, "\002{0}\002 heals for \002{1}HP\002, bringing them to \002100HP\002".format(nick, healing))
+        else:
+            self.irc.privmsg(self.chan, "\002{0}\002 heals for \002{1}HP\002, bringing them to \002{2}HP\002".format(nick, healing, self.health[nick.lower()]))
+        self.getturn()
+
+    
     # Here we handle ragequits
     def _coward(self, cli, ev):
         if self.gamerunning:
@@ -271,10 +283,26 @@ class Donger(object):
             self.win(self.aliveplayers[0])
             return
             
-        self.turn = random.choice(self._turnleft)
+        self.newturn = random.choice(self._turnleft)
+        while self.turn == self.newturn:
+            self.newturn = random.choice(self._turnleft)
+        self.turn = self.newturn
         self._turnleft.remove(self.turn)
         self.roundstart = time.time()
         self.irc.privmsg(self.chan, "It is \002{0}\002's turn".format(self.irc.channels[self.chan].users[self.turn].nick))
+        
+        # AI
+        if self.turn.lower() == self.irc.nickname.lower():
+            time.sleep(random.randint(2, 5))
+            if self.health[self.irc.nickname.lower()] < 45:
+                self.irc.privmsg(self.chan, "!heal") 
+                self.heal(self.irc.nickname.lower())
+            else:
+                playerstohit = copy.copy(self.aliveplayers)
+                playerstohit.remove(self.irc.nickname.lower())
+                tohit = random.choice(playerstohit)
+                self.irc.privmsg(self.chan, "!hit " + tohit) 
+                self.hit(self.irc.nickname.lower(), tohit)
     
     def win(self, winner, stats=True):
         
