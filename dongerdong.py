@@ -120,10 +120,10 @@ class Donger(object):
                 cli.privmsg(self.chan, "GET OUT OR I'LL KILL YOU! INTRUDER INTRUDER INTRUDER")
             
             if len(ev.splitd) != 1 and ev.splitd[1] != "":
-                if ev.splitd[1] not in self.aliveplayers and ev.splitd[1] in list(self.health):
+                if ev.splitd[1].lower() not in self.aliveplayers and ev.splitd[1].lower() in list(self.health):
                     cli.privmsg(self.chan, "WHAT?! Do you REALLY want to hit a corpse?!")
                     return
-                elif ev.splitd[1] not in self.aliveplayers:
+                elif ev.splitd[1].lower() not in self.aliveplayers:
                     cli.privmsg(self.chan, "WHA?! \002{0}\002 is not playing!".format(ev.splitd[1]))
                     return
                 nick = ev.splitd[1]
@@ -254,7 +254,7 @@ class Donger(object):
             stat.wins += 1
         elif ctype == "loss":
             stat.losses += 1
-        elif ctyle == "quit":
+        elif ctype == "quit":
             stat.quits += 1
         stat.save()
     
