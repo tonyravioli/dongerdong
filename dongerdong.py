@@ -429,8 +429,9 @@ while dongerdong.irc.connected == True:
     try:
         time.sleep(1) # Infinite loop of awesomeness
     except KeyboardInterrupt:
+        excuse=random.choice(list(open("excuse_list.txt"))) #Parsing an excuse list from BOFH
         # Sending stuff manually and assigning it the fucking top priority (no queue)
-        dongerdong.irc.send("PRIVMSG {0} :FUCK YOU ALL".format(dongerdong.chan), True)
-        dongerdong.irc.send("QUIT :I'LL KILL YOU ALL", True)
+        dongerdong.irc.send("PRIVMSG {0} :ERROR - {1}".format(dongerdong.chan,excuse), True)
+        dongerdong.irc.send("QUIT :ERROR - "+ excuse +"", True)
         print("exit due to keyboard interrupt")
         break  # >:D PURE EVIL
