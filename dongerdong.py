@@ -209,6 +209,10 @@ class Donger(object):
             #self.win(ev.source, self.health)
             self.health[to.lower()] = -1
             self.aliveplayers.remove(to.lower())
+            try:
+                self._turnleft.remove(to.lower())
+            except:
+                pass
             self.getturn()
             self.countstat(self.irc.channels[self.chan].users[to.lower()].nick, "loss")
             self.irc.mode(self.chan, "-v " + to)
@@ -225,6 +229,10 @@ class Donger(object):
             self.ascii("rekt")
             self.irc.privmsg(self.chan, "\002{0}\002 REKT {1}!".format(self.irc.channels[self.chan].users[hfrom.lower()].nick, self.irc.channels[self.chan].users[to.lower()].nick))
             self.aliveplayers.remove(to.lower())
+            try:
+                self._turnleft.remove(to.lower())
+            except:
+                pass
             self.countstat(self.irc.channels[self.chan].users[to.lower()].nick, "loss")
             self.irc.mode(self.chan, "-v " + to)
         
@@ -294,7 +302,7 @@ class Donger(object):
         self.getturn()
         
     def getturn(self):
-        if self._turnleft == []:
+        if len(self._turnleft) == 0:
             self._turnleft = copy.copy(self.aliveplayers)
         
         if len(self.aliveplayers) == 1:
