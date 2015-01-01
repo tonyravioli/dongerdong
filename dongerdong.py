@@ -426,4 +426,11 @@ Stats.create_table(True) # Here we create the table
 dongerdong = Donger()
 
 while dongerdong.irc.connected == True:
-    time.sleep(1) # Infinite loop of awesomeness
+    try:
+        time.sleep(1) # Infinite loop of awesomeness
+    except KeyboardInterrupt:
+        # Sending stuff manually and assigning it the fucking top priority (no queue)
+        dongerdong.irc.send("PRIVMSG {0} :FUCK YOU ALL".format(dongerdong.chan), True)
+        dongerdong.irc.send("QUIT :I'LL KILL YOU ALL", True)
+        print("exit due to keyboard interrupt")
+        break  # >:D PURE EVIL
