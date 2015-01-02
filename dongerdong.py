@@ -2,6 +2,12 @@
 
 from irc import client
 from peewee import peewee
+import sys
+try:
+    from pyfiglet import Figlet
+except:
+    print("FOR FUCKS SAKE INSTALL PYFIGLET https://github.com/pwaller/pyfiglet")
+    sys.exit(1)
 import json
 import base64
 import time
@@ -16,7 +22,7 @@ logging.basicConfig()
 
 class Donger(object):
     def __init__(self):
-        # For future usageâ„¢
+        # For future usage
         self.pending = {} # pending['Polsaker'] = 'ravioli'
         self.health = {} # health['ravioli'] = 69
         self.gamerunning = False
@@ -219,7 +225,7 @@ class Donger(object):
             self.irc.privmsg(self.chan, "Verbose: Regular damage is {0}/35".format(damage))
             
         if instaroll == 1:
-            self.irc.privmsg(self.chan, "\002INSTAKILL\002")
+            self.ascii("instakill")
             self.ascii("rekt")
             self.irc.privmsg(self.chan, "\002{0}\002 REKT {1}!".format(self.irc.channels[self.chan].users[hfrom.lower()].nick, self.irc.channels[self.chan].users[to.lower()].nick))
             #self.win(ev.source, self.health)
@@ -384,31 +390,7 @@ class Donger(object):
             self.countstat(self.irc.channels[self.chan].users[winner.lower()].nick, "win")
     
     def ascii(self, key):
-        cli = self.irc # >_>
-        if key=="rekt":
-            cli.privmsg(self.chan, "   ___  ______ ________")
-            cli.privmsg(self.chan, "  / _ \/ __/ //_/_  __/")
-            cli.privmsg(self.chan, " / , _/ _// ,<   / /   ")
-            cli.privmsg(self.chan, "/_/|_/___/_/|_| /_/    ")
-        elif key=="fight":
-            cli.privmsg(self.chan, "   _______________ ________")
-            cli.privmsg(self.chan, "  / __/  _/ ___/ // /_  __/")
-            cli.privmsg(self.chan, " / _/_/ // (_ / _  / / /   ")
-            cli.privmsg(self.chan, "/_/ /___/\___/_//_/ /_/    ")
-        elif key=="critical":
-            cli.privmsg(self.chan, "  ________  ______________________   __ ")
-            cli.privmsg(self.chan, " / ___/ _ \/  _/_  __/  _/ ___/ _ | / / ")
-            cli.privmsg(self.chan, "/ /__/ , _// /  / / _/ // /__/ __ |/ /__")
-            cli.privmsg(self.chan, "\___/_/|_/___/ /_/ /___/\___/_/ |_/____/")
-        elif key == "coward":
-            cli.privmsg(self.chan, "   __________ _       _____    ____  ____ ")
-            cli.privmsg(self.chan, "  / ____/ __ \ |     / /   |  / __ \/ __ \\") 
-            cli.privmsg(self.chan, " / /   / / / / | /| / / /| | / /_/ / / / /")
-            cli.privmsg(self.chan, "/ /___/ /_/ /| |/ |/ / ___ |/ _, _/ /_/ / ")
-            cli.privmsg(self.chan, "\____/\____/ |__/|__/_/  |_/_/ |_/_____/  ")
-                                          
-        else:
-            cli.privmsg(self.chan, "ascii "+ key +"!")
+        self.irc.privmsg(self.chan, Figlet("smslant").renderText(key.upper()))
     
     # For the record: cli = client and ev = event
     def _connect(self, cli, ev):

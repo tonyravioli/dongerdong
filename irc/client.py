@@ -326,8 +326,13 @@ class IRCClient:
     def mode(self, target, modes):
         self.send("MODE {0} {1}".format(target, modes))
     
-    def privmsg(self, target, modes):
-        self.send("PRIVMSG {0} :{1}".format(target, modes))
+    def privmsg(self, target, message):
+        if "\n" in message:
+            m = message.split("\n")
+            for l in m:
+                self.send("PRIVMSG {0} :{1}".format(target, l))
+        else:
+            self.send("PRIVMSG {0} :{1}".format(target, message))
     
     def notice(self, target, modes):
         self.send("NOTICE {0} :{1}".format(target, modes))
