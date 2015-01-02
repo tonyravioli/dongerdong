@@ -165,7 +165,14 @@ class Donger(object):
             self.heal(ev.source)
             
         elif ev.arguments[0].startswith(cli.nickname):
-            cli.privmsg(self.chan, ev.arguments[0].replace(cli.nickname, ev.source))
+            try:
+                if ev.splitd[1].lower().startswith("you"):
+                    cli.privmsg(self.chan, "No, {0}".format(ev.source)+ ev.arguments[0].replace(cli.nickname, ""))
+                else:
+                    cli.privmsg(self.chan, ev.arguments[0].replace(cli.nickname, ev.source))
+            except IndexError:
+                    cli.privmsg(self.chan, ev.arguments[0].replace(cli.nickname, ev.source)) #God, I just wrecked this code. I'm so sorry.
+
         elif ev.splitd[0] == "!help":
             cli.privmsg(self.chan, "!fight <nick> to initiate fight; !quit to bail out of a fight; !hit to hit, !heal to heal.")
         elif ev.splitd[0] == "!ping":
