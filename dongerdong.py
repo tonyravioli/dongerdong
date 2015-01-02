@@ -384,7 +384,7 @@ class Donger(object):
         del players[skip]
         pplayers = []
         for i in players:
-            pplayers.append(self.irc.channels[self.chan].users[i.lower()].nick)
+            pplayers.append(i.lower())
         ṕplayers = list(self.health)
         last = pplayers[-1]
         del pplayers[-1]
