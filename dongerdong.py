@@ -234,7 +234,9 @@ class Donger(object):
             except:
                 pass
             self.countstat(self.irc.channels[self.chan].users[to.lower()].nick, "loss")
-            self.irc.mode(self.chan, "-v " + to)
+            if to.lower() != self.irc.nickname.lower():
+                self.irc.kick(self.chan, to, "REKT")
+            
         
         self.getturn()
     
@@ -290,7 +292,7 @@ class Donger(object):
         cli.privmsg(self.chan, " V. ".join(fighters).upper())
         cli.privmsg(self.chan, "RULES:")
         cli.privmsg(self.chan, "1. Wait your turn. One person at a time.")
-        cli.privmsg(self.chan, "2. That's it")
+        cli.privmsg(self.chan, "2. Don't be a dick about it.")
         cli.privmsg(self.chan, ".")
         cli.privmsg(self.chan, "Use !hit to strike the other player.")
         cli.privmsg(self.chan, "Use !heal to heal yourself.")
@@ -439,7 +441,7 @@ while dongerdong.irc.connected == True:
     except KeyboardInterrupt:
         excuse=random.choice(list(open("excuse_list.txt"))) #Parsing an excuse list from BOFH
         # Sending stuff manually and assigning it the fucking top priority (no queue)
-        dongerdong.irc.send("PRIVMSG {0} :ERROR - {1}".format(dongerdong.chan,excuse), True)
-        dongerdong.irc.send("QUIT :ERROR - "+ excuse +"", True)
+        # dongerdong.irc.send("PRIVMSG {0} :ERROR - {1}".format(dongerdong.chan, excuse), True)
+        dongerdong.irc.send("QUIT :{0}".format(excuse.upper()), True)
         print("exit due to keyboard interrupt")
         break  # >:D PURE EVIL
