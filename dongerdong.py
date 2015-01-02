@@ -20,6 +20,7 @@ class Donger(object):
         self.pending = {} # pending['Polsaker'] = 'ravioli'
         self.health = {} # health['ravioli'] = 69
         self.gamerunning = False
+        self.verbose = False
         self.turn = ""
         self._turnleft = []
         self._paccept = []
@@ -68,6 +69,12 @@ class Donger(object):
             #    cli.privmsg(self.chan, "YOU WILL SEE")
             #    self.fight(cli, [ev.source.lower(), cli.nickname])
             #    return
+            
+            if "--verbose" in ev.splitd:
+                ev.splitd.remove("--verbose")
+                self.verbose = True
+                cli.privmsg(self.chan, "Verbose mode activated (Will deactivate when a game ends)")
+
             
             players = copy.copy(ev.splitd)
             del players[0]
@@ -206,6 +213,11 @@ class Donger(object):
         damage = random.randint(18, 35)
         criticalroll = random.randint(1, 12)
         instaroll = random.randint(1, 50)
+        if self.verbose:
+            self.irc.privmsg(self.chan, "Verbose: instaroll is {0}/50 (1 for instakill)".format(instaroll))
+            self.irc.privmsg(self.chan, "Verbose: criticalroll is {0}/12 (1 for critical)".format(criticalroll))
+            self.irc.privmsg(self.chan, "Verbose: Regular damage is {0}/35".format(damage))
+            
         if instaroll == 1:
             self.irc.privmsg(self.chan, "\002INSTAKILL\002")
             self.ascii("rekt")
@@ -222,6 +234,8 @@ class Donger(object):
             self.irc.mode(self.chan, "-v " + to)
             return
         elif criticalroll == 1:
+            if self.verbose:
+                self.irc.privmsg(self.chan, "Verbose: Critical hit, duplicating damage: {0}/70".format(damage*2))
             self.ascii("critical")
             damage = damage * 2
         
@@ -247,6 +261,8 @@ class Donger(object):
     def heal(self, nick):
         healing = random.randint(22, 44)
         self.health[nick.lower()] += healing
+        if self.verbose:
+            self.irc.privmsg(self.chan, "Verbose: Regular healing is {0}/44".format(healing))
         if self.health[nick.lower()] > 100:
             self.health[nick.lower()] = 100
             self.irc.privmsg(self.chan, "\002{0}\002 heals for \002{1}HP\002, bringing them to \002100HP\002".format(nick, healing))
@@ -308,16 +324,28 @@ class Donger(object):
         self.getturn()
         
     def getturn(self):
+        if self.verbose:
+            self.irc.privmsg(self.chan, "Verbose: Getting turns")
+            
         if len(self._turnleft) == 0:
+            if self.verbose:
+                self.irc.privmsg(self.chan, "Verbose: No turns left, refreshing list")
             self._turnleft = copy.copy(self.aliveplayers)
         
         if len(self.aliveplayers) == 1:
+            if self.verbose:
+                self.irc.privmsg(self.chan, "Verbose: Only one player left, ending the game")
             self.win(self.aliveplayers[0])
             return
-            
+        
         self.newturn = random.choice(self._turnleft)
+        if self.verbose:
+            self.irc.privmsg(self.chan, "Verbose: Got turn: {0}".format(self.newturn))
         while self.turn == self.newturn or self.newturn not in self.aliveplayers:
             self.newturn = random.choice(self._turnleft)
+            if self.verbose:
+                self.irc.privmsg(self.chan, "Verbose: Getting turns again (last turn was dead or turned recently): {0}".format(self.newturn))
+                
         self.turn = self.newturn
         self._turnleft.remove(self.turn)
         self.roundstart = time.time()
@@ -327,17 +355,21 @@ class Donger(object):
         if self.turn.lower() == self.irc.nickname.lower():
             time.sleep(random.randint(2, 5))
             if self.health[self.irc.nickname.lower()] < 45:
+                if self.verbose:
+                    self.irc.privmsg(self.chan, "Verbose: AI: Less than 45 HP. Healing.")
                 self.irc.privmsg(self.chan, "!heal") 
                 self.heal(self.irc.nickname.lower())
             else:
                 playerstohit = copy.copy(self.aliveplayers)
                 playerstohit.remove(self.irc.nickname.lower())
                 tohit = random.choice(playerstohit)
+                if self.verbose:
+                    self.irc.privmsg(self.chan, "Verbose: AI: More than 45 HP. Attacking.")
                 self.irc.privmsg(self.chan, "!hit " + tohit) 
                 self.hit(self.irc.nickname.lower(), tohit)
     
     def win(self, winner, stats=True):
-        
+        self.verbose = False
         self.irc.mode(self.chan, "-m")
         self.irc.mode(self.chan, "-v " + winner)
         if len(list(self.health)) > 2:
