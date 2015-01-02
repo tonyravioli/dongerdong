@@ -188,8 +188,8 @@ class Donger(object):
         elif ev.splitd[0] == "!ping":
             cli.privmsg(self.chan, "pong!")
         elif ev.splitd[0] == "!ascii":
-            if len(ev.splitd) > 1 and len(ev.splitd[1]) < 13:
-                cli.privmsg(self.chan, Figlet("smslant").renderText(' '.join(ev.splitd[1:len(ev.splitd)])))
+            if len(ev.splitd) > 1 and len(' '.join(ev.splitd[1:])) < 13:
+                cli.privmsg(self.chan, Figlet("smslant").renderText(' '.join(ev.splitd[1:])))
             else:
                 cli.privmsg(self.chan, "Text must be less than 13 characters. Syntax: !ascii Fuck You")
         elif ev.splitd[0] == "!health":
