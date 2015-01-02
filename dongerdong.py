@@ -56,7 +56,7 @@ class Donger(object):
         # Processing commands here
         if ev.splitd[0] == "!fight":
             if self.gamerunning:
-                cli.privmsg(self.chan, "WAIT TILL THIS FUCKING GAME ENDS")
+                cli.privmsg(self.chan, "There's already a fight in progress.")
                 return
                 
             if len(ev.splitd) == 1 or ev.splitd[1] == "": # I hate you
@@ -76,11 +76,11 @@ class Donger(object):
                 try: # Check if the challenged user is on the channel..
                     cli.channels[self.chan].users[i.lower()]
                 except:
-                    cli.privmsg(self.chan, "You're high? Because {0} is not on this channel".format(i))
+                    cli.privmsg(self.chan, "There's no one named {0} on this channel".format(i))
                     return
             
                 if cli.channels[self.chan].users[i.lower()].host == ev.source2.host:
-                    cli.privmsg(self.chan, "I THINK YOU'RE TRYING TO HIT YOURSELF")
+                    cli.privmsg(self.chan, "Stop hitting yourself.")
                     return 
                 
                 pplayers.append(cli.channels[self.chan].users[i.lower()].nick)
@@ -126,7 +126,7 @@ class Donger(object):
                 self._paccept = []
         elif ev.splitd[0] == "!hit":
             if not self.gamerunning:
-                cli.privmsg(self.chan, "THE FUCKING GAME IS NOT RUNNING")
+                #cli.privmsg(self.chan, "There is no game running currently.") #This will be flood-abused.
                 return
                 
             if self.turn != ev.source.lower():
