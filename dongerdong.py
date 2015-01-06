@@ -15,6 +15,7 @@ import logging
 import random
 import copy
 import _thread
+import moduoli
 
 # This is for debugging. It vomits on the screen all the irc stuff
 logging.getLogger(None).setLevel(logging.DEBUG)
@@ -187,6 +188,8 @@ class Donger(object):
             cli.privmsg(self.chan, "!fight <nick> to initiate fight; !quit to bail out of a fight; !hit to hit, !heal to heal.")
         elif ev.splitd[0] == "!ping":
             cli.privmsg(self.chan, "pong!")
+        elif ev.splitd[0] == "!excuse":
+            cli.privmsg(self.chan, moduoli.returnExcuse())
         elif ev.splitd[0] == "!ascii":
             if len(ev.splitd) > 1 and len(' '.join(ev.splitd[1:])) < 13:
                 cli.privmsg(self.chan, Figlet("smslant").renderText(' '.join(ev.splitd[1:])))
@@ -462,7 +465,8 @@ while dongerdong.irc.connected == True:
     try:
         time.sleep(1) # Infinite loop of awesomeness
     except KeyboardInterrupt:
-        excuse=random.choice(list(open("excuse_list.txt"))) #Parsing an excuse list from BOFH
+        excuse=moduoli.returnExcuse()
+        #excuse=random.choice(list(open("excuse_list.txt"))) #Parsing an excuse list from BOFH
         # Sending stuff manually and assigning it the fucking top priority (no queue)
         # dongerdong.irc.send("PRIVMSG {0} :ERROR - {1}".format(dongerdong.chan, excuse), True)
         dongerdong.irc.send("QUIT :{0}".format(excuse.upper()), True)
