@@ -222,7 +222,18 @@ class Donger(object):
                                         player.realnick, player.wins, player.losses, player.quits))
             except:
                 cli.privmsg(self.chan, "There are no registered stats for \002{0}\002".format(nick))   
-    
+
+        elif ev.splitd[0].startswith("!"):
+            try:
+                command = ev.splitd[0].replace("!", "").lower()
+                '''module = getattr(moduoli.Module(), ev.splitd[0].replace("!", "").lower())
+                cli.privmsg(self.chan, module())'''
+                #cli.privmsg(self.chan, moduoli.Module(ev.splitd[0].replace("!", "").lower()))
+                stringtosend=getattr(moduoli.Module, command)()
+                cli.privmsg(self.chan, stringtosend)
+            except:
+                raise
+
     def hit(self, hfrom, to):
         damage = random.randint(18, 35)
         criticalroll = random.randint(1, 12)
