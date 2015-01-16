@@ -185,16 +185,16 @@ class Donger(object):
                 cli.privmsg(self.chan, ev.arguments[0].replace(cli.nickname, ev.source))
 
         elif ev.splitd[0] == "!help":
-            cli.privmsg(self.chan, "!fight <nick> to initiate fight; !quit to bail out of a fight; !hit to hit, !heal to heal.")
+            cli.privmsg(self.chan, "!fight <nick> to initiate fight. Other commands: !ascii <text>; !excuse; !ping")
         elif ev.splitd[0] == "!ping":
             cli.privmsg(self.chan, "pong!")
         elif ev.splitd[0] == "!excuse":
-            cli.privmsg(self.chan, moduoli.returnExcuse())
+            cli.privmsg(self.chan, self.excuse())
         elif ev.splitd[0] == "!ascii":
             if len(ev.splitd) > 1 and len(' '.join(ev.splitd[1:])) < 13:
                 cli.privmsg(self.chan, Figlet("smslant").renderText(' '.join(ev.splitd[1:])))
             else:
-                cli.privmsg(self.chan, "Text must be less than 13 characters. Syntax: !ascii Fuck You")
+                cli.privmsg(self.chan, "Text must be less than 13 characters (that was {0} characters). Syntax: !ascii Fuck You".format(len(' '.join(ev.splitd[1:]))))
         elif ev.splitd[0] == "!health":
             if not self.gamerunning:
                 cli.privmsg(self.chan, "THE FUCKING GAME IS NOT RUNNING")
@@ -223,12 +223,9 @@ class Donger(object):
             except:
                 cli.privmsg(self.chan, "There are no registered stats for \002{0}\002".format(nick))   
 
-        elif ev.splitd[0].startswith("!"):
+        elif ev.splitd[0].startswith("!") and 1 == 0: #Disabling this cause it's dumb.
             try:
                 command = ev.splitd[0].replace("!", "").lower()
-                '''module = getattr(moduoli.Module(), ev.splitd[0].replace("!", "").lower())
-                cli.privmsg(self.chan, module())'''
-                #cli.privmsg(self.chan, moduoli.Module(ev.splitd[0].replace("!", "").lower()))
                 stringtosend=getattr(moduoli.Module, command)()
                 cli.privmsg(self.chan, stringtosend)
             except:
@@ -411,6 +408,9 @@ class Donger(object):
     def ascii(self, key):
         self.irc.privmsg(self.chan, Figlet("smslant").renderText(key.upper()))
     
+    def excuse(self):
+        return random.choice(list(open("excuse_list.txt")))
+
     # For the record: cli = client and ev = event
     def _connect(self, cli, ev):
         # Starting with the SASL authentication
@@ -476,7 +476,7 @@ while dongerdong.irc.connected == True:
     try:
         time.sleep(1) # Infinite loop of awesomeness
     except KeyboardInterrupt:
-        excuse=moduoli.returnExcuse()
+        excuse=dongerdong.excuse()
         #excuse=random.choice(list(open("excuse_list.txt"))) #Parsing an excuse list from BOFH
         # Sending stuff manually and assigning it the fucking top priority (no queue)
         # dongerdong.irc.send("PRIVMSG {0} :ERROR - {1}".format(dongerdong.chan, excuse), True)
