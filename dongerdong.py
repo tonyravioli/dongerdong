@@ -30,7 +30,7 @@ class Donger(object):
         self.verbose = False
         self.turn = ""
         self._turnleft = []
-        self._paccept = []
+        self._paccept = {}
         self.aliveplayers = []
         self.roundstart = 0
         
@@ -100,12 +100,12 @@ class Donger(object):
                 pplayers.append(cli.channels[self.chan].users[i.lower()].nick)
             pplayers.append(ev.source)
             self.pending[ev.source.lower()] = pplayers
-            self._paccept = copy.copy(pplayers)
-            self._paccept.remove(ev.source)
+            self._paccept[ev.source.nick.lower()] = copy.copy(pplayers)
+            self._paccept[ev.source.nick.lower()].remove(ev.source)
             if cli.nickname.lower() in players:
                 cli.privmsg(self.chan, "YOU WILL SEE")
-                self._paccept.remove(cli.nickname)
-                if self._paccept == []:
+                self._paccept[ev.source.nick.lower()].remove(cli.nickname)
+                if self._paccept[ev.source.nick.lower()] == []:
                     self.fight(cli, pplayers)
                     return
             
@@ -132,12 +132,12 @@ class Donger(object):
                 del self.pending[ev.splitd[1]]
                 return
             
-            self._paccept.remove(ev.source)
-            if self._paccept == []:
+            self._paccept[ev.source.nick.lower()].remove(ev.source)
+            if self._paccept[ev.source.nick.lower()] == []:
                 # Start the fight!!!
                 self.fight(cli, self.pending[ev.splitd[1]])
                 del self.pending[ev.splitd[1]]
-                self._paccept = []
+                del self._paccept[ev.source.nick.lower()]
         elif ev.splitd[0] == "!hit":
             if not self.gamerunning:
                 #cli.privmsg(self.chan, "There is no game running currently.") #This will be flood-abused.
