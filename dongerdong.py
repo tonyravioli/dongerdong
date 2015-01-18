@@ -32,6 +32,7 @@ class Donger(object):
         self._turnleft = []
         self._paccept = {}
         self.aliveplayers = []
+        self.maxheal = {} # maxheal['Polsaker'] = -6
         self.roundstart = 0
         
         # thread for timeouts
@@ -232,6 +233,10 @@ class Donger(object):
                 raise
 
     def hit(self, hfrom, to):
+        try:
+            self.maxheal[nick.lower()]
+        except:
+            self.maxheal[nick.lower()] = 44
         damage = random.randint(18, 35)
         criticalroll = random.randint(1, 12)
         instaroll = random.randint(1, 50)
@@ -281,7 +286,14 @@ class Donger(object):
         self.getturn()
     
     def heal(self, nick):
-        healing = random.randint(22, 44)
+        try:
+            self.maxheal[nick.lower()]
+        except:
+            self.maxheal[nick.lower()] = 44
+        if self.maxheal[nick.lower()] <= 23:
+            self.irc.privmsg(self.chan, "Sorry, bro. We don't have enough chopsticks to heal you.")
+            return
+        healing = random.randint(22, self.maxheal[nick.lower()])
         self.health[nick.lower()] += healing
         if self.verbose:
             self.irc.privmsg(self.chan, "Verbose: Regular healing is {0}/44".format(healing))
