@@ -57,6 +57,7 @@ class Donger(object):
         self.irc.addhandler("pubmsg", self._pubmsg) # For commands
         self.irc.addhandler("part", self._coward) # Coward extermination
         self.irc.addhandler("quit", self._coward) # ^
+        self.irc.addhandler("join", self._join) # For custom messages on join
         
         # Connect to the IRC
         self.irc.connect()
@@ -429,7 +430,11 @@ class Donger(object):
         # Note: If services are down, the bot won't connect
         cli.send("CAP REQ :sasl")
         cli.send("AUTHENTICATE PLAIN")
-    
+
+    def _join(self, cli, ev):
+        if ev.source.nick == cli.nickname:
+            self.irc.privmsg(self.chan, "ヽ༼ຈل͜ຈ༽ﾉ RAISE YOUR DONGERS ヽ༼ຈل͜ຈ༽ﾉ")
+
     def _dusers(self, skip):
         players = self.health
         del players[skip]
