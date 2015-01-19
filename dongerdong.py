@@ -30,8 +30,9 @@ class Donger(object):
         self.verbose = False
         self.turn = ""
         self._turnleft = []
-        self._paccept = []
+        self._paccept = {}
         self.aliveplayers = []
+        self.maxheal = {} # maxheal['Polsaker'] = -6
         self.roundstart = 0
         
         # thread for timeouts
@@ -100,12 +101,12 @@ class Donger(object):
                 pplayers.append(cli.channels[self.chan].users[i.lower()].nick)
             pplayers.append(ev.source)
             self.pending[ev.source.lower()] = pplayers
-            self._paccept = copy.copy(pplayers)
-            self._paccept.remove(ev.source)
+            self._paccept[ev.source.nick.lower()] = copy.copy(pplayers)
+            self._paccept[ev.source.nick.lower()].remove(ev.source)
             if cli.nickname.lower() in players:
                 cli.privmsg(self.chan, "YOU WILL SEE")
-                self._paccept.remove(cli.nickname)
-                if self._paccept == []:
+                self._paccept[ev.source.nick.lower()].remove(cli.nickname)
+                if self._paccept[ev.source.nick.lower()] == []:
                     self.fight(cli, pplayers)
                     return
             
@@ -132,12 +133,12 @@ class Donger(object):
                 del self.pending[ev.splitd[1]]
                 return
             
-            self._paccept.remove(ev.source)
-            if self._paccept == []:
+            self._paccept[ev.source.nick.lower()].remove(ev.source)
+            if self._paccept[ev.source.nick.lower()] == []:
                 # Start the fight!!!
                 self.fight(cli, self.pending[ev.splitd[1]])
                 del self.pending[ev.splitd[1]]
-                self._paccept = []
+                del self._paccept[ev.source.nick.lower()]
         elif ev.splitd[0] == "!hit":
             if not self.gamerunning:
                 #cli.privmsg(self.chan, "There is no game running currently.") #This will be flood-abused.
@@ -232,6 +233,10 @@ class Donger(object):
                 raise
 
     def hit(self, hfrom, to):
+        try:
+            self.maxheal[nick.lower()]
+        except:
+            self.maxheal[nick.lower()] = 44
         damage = random.randint(18, 35)
         criticalroll = random.randint(1, 12)
         instaroll = random.randint(1, 50)
@@ -281,7 +286,14 @@ class Donger(object):
         self.getturn()
     
     def heal(self, nick):
-        healing = random.randint(22, 44)
+        try:
+            self.maxheal[nick.lower()]
+        except:
+            self.maxheal[nick.lower()] = 44
+        if self.maxheal[nick.lower()] <= 23:
+            self.irc.privmsg(self.chan, "Sorry, bro. We don't have enough chopsticks to heal you.")
+            return
+        healing = random.randint(22, self.maxheal[nick.lower()])
         self.health[nick.lower()] += healing
         if self.verbose:
             self.irc.privmsg(self.chan, "Verbose: Regular healing is {0}/44".format(healing))

@@ -38,6 +38,7 @@ class IRCClient:
         self.logger = logging.getLogger('bearded-potato-' + sid)
         self.ibuffer = LineBuffer()
         self.features = features.FeatureSet()
+        self.lastping = time.time()
         #self.addhandler("pubmsg", self._pubmsg)
 
         # Internal handlers used to get user/channel information
@@ -84,6 +85,7 @@ class IRCClient:
 
         self.connected = True
 
+        _thread.start_new_thread(self._cookie_monster, ())
         _thread.start_new_thread(self._process_queue, ())
 
         _thread.start_new_thread(self._process_forever, ())
@@ -93,6 +95,12 @@ class IRCClient:
         self.user(self.ident, self.gecos)
         self.nick(self.nickname)
 
+    def _cookie_monster(self):
+        while self.connected:
+            time.sleep(60)
+            if (time.time() - self.lastping) > 300:
+                self.disconnect("", False) # We're dead
+            
     def _process_forever(self):
         while self.connected:
             self._process_data()
@@ -177,6 +185,7 @@ class IRCClient:
                 arguments = [arguments[0]]
             elif command == "ping":
                 # Hardcoded pong :D
+                self.lastping = time.time()
                 self.pong(arguments[0])
                 target = arguments[0]
             else:
@@ -200,11 +209,11 @@ class IRCClient:
             new_data = reader(2 ** 14)
         except socket.error:
             # The server hung up.
-            self.disconnect("Connection reset by peer")
+            self.disconnect("Connection reset by peer", False)
             return False
         if not new_data:
             # Read nothing: connection must be down.
-            self.disconnect("Connection reset by peer")
+            self.disconnect("Connection reset by peer", False)
             return False
 
         self.ibuffer.feed(new_data)
@@ -280,10 +289,11 @@ class IRCClient:
             self.logger.debug("TO SERVER: {0}".format(stuff))
         except socket.error:
             # Ouch!
-            self.disconnect("Connection reset by peer.")
+            self.disconnect("Connection reset by peer.", False)
 
-    def disconnect(self, message):
-        self.reconncount = 100000  # :D
+    def disconnect(self, message, noreconn=True):
+        if noreconn:
+            self.reconncount = 100000  # :D
         if not self.connected:
             return
 
