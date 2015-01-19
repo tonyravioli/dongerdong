@@ -68,7 +68,7 @@ class Donger(object):
                 return
                 
             if len(ev.splitd) == 1 or ev.splitd[1] == "": # I hate you
-                cli.privmsg(self.chan, "Sorry, bro... But the right syntax is !fight <nick> [othernick] ...")
+                cli.privmsg(self.chan, "Can you read? It's !fight <nick> [othernick] ...")
                 return
             #ev.splitd[1] = ev.splitd[1].lower()
             
@@ -116,7 +116,7 @@ class Donger(object):
                 return
                 
             if len(ev.splitd) == 1 or ev.splitd[1] == "": # I hate you
-                cli.privmsg(self.chan, "Sorry, bro... But the right syntax is !accept <nick>")
+                cli.privmsg(self.chan, "Can you read? It's !accept <nick>")
                 return
             ev.splitd[1] = ev.splitd[1].lower()
             try:
