@@ -193,10 +193,10 @@ class Donger(object):
         elif ev.splitd[0] == "!excuse":
             cli.privmsg(self.chan, self.excuse())
         elif ev.splitd[0] == "!ascii":
-            if len(ev.splitd) > 1 and len(' '.join(ev.splitd[1:])) < 17:
+            if len(ev.splitd) > 1 and len(' '.join(ev.splitd[1:])) < 14:
                 cli.privmsg(self.chan, Figlet("smslant").renderText(' '.join(ev.splitd[1:])))
             else:
-                cli.privmsg(self.chan, "Text must be 16 characters or less (that was {0} characters). Syntax: !ascii Fuck You".format(len(' '.join(ev.splitd[1:]))))
+                cli.privmsg(self.chan, "Text must be 13 characters or less (that was {0} characters). Syntax: !ascii Fuck You".format(len(' '.join(ev.splitd[1:]))))
         elif ev.splitd[0] == "!health":
             if not self.gamerunning:
                 cli.privmsg(self.chan, "THE FUCKING GAME IS NOT RUNNING")
