@@ -334,9 +334,9 @@ class Donger(object):
         cli.privmsg(self.chan, " V. ".join(fighters).upper())
         cli.privmsg(self.chan, "RULES:")
         cli.privmsg(self.chan, "1. Wait your turn. One person at a time.")
-        cli.privmsg(self.chan, "2. Don't be a dick about it.")
+        cli.privmsg(self.chan, "2. Be a dick about it.")
         cli.privmsg(self.chan, ".")
-        cli.privmsg(self.chan, "Use !hit to strike the other player.")
+        cli.privmsg(self.chan, "Use !hit to strike.")
         cli.privmsg(self.chan, "Use !heal to heal yourself.")
         for i in fighters:
             cli.mode(self.chan, "+v " + i)
