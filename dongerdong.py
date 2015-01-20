@@ -126,7 +126,7 @@ class Donger(object):
                     raise  # two in one
             except:
                 cli.privmsg(self.chan, "Err... Maybe you meant to say \002!fight {0}\002? They never challenged you.".format(ev.splitd[1]))
-                
+                return
             try: # Check if the challenged user is on the channel..
                 cli.channels[self.chan].users[ev.splitd[1]]
             except:
