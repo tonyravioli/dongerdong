@@ -205,7 +205,10 @@ class Donger(object):
                 ev.splitd[1] = ev.source
             cli.privmsg(self.chan, "\002{0}\002's has \002{1}\002HP".format(ev.splitd[1], self.health[ev.splitd[1].lower()]))
         elif ev.splitd[0] == "!quit":
-            cli.mode(self.channel, "-v " + ev.source)
+            if not self.gamerunning:
+                cli.privmsg(self.chan, "THE FUCKING GAME IS NOT RUNNING")
+                return
+            cli.mode(self.chan, "-v " + ev.source)
             self._coward(cli, ev)
         elif ev.splitd[0] == "!leaderboard" or ev.splitd[0] == "!top":
             players = Stats.select().order_by(Stats.wins.desc()).limit(3)
