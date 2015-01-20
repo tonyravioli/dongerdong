@@ -102,8 +102,8 @@ class Donger(object):
                 pplayers.append(cli.channels[self.chan].users[i.lower()].nick)
             pplayers.append(ev.source)
             self.pending[ev.source.lower()] = pplayers
-            self._paccept[ev.source.nick.lower()] = copy.copy(pplayers)
-            self._paccept[ev.source.nick.lower()].remove(ev.source)
+            self._paccept[ev.source2.nick.lower()] = copy.copy(pplayers)
+            self._paccept[ev.source2.nick.lower()].remove(ev.source)
             if cli.nickname.lower() in players:
                 cli.privmsg(self.chan, "YOU WILL SEE")
                 self._paccept[ev.source.nick.lower()].remove(cli.nickname)
