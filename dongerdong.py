@@ -492,7 +492,7 @@ Stats.create_table(True) # Here we create the table
 # Start donging
 dongerdong = Donger()
 
-while dongerdong.irc.connected == True:
+while dongerdong.irc.connected == True and dongerdong.irc.imayreconnect == True:
     try:
         time.sleep(1) # Infinite loop of awesomeness
     except KeyboardInterrupt:

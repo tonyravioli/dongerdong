@@ -66,6 +66,7 @@ class IRCClient:
         self.gecos = gecos
         self.ssl = ssl
         self.msgdelay = msgdelay
+        self.imayreconnect = True
         
     def connect(self):
         """ Connects to the IRC server. """
@@ -108,6 +109,8 @@ class IRCClient:
         if self.reconncount <= self.reconnects:
             self.reconncount += 1
             self.connect()
+        else:
+            self.imayreconnect = False
 
     def _processline(self, line):
         prefix = None
@@ -294,6 +297,7 @@ class IRCClient:
     def disconnect(self, message, noreconn=True):
         if noreconn:
             self.reconncount = 100000  # :D
+            self.imayreconnect = False
         if not self.connected:
             return
 
