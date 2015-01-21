@@ -111,7 +111,7 @@ class Donger(object):
                     self.fight(cli, pplayers)
                     return
             
-            cli.privmsg(self.chan, "{1}: \002{0}\002 has challenged you. To accept, use '!accept {0}'".format(ev.source, ", ".join(self._paccept)))
+            cli.privmsg(self.chan, "{1}: \002{0}\002 has challenged you. To accept, use '!accept {0}'".format(ev.source, ", ".join(self._paccept[ev.source2.nick.lower()])))
         elif ev.splitd[0] == "!accept":
             if self.gamerunning:
                 cli.privmsg(self.chan, "WAIT TILL THIS FUCKING GAME ENDS")
