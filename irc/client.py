@@ -337,6 +337,7 @@ class IRCClient:
         self.send("MODE {0} {1}".format(target, modes))
     
     def privmsg(self, target, message):
+        self.lastping = time.time()
         if "\n" in message:
             m = message.split("\n")
             for l in m:
