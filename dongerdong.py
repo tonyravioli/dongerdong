@@ -187,7 +187,7 @@ class Donger(object):
                 cli.privmsg(self.chan, ev.arguments[0].replace(cli.nickname, ev.source))
 
         elif ev.splitd[0] == "!help":
-            cli.privmsg(self.chan, "!fight <nick> to initiate fight. Other commands: !ascii <text>; !excuse; !ping")
+            cli.privmsg(self.chan, "!fight <nick> to initiate fight. Other commands: !ascii <text>; !excuse; !ping; !raise")
         elif ev.splitd[0] == "!ping":
             cli.privmsg(self.chan, "pong!")
         elif ev.splitd[0] == "!excuse":
