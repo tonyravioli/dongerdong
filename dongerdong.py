@@ -106,8 +106,8 @@ class Donger(object):
             self._paccept[ev.source2.nick.lower()].remove(ev.source)
             if cli.nickname.lower() in players:
                 cli.privmsg(self.chan, "YOU WILL SEE")
-                self._paccept[ev.source.nick.lower()].remove(cli.nickname)
-                if self._paccept[ev.source.nick.lower()] == []:
+                self._paccept[ev.source2.nick.lower()].remove(cli.nickname)
+                if self._paccept[ev.source2.nick.lower()] == []:
                     self.fight(cli, pplayers)
                     return
             
@@ -134,12 +134,12 @@ class Donger(object):
                 del self.pending[ev.splitd[1]]
                 return
             
-            self._paccept[ev.source.nick.lower()].remove(ev.source)
-            if self._paccept[ev.source.nick.lower()] == []:
+            self._paccept[ev.source2.nick.lower()].remove(ev.source)
+            if self._paccept[ev.source2.nick.lower()] == []:
                 # Start the fight!!!
                 self.fight(cli, self.pending[ev.splitd[1]])
                 del self.pending[ev.splitd[1]]
-                del self._paccept[ev.source.nick.lower()]
+                del self._paccept[ev.source2.nick.lower()]
         elif ev.splitd[0] == "!hit":
             if not self.gamerunning:
                 #cli.privmsg(self.chan, "There is no game running currently.") #This will be flood-abused.
@@ -238,9 +238,9 @@ class Donger(object):
 
     def hit(self, hfrom, to):
         try:
-            self.maxheal[nick.lower()]
+            self.maxheal[hfrom.lower()]
         except:
-            self.maxheal[nick.lower()] = 44
+            self.maxheal[hfrom.lower()] = 44
         damage = random.randint(18, 35)
         criticalroll = random.randint(1, 12)
         instaroll = random.randint(1, 50)
@@ -435,7 +435,7 @@ class Donger(object):
         cli.send("AUTHENTICATE PLAIN")
 
     def _join(self, cli, ev):
-        if ev.source.nick == cli.nickname:
+        if ev.source2.nick == cli.nickname:
             self.irc.privmsg(self.chan, "ヽ༼ຈل͜ຈ༽ﾉ RAISE YOUR DONGERS ヽ༼ຈل͜ຈ༽ﾉ")
 
     def _dusers(self, skip):
