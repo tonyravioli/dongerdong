@@ -134,12 +134,12 @@ class Donger(object):
                 del self.pending[ev.splitd[1]]
                 return
             
-            self._paccept[ev.source2.nick.lower()].remove(ev.source)
-            if self._paccept[ev.source2.nick.lower()] == []:
+            self._paccept[ev.splitd[1].lower()].remove(ev.source)
+            if self._paccept[ev.splitd[1].lower()] == []:
                 # Start the fight!!!
                 self.fight(cli, self.pending[ev.splitd[1]])
                 del self.pending[ev.splitd[1]]
-                del self._paccept[ev.source2.nick.lower()]
+                del self._paccept[ev.splitd[1].lower()]
         elif ev.splitd[0] == "!hit":
             if not self.gamerunning:
                 #cli.privmsg(self.chan, "There is no game running currently.") #This will be flood-abused.
