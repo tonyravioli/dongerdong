@@ -192,6 +192,8 @@ class Donger(object):
             cli.privmsg(self.chan, "pong!")
         elif ev.splitd[0] == "!excuse":
             cli.privmsg(self.chan, self.excuse())
+        elif ev.splitd[0] == "!raise":
+            cli.privmsg(self.chan, "ヽ༼ຈل͜ຈ༽ﾉ RAISE YOUR DONGERS ヽ༼ຈل͜ຈ༽ﾉ")
         elif ev.splitd[0] == "!ascii":
             if len(ev.splitd) > 1 and len(' '.join(ev.splitd[1:])) < 14:
                 cli.privmsg(self.chan, Figlet("smslant").renderText(' '.join(ev.splitd[1:])))
