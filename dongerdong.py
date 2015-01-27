@@ -214,7 +214,7 @@ class Donger(object):
             if praiseroll == 1: #Heal
                 self.heal(ev.source, "praise")
             elif praiseroll == 2: #Hit
-                self.hit("The Donger Gods", ev.source.lower(), "praise")
+                self.hit(cli.nickname.lower(), ev.source.lower(), "praise")
 
         elif ev.arguments[0].startswith(cli.nickname):
             if len(ev.splitd) > 1 and ev.splitd[1].lower().startswith("you"):
@@ -285,7 +285,6 @@ class Donger(object):
 
         if modifier == "praise":
             criticalroll = 1
-            self.health[hfrom.lower()] = 10000
 
         instaroll = random.randint(1, 50)
         if self.verbose:
