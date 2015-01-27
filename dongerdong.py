@@ -34,6 +34,7 @@ class Donger(object):
         self.aliveplayers = []
         self.maxheal = {} # maxheal['Polsaker'] = -6
         self.roundstart = 0
+        self.haspraised = {} #haspraised['Polsaker'] = 1
         
         # thread for timeouts
         _thread.start_new_thread(self._timeouts, ())
@@ -179,7 +180,42 @@ class Donger(object):
                 cli.privmsg(self.chan, "GET OUT OR I'LL KILL YOU! INTRUDER INTRUDER INTRUDER")
             
             self.heal(ev.source)
+        elif ev.splitd[0] == "!praise":
+            if not self.gamerunning:
+                cli.privmsg(self.chan, "THE FUCKING GAME IS NOT RUNNING")
+                return
+                
+            if self.turn != ev.source.lower():
+                cli.privmsg(self.chan, "Wait your fucking turn or I'll kill you.")
+                return
             
+            if ev.source.lower() not in self.aliveplayers:
+                cli.privmsg(self.chan, "GET OUT OR I'LL KILL YOU! INTRUDER INTRUDER INTRUDER")
+                return
+
+            if ev.source.lower() in self.haspraised:
+                cli.privmsg(self.chan, "Your praises bore me.")
+                return
+            
+            if len(ev.splitd) != 1 and ev.splitd[1] != "":
+                nick = ev.splitd[1]
+            else:
+                allplayers = copy.deepcopy(self.aliveplayers)
+                if cli.nickname.lower() in allplayers:
+                    allplayers.remove(cli.nickname.lower())
+                allplayers.remove(ev.source.lower())
+                nick = random.choice(list(allplayers))
+
+            praiseroll=random.randint(1, 2)
+            self.haspraised.append(ev.source.lower())
+            if nick.lower() == cli.nickname.lower():
+                praiseroll = 2
+                cli.privmsg(self.chan, "You try and suckle my donger while fighting me?")
+            if praiseroll == 1: #Heal
+                self.heal(ev.source, "praise")
+            elif praiseroll == 2: #Hit
+                self.hit("The Donger Gods", ev.source.lower(), "praise")
+
         elif ev.arguments[0].startswith(cli.nickname):
             if len(ev.splitd) > 1 and ev.splitd[1].lower().startswith("you"):
                 cli.privmsg(self.chan, "No, {0}".format(ev.source)+ ev.arguments[0].replace(cli.nickname, ""))
@@ -238,13 +274,18 @@ class Donger(object):
             except:
                 raise
 
-    def hit(self, hfrom, to):
+    def hit(self, hfrom, to, modifier="none"):
         try:
             self.maxheal[hfrom.lower()]
         except:
             self.maxheal[hfrom.lower()] = 44
+
         damage = random.randint(18, 35)
         criticalroll = random.randint(1, 12)
+
+        if modifier == "praise":
+            criticalroll = 1
+
         instaroll = random.randint(1, 50)
         if self.verbose:
             self.irc.privmsg(self.chan, "Verbose: instaroll is {0}/50 (1 for instakill)".format(instaroll))
@@ -269,7 +310,10 @@ class Donger(object):
         elif criticalroll == 1:
             if self.verbose:
                 self.irc.privmsg(self.chan, "Verbose: Critical hit, duplicating damage: {0}/70".format(damage*2))
-            self.ascii("critical")
+            if modifier == "praise":
+                self.ascii("FUCK YOU")
+            else:
+                self.ascii("critical")
             damage = damage * 2
         
         self.health[to.lower()] -= damage
@@ -291,7 +335,7 @@ class Donger(object):
         
         self.getturn()
     
-    def heal(self, nick):
+    def heal(self, nick, modifier="none"):
         try:
             self.maxheal[nick.lower()]
         except:
@@ -300,6 +344,9 @@ class Donger(object):
             self.irc.privmsg(self.chan, "Sorry, bro. We don't have enough chopsticks to heal you.")
             return
         healing = random.randint(22, self.maxheal[nick.lower()])
+        if modifier == "praise":
+            healing = healing * 2
+            self.ascii("whatever")
         self.health[nick.lower()] += healing
         if self.verbose:
             self.irc.privmsg(self.chan, "Verbose: Regular healing is {0}/44".format(healing))
@@ -360,6 +407,7 @@ class Donger(object):
             cli.mode(self.chan, "+v " + i)
             self.health[i.lower()] = 100
             self.aliveplayers.append(i.lower())
+        self.haspraised = {}
         self.gamerunning = True
         self.getturn()
         
