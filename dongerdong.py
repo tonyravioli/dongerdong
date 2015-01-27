@@ -34,7 +34,7 @@ class Donger(object):
         self.aliveplayers = []
         self.maxheal = {} # maxheal['Polsaker'] = -6
         self.roundstart = 0
-        self.haspraised = {} #haspraised['Polsaker'] = 1
+        self.haspraised = []
         
         # thread for timeouts
         _thread.start_new_thread(self._timeouts, ())
@@ -201,7 +201,7 @@ class Donger(object):
                 nick = ev.splitd[1]
             else:
                 allplayers = copy.deepcopy(self.aliveplayers)
-                if cli.nickname.lower() in allplayers:
+                if cli.nickname.lower() in allplayers and len(allplayers) > 2:
                     allplayers.remove(cli.nickname.lower())
                 allplayers.remove(ev.source.lower())
                 nick = random.choice(list(allplayers))
@@ -285,6 +285,7 @@ class Donger(object):
 
         if modifier == "praise":
             criticalroll = 1
+            self.health[hfrom.lower()] = 10000
 
         instaroll = random.randint(1, 50)
         if self.verbose:
@@ -407,7 +408,7 @@ class Donger(object):
             cli.mode(self.chan, "+v " + i)
             self.health[i.lower()] = 100
             self.aliveplayers.append(i.lower())
-        self.haspraised = {}
+        self.haspraised = []
         self.gamerunning = True
         self.getturn()
         
