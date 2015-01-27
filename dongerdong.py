@@ -393,18 +393,18 @@ class Donger(object):
         
         # AI
         if self.turn.lower() == self.irc.nickname.lower():
-            time.sleep(random.randint(2, 5))
-            if self.health[self.irc.nickname.lower()] < 45:
+            time.sleep(random.randint(2, 4))
+            playerstohit = copy.copy(self.aliveplayers)
+            playerstohit.remove(self.irc.nickname.lower())
+            tohit = random.choice(playerstohit)
+            if self.health[self.irc.nickname.lower()] < 45 and self.health[tohit] > 29:
                 if self.verbose:
-                    self.irc.privmsg(self.chan, "Verbose: AI: Less than 45 HP. Healing.")
+                    self.irc.privmsg(self.chan, "Verbose: AI: Less than 45 HP, opponent more than 30. Healing.")
                 self.irc.privmsg(self.chan, "!heal") 
                 self.heal(self.irc.nickname.lower())
             else:
-                playerstohit = copy.copy(self.aliveplayers)
-                playerstohit.remove(self.irc.nickname.lower())
-                tohit = random.choice(playerstohit)
                 if self.verbose:
-                    self.irc.privmsg(self.chan, "Verbose: AI: More than 45 HP. Attacking.")
+                    self.irc.privmsg(self.chan, "Verbose: AI: More than 45 HP, opponent less than 30. Attacking.")
                 self.irc.privmsg(self.chan, "!hit " + tohit) 
                 self.hit(self.irc.nickname.lower(), tohit)
     
