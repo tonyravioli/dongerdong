@@ -180,7 +180,7 @@ class Donger(object):
                 cli.privmsg(self.chan, "GET OUT OR I'LL KILL YOU! INTRUDER INTRUDER INTRUDER")
             
             self.heal(ev.source)
-        elif ev.splitd[0] == "!praise":
+        elif ev.splitd[0] == "!1212123123103mf23mf3praise": #disabled for now
             if not self.gamerunning:
                 cli.privmsg(self.chan, "THE FUCKING GAME IS NOT RUNNING")
                 return
