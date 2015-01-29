@@ -206,15 +206,17 @@ class Donger(object):
                 allplayers.remove(ev.source.lower())
                 nick = random.choice(list(allplayers))
 
-            praiseroll=random.randint(1, 2)
+            praiseroll=random.randint(1, 3)
             self.haspraised.append(ev.source.lower())
             if nick.lower() == cli.nickname.lower():
                 praiseroll = 2
                 cli.privmsg(self.chan, "You try and suckle my donger while fighting me?")
             if praiseroll == 1: #Heal
-                self.heal(ev.source, "praise")
+                self.heal(nick, "praise")
             elif praiseroll == 2: #Hit
-                self.hit(cli.nickname.lower(), ev.source.lower(), "praise")
+                self.hit(cli.nickname.lower(), nick, "praise")
+            elif praiseroll == 3:
+                self.ascii("GO FUCK A PINEAPPLE")
 
         elif ev.arguments[0].startswith(cli.nickname):
             if len(ev.splitd) > 1 and ev.splitd[1].lower().startswith("you"):
