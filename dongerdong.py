@@ -225,7 +225,13 @@ class Donger(object):
                 cli.privmsg(self.chan, ev.arguments[0].replace(cli.nickname, ev.source))
 
         elif ev.splitd[0] == "!help":
-            cli.privmsg(self.chan, "!fight <nick> to initiate fight. Other commands: !ascii <text>; !excuse; !ping; !raise")
+            cli.privmsg(self.chan, "PM'd you my commands.")
+            cli.privmsg(ev.source, "Commands:")
+            cli.privmsg(ev.source, "!fight <nickname> [othernicknames]: Challenge another player")
+            cli.privmsg(ev.source, "!raise: Commands users to raise their dongers")
+            cli.privmsg(ev.source, "!excuse: Outputs random BOFH excuse")
+            cli.privmsg(ev.source, "!ascii <text>: Turns any text 13 characters or less into ascii art")
+            cli.privmsg(ev.source, "!jaden: Outputs random Jaden Smith tweet")
         elif ev.splitd[0] == "!ping":
             cli.privmsg(self.chan, "pong!")
         elif ev.splitd[0] == "!excuse":
