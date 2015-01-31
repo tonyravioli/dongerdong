@@ -232,8 +232,6 @@ class Donger(object):
             cli.privmsg(ev.source, "!excuse: Outputs random BOFH excuse")
             cli.privmsg(ev.source, "!ascii <text>: Turns any text 13 characters or less into ascii art")
             cli.privmsg(ev.source, "!jaden: Outputs random Jaden Smith tweet")
-        elif ev.splitd[0] == "!ping":
-            cli.privmsg(self.chan, "pong!")
         elif ev.splitd[0] == "!excuse":
             cli.privmsg(self.chan, self.randomLine("excuse"))
         elif ev.splitd[0] == "!jaden":
