@@ -229,7 +229,9 @@ class Donger(object):
         elif ev.splitd[0] == "!ping":
             cli.privmsg(self.chan, "pong!")
         elif ev.splitd[0] == "!excuse":
-            cli.privmsg(self.chan, self.excuse())
+            cli.privmsg(self.chan, self.randomLine("excuse"))
+        elif ev.splitd[0] == "!jaden":
+            cli.privmsg(self.chan, self.randomLine("jaden"))
         elif ev.splitd[0] == "!raise":
             cli.privmsg(self.chan, "ヽ༼ຈل͜ຈ༽ﾉ RAISE YOUR DONGERS ヽ༼ຈل͜ຈ༽ﾉ")
         elif ev.splitd[0] == "!ascii":
@@ -476,8 +478,15 @@ class Donger(object):
     def ascii(self, key):
         self.irc.privmsg(self.chan, Figlet("smslant").renderText(key.upper()))
     
-    def excuse(self):
-        return random.choice(list(open("excuse_list.txt")))
+    def randomLine(self, type):
+        if type == "excuse":
+            file = "excuse_list.txt"
+        elif type == "jaden":
+            file = "jaden_list.txt"
+        try:
+            return random.choice(list(open(file)))
+        except:
+            return "Error getting file {0}".format(file)
 
     # For the record: cli = client and ev = event
     def _connect(self, cli, ev):
@@ -548,7 +557,7 @@ while dongerdong.irc.connected == True and dongerdong.irc.imayreconnect == True:
     try:
         time.sleep(1) # Infinite loop of awesomeness
     except KeyboardInterrupt:
-        excuse=dongerdong.excuse()
+        excuse=dongerdong.randomLine("excuse")
         #excuse=random.choice(list(open("excuse_list.txt"))) #Parsing an excuse list from BOFH
         # Sending stuff manually and assigning it the fucking top priority (no queue)
         # dongerdong.irc.send("PRIVMSG {0} :ERROR - {1}".format(dongerdong.chan, excuse), True)
