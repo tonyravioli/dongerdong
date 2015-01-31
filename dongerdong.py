@@ -71,7 +71,7 @@ class Donger(object):
 
         if ev.splitd[0].startswith("!"):
             try:
-                if ev.source == self.sourcehistory[-2] and ev.source == self.sourcehistory[-1] and time.time() - self.lastheardfrom[ev.source] < 10:
+                if ev.target != self.primarychan and ev.source == self.sourcehistory[-2] and ev.source == self.sourcehistory[-1] and time.time() - self.lastheardfrom[ev.source] < 10:
                     return #If the user was the last two users to speak and the last msg was within 10 seconds, don't do anything. Flood control.
             except IndexError:
                 pass
@@ -520,7 +520,7 @@ class Donger(object):
         cli.send("AUTHENTICATE PLAIN")
 
     def _join(self, cli, ev):
-        if ev.source2.nick == cli.nickname:
+        if ev.source2.nick == cli.nickname and ev.target == self.primarychan:
             self.irc.privmsg(ev.target, "ヽ༼ຈل͜ຈ༽ﾉ RAISE YOUR DONGERS ヽ༼ຈل͜ຈ༽ﾉ")
 
     def _dusers(self, skip):
