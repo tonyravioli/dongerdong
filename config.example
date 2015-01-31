@@ -1,7 +1,8 @@
 {
     "server": "irc.freenode.net",
-    "nick": "dongtester",
-    "channel": "#donger-test",
-    "nickserv-user": "dongy",
-    "nickserv-pass": "dongitydong"
+    "nick": "botnick",
+    "channel": "#fightchannel",
+    "auxchans": ["#auxchannel1", "#auxchannel2"],
+    "nickserv-user": "botusername",
+    "nickserv-pass": "botpassword"
 }
