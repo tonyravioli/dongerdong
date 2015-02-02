@@ -333,7 +333,8 @@ class Donger(object):
                 pass
             self.getturn()
             self.countstat(self.irc.channels[self.primarychan].users[to.lower()].nick, "loss")
-            self.irc.mode(self.primarychan, "-v " + to)
+            if to.lower() != self.irc.nickname.lower():
+                self.irc.kick(self.primarychan, to, "REKT")
             return
         elif criticalroll == 1:
             if self.verbose:
