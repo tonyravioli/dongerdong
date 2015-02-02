@@ -241,6 +241,7 @@ class Donger(object):
                 self.hit(cli.nickname.lower(), nick, "praise")
             elif praiseroll == 3:
                 self.ascii("GO FUCK A PINEAPPLE")
+                self.getturn()
 
         elif ev.arguments[0].startswith(cli.nickname):
             if len(ev.splitd) > 1 and ev.splitd[1].lower().startswith("you"):
@@ -353,8 +354,12 @@ class Donger(object):
             damage = damage * 2
         
         self.health[to.lower()] -= damage
+        if hfrom.lower() == self.irc.nickname.lower() and hfrom.lower() not in self.health:
+            fromhp = "999999999"
+        else:
+            fromhp = self.health[hfrom.lower()]
         self.irc.privmsg(self.primarychan, "\002{0}\002 (\002{1}\002HP) deals \002{2}\002 to \002{3}\002 (\002{4}\002HP)".format(hfrom,
-                                    str(self.health[hfrom.lower()]), str(damage), self.irc.channels[self.primarychan].users[to.lower()].nick, str(self.health[to.lower()])))
+                                    str(fromhp), str(damage), self.irc.channels[self.primarychan].users[to.lower()].nick, str(self.health[to.lower()])))
 
         if self.health[to.lower()] <= 0:
             self.ascii("rekt")
