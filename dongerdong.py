@@ -217,6 +217,12 @@ class Donger(object):
             
             if len(ev.splitd) != 1 and ev.splitd[1] != "":
                 nick = ev.splitd[1]
+                if ev.splitd[1].lower() not in self.aliveplayers and ev.splitd[1].lower() in list(self.health):
+                    cli.privmsg(self.primarychan, "WHAT?! Do you REALLY want to hit a corpse?!")
+                    return
+                if ev.splitd[1].lower() not in self.aliveplayers:
+                    cli.privmsg(self.primarychan, "WHA?! \002{0}\002 is not playing!".format(ev.splitd[1]))
+                    return
             else:
                 allplayers = copy.deepcopy(self.aliveplayers)
                 if cli.nickname.lower() in allplayers and len(allplayers) > 2:
@@ -505,7 +511,7 @@ class Donger(object):
         if not fancy:
             self.irc.privmsg(self.primarychan, Figlet("smslant").renderText(key.upper()))
         else:
-            self.irc.privmsg(self.primarychan, Figlet(random.choice(['lant', 'smslant'])).renderText(key.upper()))
+            self.irc.privmsg(self.primarychan, Figlet(random.choice(['slant', 'smslant'])).renderText(key.upper()))
     
     def randomLine(self, type):
         if type == "excuse":
