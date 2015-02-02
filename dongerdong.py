@@ -563,7 +563,7 @@ class Donger(object):
             time.sleep(5)
             if self.gamerunning and self.turn != "":
                 if time.time() - self.roundstart > 60:
-                    self.irc.privmsg(ev.target, "\002{0}\002 forfeits due to idle.".format(self.turn))
+                    self.irc.privmsg(self.primarychan, "\002{0}\002 forfeits due to idle.".format(self.turn))
                     self.irc.mode(ev.target, "-v " + self.turn)
                     self.aliveplayers.remove(self.turn)
                     self.health[self.turn] = -1
