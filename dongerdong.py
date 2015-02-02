@@ -197,9 +197,10 @@ class Donger(object):
                 cli.privmsg(self.primarychan, "GET OUT OR I'LL KILL YOU! INTRUDER INTRUDER INTRUDER")
             
             self.heal(ev.source)
-        elif ev.splitd[0] == "!1212123123103mf23mf3praise": #disabled for now
+        elif ev.splitd[0] == "!praise": #disabled for now
             if not self.gamerunning:
-                #cli.privmsg(self.primarychan, "THE FUCKING GAME IS NOT RUNNING")
+                #cli.privmsg(self.primarychan, )
+                self.ascii("BOOM", True)
                 return
                 
             if self.turn != ev.source.lower():
@@ -500,8 +501,11 @@ class Donger(object):
         if stats is True:
             self.countstat(self.irc.channels[self.primarychan].users[winner.lower()].nick, "win")
     
-    def ascii(self, key): #Only used in fights
-        self.irc.privmsg(self.primarychan, Figlet("smslant").renderText(key.upper()))
+    def ascii(self, key, fancy=False): #Only used in fights
+        if not fancy:
+            self.irc.privmsg(self.primarychan, Figlet("smslant").renderText(key.upper()))
+        else:
+            self.irc.privmsg(self.primarychan, Figlet(random.choice(['lant', 'smslant'])).renderText(key.upper()))
     
     def randomLine(self, type):
         if type == "excuse":
