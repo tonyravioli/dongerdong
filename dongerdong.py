@@ -389,9 +389,11 @@ class Donger(object):
         if modifier == "praise":
             healing = healing * 2
             self.ascii("whatever")
+        
         self.health[nick.lower()] += healing
+        self.maxheal[nick.lower()] = self.maxheal[nick.lower()] - 5
         if self.verbose:
-            self.irc.privmsg(self.primarychan, "Verbose: Regular healing is {0}/44".format(healing))
+            self.irc.privmsg(self.primarychan, "Verbose: Regular healing is {0}/{1}".format(healing, self.maxheal[nick.lower()]))
         if self.health[nick.lower()] > 100:
             self.health[nick.lower()] = 100
             self.irc.privmsg(self.primarychan, "\002{0}\002 heals for \002{1}HP\002, bringing them to \002100HP\002".format(nick, healing))
