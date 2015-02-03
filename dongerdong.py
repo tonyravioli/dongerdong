@@ -197,7 +197,7 @@ class Donger(object):
                 cli.privmsg(self.primarychan, "GET OUT OR I'LL KILL YOU! INTRUDER INTRUDER INTRUDER")
             
             self.heal(ev.source)
-        elif ev.splitd[0] == "!praise": #disabled for now
+        elif ev.splitd[0] == "!praise":
             if not self.gamerunning:
                 #cli.privmsg(self.primarychan, )
                 #self.ascii("BOOM", True)
@@ -235,6 +235,7 @@ class Donger(object):
             if nick.lower() == cli.nickname.lower():
                 praiseroll = 2
                 cli.privmsg(self.primarychan, "You try and suckle my donger while fighting me?")
+                nick = ev.source
             if praiseroll == 1: #Heal
                 self.heal(nick, "praise")
             elif praiseroll == 2: #Hit
