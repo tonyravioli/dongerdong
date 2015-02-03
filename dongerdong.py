@@ -200,7 +200,7 @@ class Donger(object):
         elif ev.splitd[0] == "!praise": #disabled for now
             if not self.gamerunning:
                 #cli.privmsg(self.primarychan, )
-                self.ascii("BOOM", True)
+                #self.ascii("BOOM", True)
                 return
                 
             if self.turn != ev.source.lower():
