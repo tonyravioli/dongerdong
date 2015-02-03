@@ -445,7 +445,7 @@ class Donger(object):
         cli.privmsg(self.primarychan, ".")
         cli.privmsg(self.primarychan, "Use !hit [nick] to strike.")
         cli.privmsg(self.primarychan, "Use !heal to heal yourself.")
-        cli.privmsg(self.primarychan, "Use !praise [nick] to praise to the donger gods.")
+        cli.privmsg(self.primarychan, "Use !praise [nick] to praise to the donger gods (once per game).")
         for i in fighters:
             cli.mode(self.primarychan, "+v " + i)
             self.health[i.lower()] = 100
