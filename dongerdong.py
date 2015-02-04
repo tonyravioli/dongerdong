@@ -616,15 +616,21 @@ class BaseModel(peewee.Model):
     class Meta:
         database = database
 
-# Stats table
-class Stats(BaseModel):
-    nick = peewee.CharField()  # Nickname of the player
+# NEW Stats table
+class Statsv2(BaseModel):
+    nick = peewee.CharField()  # NickServ account of the player
     realnick = peewee.CharField()  # Nickname of the player (not lowercased :P)
     wins = peewee.IntegerField() # Number of REKTs
     losses = peewee.IntegerField() # Number of loses
     quits = peewee.IntegerField() # Number of coward quits
+    easywins = peewee.IntegerField() # Number of easy wins (player leaving, etc)
+    fights = peewee.IntegerField() # !fight usage [only counted if it started a game]
+    accepts = peewee.IntegerField() # !accept usage [only counted if the fight was started] (Total = !fight + !accept)
+    dcaused = peewee.IntegerField() # Total amount of damage caused
+    dreceived = peewee.IntegerField() # Total amount of damage received
+    praises = peewee.IntegerField() # !praise usage
     
-Stats.create_table(True) # Here we create the table
+Statsv2.create_table(True) # Here we create the table
 
 # Start donging
 dongerdong = Donger()
