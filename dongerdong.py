@@ -421,7 +421,7 @@ class Donger(object):
             healing = healing * 2
             self.ascii("whatever")
         else:
-            self.countstat(hfrom, "heal")
+            self.countstat(nick, "heal")
         
         self.health[nick.lower()] += healing
         self.maxheal[nick.lower()] = self.maxheal[nick.lower()] - 5
