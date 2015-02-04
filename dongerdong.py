@@ -289,6 +289,8 @@ class Donger(object):
             cli.privmsg(ev.source, "  !raise: Commands users to raise their dongers")
             cli.privmsg(ev.source, "  !excuse: Outputs random BOFH excuse")
             cli.privmsg(ev.source, "  !jaden: Outputs random Jaden Smith tweet")
+            cli.privmsg(ev.source, "  !stats [player]: Outputs player's game stats (or your own stats)")
+            cli.privmsg(ev.source, "  !top: Shows the three players with most wins")
         elif ev.splitd[0] == "!excuse":
             cli.privmsg(ev.target, self.randomLine("excuse"))
         elif ev.splitd[0] == "!jaden":
@@ -328,8 +330,8 @@ class Donger(object):
                 nick = ev.source
             try:
                 player = Statsv2.get(Statsv2.nick == nick.lower())
-                cli.privmsg(ev.target, "\002{0}\002's stats: \002{1}\002 wins, \002{2}\002 losses, and \002{3}\002 coward quits".format(
-                                        player.realnick, player.wins, player.losses, player.quits))
+                cli.privmsg(ev.target, "\002{0}\002's stats: \002{1}\002 wins, \002{4}\002 easy wins, \002{2}\002 losses, \002{3}\002 coward quits, \002{5}\002 idle-outs, \002{6}\002 !praises, \002{7}\002 fights started, joined \002{8}\002 fights (\002{9}\002 total fights), \002{10}\002 !hits, \002{11}\002 !heals, \002{12}\002HP of damage dealt and \002{13}\002 damage received.".format(
+                                        player.realnick, player.wins, player.losses, player.quits, player.easywins, player.idleouts, player.praises, player.fights, player.accepts, (player.fights + player.accepts), player.hits, player.heals, player.dcaused, player.dreceived))
             except:
                 cli.privmsg(ev.target, "There are no registered stats for \002{0}\002".format(nick))   
 
