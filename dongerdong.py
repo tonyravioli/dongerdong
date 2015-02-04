@@ -315,7 +315,7 @@ class Donger(object):
             cli.devoice(ev.target, ev.source)
             self._coward(cli, ev)
         elif ev.splitd[0] == "!leaderboard" or ev.splitd[0] == "!top":
-            players = Stats.select().order_by(Stats.wins.desc()).limit(3)
+            players = Statsv2.select().order_by(Statsv2.wins.desc()).limit(3)
             c = 1
             for player in players:
                 cli.privmsg(ev.target, "{0} - \002{1}\002 (\002{2}\002)".format(c, player.nick.upper(), player.wins))
@@ -326,7 +326,7 @@ class Donger(object):
             else:
                 nick = ev.source
             try:
-                player = Stats.get(Stats.nick == nick.lower())
+                player = Statsv2.get(Statsv2.nick == nick.lower())
                 cli.privmsg(ev.target, "\002{0}\002's stats: \002{1}\002 wins, \002{2}\002 losses, and \002{3}\002 coward quits".format(
                                         player.realnick, player.wins, player.losses, player.quits))
             except:
@@ -448,9 +448,9 @@ class Donger(object):
     # ctype = win/loss/quit
     def countstat(self, nick, ctype):
         try:
-            stat = Stats.get(Stats.nick == nick.lower())
+            stat = Statsv2.get(Statsv2.nick == nick.lower())
         except:
-            stat = Stats.create(nick=nick.lower(), losses=0, quits=0, wins=0, realnick=nick)
+            stat = Statsv2.create(nick=nick.lower(), losses=0, quits=0, wins=0, realnick=nick)
         if ctype == "win":
             stat.wins += 1
         elif ctype == "loss":
