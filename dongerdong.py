@@ -462,7 +462,7 @@ class Donger(object):
             stat = Statsv2.get(Statsv2.nick == nick.lower())
         except:
             stat = Statsv2.create(nick=nick.lower(), losses=0, quits=0, wins=0, idleouts=0, accepts=0,
-            dcaused=0, dreceived=0, easywins=0, fights=0, praises=0, realnick=nick)
+            dcaused=0, dreceived=0, easywins=0, fights=0, praises=0, realnick=nick, heals=0, hits=0)
         if ctype == "win":
             stat.wins += 1
         elif ctype == "loss":
