@@ -341,10 +341,7 @@ class Donger(object):
                 raise
 
     def hit(self, hfrom, to, modifier="none"):
-        try:
-            self.maxheal[hfrom.lower()]
-        except:
-            self.maxheal[hfrom.lower()] = 44
+        self.maxheal[hfrom.lower()] = 44
 
         damage = random.randint(18, 35)
         criticalroll = random.randint(1, 12)
@@ -407,10 +404,6 @@ class Donger(object):
         self.getturn()
     
     def heal(self, nick, modifier="none"):
-        try:
-            self.maxheal[nick.lower()]
-        except:
-            self.maxheal[nick.lower()] = 44
         if self.maxheal[nick.lower()] <= 23:
             self.irc.privmsg(self.primarychan, "Sorry, bro. We don't have enough chopsticks to heal you.")
             return
@@ -479,6 +472,7 @@ class Donger(object):
         cli.privmsg(self.primarychan, "Use !praise [nick] to praise to the donger gods (once per game).")
         cli.voice(self.primarychan, fighters)
         for i in fighters:
+            self.maxheal[i.lower()] = 44
             self.health[i.lower()] = 100
             self.aliveplayers.append(i.lower())
         self.haspraised = []
@@ -616,15 +610,21 @@ class BaseModel(peewee.Model):
     class Meta:
         database = database
 
-# Stats table
-class Stats(BaseModel):
-    nick = peewee.CharField()  # Nickname of the player
+# NEW Stats table
+class Statsv2(BaseModel):
+    nick = peewee.CharField()  # NickServ account of the player
     realnick = peewee.CharField()  # Nickname of the player (not lowercased :P)
     wins = peewee.IntegerField() # Number of REKTs
     losses = peewee.IntegerField() # Number of loses
     quits = peewee.IntegerField() # Number of coward quits
+    easywins = peewee.IntegerField() # Number of easy wins (player leaving, etc)
+    fights = peewee.IntegerField() # !fight usage [only counted if it started a game]
+    accepts = peewee.IntegerField() # !accept usage [only counted if the fight was started] (Total = !fight + !accept)
+    dcaused = peewee.IntegerField() # Total amount of damage caused
+    dreceived = peewee.IntegerField() # Total amount of damage received
+    praises = peewee.IntegerField() # !praise usage
     
-Stats.create_table(True) # Here we create the table
+Statsv2.create_table(True) # Here we create the table
 
 # Start donging
 dongerdong = Donger()
