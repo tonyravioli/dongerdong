@@ -90,12 +90,6 @@ class Donger(object):
             if len(ev.splitd) == 1 or ev.splitd[1] == "": # I hate you
                 cli.privmsg(self.primarychan, "Can you read? It's !fight <nick> [othernick] ...")
                 return
-            #ev.splitd[1] = ev.splitd[1].lower()
-            
-            #if ev.splitd[1] == cli.nickname.lower():
-            #    cli.privmsg(self.chan, "YOU WILL SEE")
-            #    self.fight(cli, [ev.source.lower(), cli.nickname])
-            #    return
             
             if "--verbose" in ev.splitd:
                 ev.splitd.remove("--verbose")
@@ -160,7 +154,6 @@ class Donger(object):
                 del self._paccept[ev.splitd[1].lower()]
         elif ev.splitd[0] == "!hit":
             if not self.gamerunning:
-                #cli.privmsg(self.primarychan, "There is no game running currently.") #This will be flood-abused.
                 return
                 
             if self.turn != ev.source.lower():
@@ -199,8 +192,6 @@ class Donger(object):
             self.heal(ev.source)
         elif ev.splitd[0] == "!praise":
             if not self.gamerunning:
-                #cli.privmsg(self.primarychan, )
-                #self.ascii("BOOM", True)
                 return
                 
             if self.turn != ev.source.lower():
@@ -241,9 +232,49 @@ class Donger(object):
             elif praiseroll == 2: #Hit
                 self.hit(cli.nickname.lower(), nick, "praise")
             elif praiseroll == 3:
-                self.ascii("GO FUCK A PINEAPPLE")
+                self.ascii("NOPE NOPE NOPE")
                 self.getturn()
-
+        elif ev.splitd[0] == "!cancel":
+            try:
+                self.pending[ev.source.lower()]
+            except:
+                cli.privmsg(self.primarychan, "You can only use !cancel if you started a !fight")
+                return
+            if self.gamerunning:
+                cli.privmsg(self.primarychan, "THE FIGHT WAS ALREADY STARTED, IF YOU'RE A COWARD USE !QUIT")
+                return
+            del self.pending[ev.source.lower()]
+            del self._paccept[ev.source.lower()]
+            cli.privmsg(self.primarychan, "{0}'s fight cancelled".format(ev.source))
+        elif ev.splitd[0] == "!reject":
+            if self.gamerunning:
+                return
+            if len(ev.splitd) == 1 or ev.splitd[1] == "": # I hate you
+                cli.privmsg(self.primarychan, "Can you read? It's !reject <nick>")
+                return
+            try:
+                if ev.source not in self.pending[ev.splitd[1].lower()]:
+                    raise  # two in one
+            except:
+                cli.privmsg(self.primarychan, "But... {0} never challenged you!".format(ev.splitd[1]))
+                return
+            
+            self.pending[ev.splitd[1].lower()].remove(ev.source)
+            if len(self.pending[ev.splitd[1].lower()]) == 2 and cli.nickname in self.pending[ev.splitd[1].lower()]:
+                self.pending[ev.splitd[1].lower()].remove(cli.nickname)
+            self._paccept[ev.splitd[1].lower()].remove(ev.source)
+            cli.privmsg(self.primarychan, "{0} fled out of the fight".format(ev.source))
+            if len(self.pending[ev.splitd[1].lower()]) == 1:
+                del self.pending[ev.splitd[1].lower()]
+                del self._paccept[ev.splitd[1].lower()]
+                cli.privmsg(self.primarychan, "Fight cancelled")
+                return
+            
+            if self._paccept[ev.splitd[1].lower()] == []:
+                # Start the fight!!!
+                self.fight(cli, self.pending[ev.splitd[1].lower()])
+                del self.pending[ev.splitd[1]]
+                del self._paccept[ev.splitd[1].lower()]
         elif ev.arguments[0].startswith(cli.nickname):
             if len(ev.splitd) > 1 and ev.splitd[1].lower().startswith("you"):
                 cli.privmsg(ev.target, "No, {0}".format(ev.source)+ ev.arguments[0].replace(cli.nickname, ""))
@@ -255,6 +286,8 @@ class Donger(object):
             cli.privmsg(ev.source, "Commands available only in {0}:".format(self.primarychan))
             cli.privmsg(ev.source, "  !fight <nickname> [othernicknames]: Challenge another player")
             cli.privmsg(ev.source, "  !ascii <text>: Turns any text 13 characters or less into ascii art")
+            cli.privmsg(ev.source, "  !cancel: Cancels a !fight")
+            cli.privmsg(ev.source, "  !reject <nick>: Cowardly rejects a !fight")
             cli.privmsg(ev.source, "Commands available everywhere:")
             cli.privmsg(ev.source, "  !raise: Commands users to raise their dongers")
             cli.privmsg(ev.source, "  !excuse: Outputs random BOFH excuse")
