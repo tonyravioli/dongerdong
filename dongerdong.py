@@ -215,11 +215,7 @@ class Donger(object):
                     cli.privmsg(self.primarychan, "WHA?! \002{0}\002 is not playing!".format(ev.splitd[1]))
                     return
             else:
-                allplayers = copy.deepcopy(self.aliveplayers)
-                if cli.nickname.lower() in allplayers and len(allplayers) > 2:
-                    allplayers.remove(cli.nickname.lower())
-                allplayers.remove(ev.source.lower())
-                nick = random.choice(list(allplayers))
+                nick = ev.source
 
             praiseroll=random.randint(1, 3)
             self.haspraised.append(ev.source.lower())
