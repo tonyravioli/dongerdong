@@ -357,7 +357,29 @@ class IRCClient:
         
     def kick(self, channel, target, reason=""):
         self.send("KICK {0} {1} :{2}".format(channel, target, reason))
-
+    
+    def multimode(self, channel, mode, users):
+        if type(users) == str:
+            self.mode(channel, mode + " " + users)
+        elif type(users) == list:
+            f1 = ""
+            count = 1
+            for i in users:
+                f1 += " " + i
+                if count == self.features.modes:
+                    self.mode(channel, "{2}{0} {1}".format(mode[1] * count, f1, mode[0]))
+                    count = 1
+                count += 1
+            self.mode(channel, "{2}{0} {1}".format(mode[1] * (count - 1), f1, mode[0]))
+        else:
+            raise
+    
+    def voice(self, channel, users):
+        self.multimode(channel, "+v", users)
+        
+    def devoice(self, channel, users):
+        self.multimode(channel, "-v", users)
+        
     # Internal handlers
 
     def _on_join(self, this, event):

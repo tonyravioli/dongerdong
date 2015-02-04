@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from irc import client
+import irc.client as client
 from peewee import peewee
 import sys
 try:
@@ -312,7 +312,7 @@ class Donger(object):
             if not self.gamerunning:
                 #cli.privmsg(ev.target, "THE FUCKING GAME IS NOT RUNNING")
                 return
-            cli.mode(ev.target, "-v " + ev.source)
+            cli.devoice(ev.target, ev.source)
             self._coward(cli, ev)
         elif ev.splitd[0] == "!leaderboard" or ev.splitd[0] == "!top":
             players = Stats.select().order_by(Stats.wins.desc()).limit(3)
@@ -477,8 +477,8 @@ class Donger(object):
         cli.privmsg(self.primarychan, "Use !hit [nick] to strike.")
         cli.privmsg(self.primarychan, "Use !heal to heal yourself.")
         cli.privmsg(self.primarychan, "Use !praise [nick] to praise to the donger gods (once per game).")
+        cli.voice(self.primarychan, fighters)
         for i in fighters:
-            cli.mode(self.primarychan, "+v " + i)
             self.health[i.lower()] = 100
             self.aliveplayers.append(i.lower())
         self.haspraised = []
@@ -533,7 +533,7 @@ class Donger(object):
     def win(self, winner, stats=True):
         self.verbose = False
         self.irc.mode(self.primarychan, "-m")
-        self.irc.mode(self.primarychan, "-v " + winner)
+        self.irc.devoice(self.primarychan, winner)
         if len(list(self.health)) > 2:
             self.irc.privmsg(self.primarychan, "{0} REKT {1}!".format(self.irc.channels[self.primarychan].users[winner.lower()].nick, self._dusers(winner)))
         self.aliveplayers = []
@@ -602,7 +602,7 @@ class Donger(object):
             if self.gamerunning and self.turn != "":
                 if time.time() - self.roundstart > 60:
                     self.irc.privmsg(self.primarychan, "\002{0}\002 forfeits due to idle.".format(self.turn))
-                    self.irc.mode(self.primarychan, "-v " + self.turn)
+                    self.irc.devoice(self.primarychan, self.turn)
                     self.aliveplayers.remove(self.turn)
                     self.health[self.turn] = -1
                     self.getturn()
