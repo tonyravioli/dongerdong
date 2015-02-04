@@ -507,7 +507,8 @@ class Donger(object):
             self.maxheal[i.lower()] = 44
             self.health[i.lower()] = 100
             self.aliveplayers.append(i.lower())
-            self.countstat(i.lower(), "accept")
+            if i.lower() != starter.lower():
+                self.countstat(i.lower(), "accept")
         self.haspraised = []
         self.gamerunning = True
         self.getturn()
