@@ -37,6 +37,30 @@ class Donger(object):
         self.haspraised = []
         self.lastheardfrom = {}
         self.sourcehistory = []
+        self.userstats = {}
+        # stock = amount of weapons available
+        # hit = hit multiplier (base = 5 ~ 11)
+        # crit = crit chances (15 = always crit)
+        # noshield = this weapon won't allow shield (if True)
+        self.weapons = [
+            {'name': 'shortsword', 'hit': 1.8, 'crit': 2, 'noshield': False, 'stock': 2},
+            {'name': 'sword', 'hit': 2, 'crit': 4, 'noshield': False, 'stock': 2},
+            {'name': 'smallaxe', 'hit': 1.8, 'crit': 3, 'noshield': False, 'stock': 2},
+            {'name': 'bigaxe', 'hit': 2.3, 'crit': 6, 'noshield': True, 'stock': 2},
+            {'name': 'bow', 'hit': 3.3, 'crit': 7, 'noshield': True, 'stock': 1},
+            {'name': 'bat', 'hit': 1.5, 'crit': 1, 'noshield': False, 'stock': 3},
+            {'name': 'crossbow', 'hit': 3.5, 'crit': 8, 'noshield': True, 'stock': 1},
+            {'name': 'chain', 'hit': 3, 'crit': 2, 'noshield': False, 'stock': 1}
+        ]
+        # hit = hit multiplier (0 = doesn't affect hitting)
+        # def = defense (0 = no damage, 1 = full damage)
+        # chance = chances of "acting" (1 = always, 2 = 1 every 2, etc)
+        self.shields = [
+            {'name': 'shield', 'def': 0.60, 'hit': 0.95, 'chance': 2, 'stock': 3},
+            {'name': 'leatherset', 'def': 0.75, 'hit': 0, 'chance': 1, 'stock': 3},
+            {'name': 'chainmail', 'def': 0.55, 'hit': 0, 'chance': 1, 'stock': 2},
+            {'name': 'platearmor', 'def': 0.45, 'hit': 0, 'chance': 1, 'stock': 2}
+        ]
         
         # thread for timeouts
         _thread.start_new_thread(self._timeouts, ())
@@ -190,7 +214,63 @@ class Donger(object):
                 cli.privmsg(self.primarychan, "GET OUT OR I'LL KILL YOU! INTRUDER INTRUDER INTRUDER")
             
             self.heal(ev.source)
-        elif ev.splitd[0] == "!praise":
+        elif ev.splitd[0] == "!shield":
+            if not self.gamerunning:
+                return
+            if self.deflist == []:
+                cli.privmsg(self.primarychan, "You shall not choose weapons now")
+                return
+            
+            if ev.source.lower() not in self.nodef:
+                cli.privmsg(self.primarychan, "NOPE NOPE, YOU'LL KEEP THAT ONE")
+                return
+            
+            if ev.splitd[1].lower() not in self.deflist:
+                cli.privmsg(self.primarychan, "I don't have that one")
+                return
+            
+            if self.availdefs[ev.splitd[1].lower()]['stock'] == 0:
+                cli.privmsg(self.primarychan, "I ran out of those")
+                return
+            if self.userstats[ev.source.lower()]['noshield'] is True:
+                cli.privmsg(self.primarychan, "You can't use a shield with that weapon")
+                return
+                
+            self.availdefs[ev.splitd[1].lower()]['stock'] -= 1
+            #self.userstats[ev.source.lower()] = self.availweapons[ev.splitd[0].lower()]
+            self.userstats[ev.source.lower()]['def'] = self.availdefs[ev.splitd[1].lower()]['def']
+            self.userstats[ev.source.lower()]['hit'] -= self.availdefs[ev.splitd[1].lower()]['hit']
+            self.userstats[ev.source.lower()]['chance'] = self.availdefs[ev.splitd[1].lower()]['chance']
+            self.nodef.remove(ev.source.lower())
+            cli.privmsg(self.primarychan, "Now you have a {0}!".format(self.availweapons[ev.splitd[1].lower()]['name'] ))
+
+        elif ev.splitd[0] == "!weapon":
+            if not self.gamerunning:
+                return
+            if self.weaponlist == []:
+                cli.privmsg(self.primarychan, "You shall not choose weapons now")
+                return
+            
+            if ev.source.lower() not in self.noweap:
+                cli.privmsg(self.primarychan, "NOPE NOPE, YOU'LL KEEP THAT ONE")
+                return
+        
+            if ev.splitd[1].lower() not in self.weaponlist:
+                cli.privmsg(self.primarychan, "I don't have that one")
+                return
+            
+            if self.availweapons[ev.splitd[1].lower()]['stock'] == 0:
+                cli.privmsg(self.primarychan, "I ran out of those")
+                return
+            
+            self.availweapons[ev.splitd[1].lower()]['stock'] -= 1
+            self.userstats[ev.source.lower()] = self.availweapons[ev.splitd[1].lower()]
+            self.userstats[ev.source.lower()]['def'] = 0
+            self.userstats[ev.source.lower()]['chance'] = 1
+            self.noweap.remove(ev.source.lower())
+            cli.privmsg(self.primarychan, "Now you have a {0}!".format(self.availweapons[ev.splitd[1].lower()]['name'] ))
+            
+        elif ev.splitd[0] == "!praise": 
             if not self.gamerunning:
                 return
                 
@@ -284,6 +364,7 @@ class Donger(object):
             cli.privmsg(ev.source, "  !fight <nickname> [othernicknames]: Challenge another player")
             cli.privmsg(ev.source, "  !ascii <text>: Turns any text 13 characters or less into ascii art")
             cli.privmsg(ev.source, "  !cancel: Cancels a !fight")
+            cli.privmsg(ev.source, "  !accept <player> [role]: Accepts a fight")
             cli.privmsg(ev.source, "  !reject <nick>: Cowardly rejects a !fight")
             cli.privmsg(ev.source, "Commands available everywhere:")
             cli.privmsg(ev.source, "  !raise: Commands users to raise their dongers")
@@ -513,8 +594,53 @@ class Donger(object):
             self.aliveplayers.append(i.lower())
             if i.lower() != starter.lower():
                 self.countstat(i.lower(), "accept")
+            self.userstats[i] = {'hit': 1, 'def': 1, 'crit': 0, 'chance': 0, 'noshield': False}
+        
         self.haspraised = []
+        cli.privmsg(self.primarychan, "EVERYBODY HAS ONE MINUTE TO CHOOSE A WEAPON!!!!")
+        self.weaponlist = []
+        self.noweap = copy.copy(self.aliveplayers)
+        self.availweapons = {}
+        poop = 0
         self.gamerunning = True
+        while poop <= (len(fighters)/2) + 1:
+            i = random.choice(self.weapons)
+            if i['name'] in self.weaponlist:
+                continue
+            self.weaponlist.append(i['name'])
+            self.availweapons[i['name']] = i
+            poop += 1
+        cli.privmsg(self.primarychan, "WEAPONS AVAILABLE: {0}. Choose one with !weapon <name>".format(", ".join(self.weaponlist).upper()))
+        kkk = 0
+        while kkk != 60:
+            time.sleep(1)
+            if self.noweap == []:
+                break
+            kkk += 1
+        self.noweap = []
+        cli.privmsg(self.primarychan, "K, NOW EVERYBODY HAS A FUCKING MINUTE TO CHOSE A DEFENSIVE ITEM!")
+        self.deflist = []
+        self.nodef = copy.copy(self.aliveplayers)
+        self.availdefs = {}
+        poop = 0
+        while poop <= (len(fighters)/2) + 1:
+            i = random.choice(self.shields)
+            if i['name'] in self.deflist:
+                continue
+            self.deflist.append(i['name'])
+            self.availdefs[i['name']] = i
+            poop += 1
+            
+        cli.privmsg(self.primarychan, "SHIELDS AVAILABLE: {0}. Choose one with !shield <name>".format(", ".join(self.deflist).upper()))
+        kkk = 0
+        while kkk != 60:
+            time.sleep(1)
+            if self.nodef == []:
+                break
+            kkk += 1
+        self.nodef = []
+        cli.privmsg(self.primarychan, "K, NOW FUCKING FIGHT!!")
+        
         self.getturn()
         
     def getturn(self):
