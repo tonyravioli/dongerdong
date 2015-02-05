@@ -120,7 +120,7 @@ class Donger(object):
                 cli.privmsg(self.primarychan, "YOU WILL SEE")
                 self._paccept[ev.source2.nick.lower()].remove(cli.nickname)
                 if self._paccept[ev.source2.nick.lower()] == []:
-                    self.fight(cli, pplayers)
+                    self.fight(cli, pplayers, ev.source2.nick.lower())
                     return
             
             cli.privmsg(self.primarychan, "{1}: \002{0}\002 has challenged you. To accept, use '!accept {0}'".format(ev.source, ", ".join(self._paccept[ev.source2.nick.lower()])))
@@ -149,7 +149,7 @@ class Donger(object):
             self._paccept[ev.splitd[1].lower()].remove(ev.source)
             if self._paccept[ev.splitd[1].lower()] == []:
                 # Start the fight!!!
-                self.fight(cli, self.pending[ev.splitd[1]])
+                self.fight(cli, self.pending[ev.splitd[1]], ev.splitd[1])
                 del self.pending[ev.splitd[1]]
                 del self._paccept[ev.splitd[1].lower()]
         elif ev.splitd[0] == "!hit":
@@ -215,9 +215,10 @@ class Donger(object):
                     cli.privmsg(self.primarychan, "WHA?! \002{0}\002 is not playing!".format(ev.splitd[1]))
                     return
             else:
-                nick = ev.source
+                nick = ev.source.lower()
 
             praiseroll=random.randint(1, 3)
+            self.countstat(nick, "praise")
             self.haspraised.append(ev.source.lower())
             if nick.lower() == cli.nickname.lower():
                 praiseroll = 2
@@ -268,7 +269,7 @@ class Donger(object):
             
             if self._paccept[ev.splitd[1].lower()] == []:
                 # Start the fight!!!
-                self.fight(cli, self.pending[ev.splitd[1].lower()])
+                self.fight(cli, self.pending[ev.splitd[1].lower()], ev.splitd[1].lower())
                 del self.pending[ev.splitd[1]]
                 del self._paccept[ev.splitd[1].lower()]
         elif ev.arguments[0].startswith(cli.nickname):
@@ -288,6 +289,8 @@ class Donger(object):
             cli.privmsg(ev.source, "  !raise: Commands users to raise their dongers")
             cli.privmsg(ev.source, "  !excuse: Outputs random BOFH excuse")
             cli.privmsg(ev.source, "  !jaden: Outputs random Jaden Smith tweet")
+            cli.privmsg(ev.source, "  !stats [player]: Outputs player's game stats (or your own stats)")
+            cli.privmsg(ev.source, "  !top: Shows the three players with most wins")
         elif ev.splitd[0] == "!excuse":
             cli.privmsg(ev.target, self.randomLine("excuse"))
         elif ev.splitd[0] == "!jaden":
@@ -315,7 +318,7 @@ class Donger(object):
             cli.devoice(ev.target, ev.source)
             self._coward(cli, ev)
         elif ev.splitd[0] == "!leaderboard" or ev.splitd[0] == "!top":
-            players = Stats.select().order_by(Stats.wins.desc()).limit(3)
+            players = Statsv2.select().order_by(Statsv2.wins.desc()).limit(3)
             c = 1
             for player in players:
                 cli.privmsg(ev.target, "{0} - \002{1}\002 (\002{2}\002)".format(c, player.nick.upper(), player.wins))
@@ -326,9 +329,9 @@ class Donger(object):
             else:
                 nick = ev.source
             try:
-                player = Stats.get(Stats.nick == nick.lower())
-                cli.privmsg(ev.target, "\002{0}\002's stats: \002{1}\002 wins, \002{2}\002 losses, and \002{3}\002 coward quits".format(
-                                        player.realnick, player.wins, player.losses, player.quits))
+                player = Statsv2.get(Statsv2.nick == nick.lower())
+                cli.privmsg(ev.target, "\002{0}\002's stats: \002{1}\002 wins, \002{4}\002 easy wins, \002{2}\002 losses, \002{3}\002 coward quits, \002{5}\002 idle-outs, \002{6}\002 !praises, \002{7}\002 fights started, joined \002{8}\002 fights (\002{9}\002 total fights), \002{10}\002 !hits, \002{11}\002 !heals, \002{12}\002HP of damage dealt and \002{13}\002 damage received.".format(
+                                        player.realnick, player.wins, player.losses, player.quits, player.easywins, player.idleouts, player.praises, player.fights, player.accepts, (player.fights + player.accepts), player.hits, player.heals, player.dcaused, player.dreceived))
             except:
                 cli.privmsg(ev.target, "There are no registered stats for \002{0}\002".format(nick))   
 
@@ -340,17 +343,18 @@ class Donger(object):
             except:
                 raise
 
-    def hit(self, hfrom, to, modifier="none"):
-        try:
-            self.maxheal[hfrom.lower()]
-        except:
-            self.maxheal[hfrom.lower()] = 44
+    def hit(self, hfrom, to, modifier=None):
+        if modifier == None and self.turn.lower() != hfrom.lower():
+            return
+        self.maxheal[hfrom.lower()] = 44
 
         damage = random.randint(18, 35)
         criticalroll = random.randint(1, 12)
 
         if modifier == "praise":
             criticalroll = 1
+        else:
+            self.countstat(hfrom, "hit")
 
         instaroll = random.randint(1, 50)
         if self.verbose:
@@ -361,6 +365,8 @@ class Donger(object):
         if instaroll == 1:
             self.ascii("instakill")
             self.ascii("rekt")
+            self.countstat(hfrom, "dmg", self.health[to.lower()])
+            self.countstat(to, "gotdmg", self.health[to.lower()])
             self.irc.privmsg(self.primarychan, "\002{0}\002 REKT {1}!".format(self.irc.channels[self.primarychan].users[hfrom.lower()].nick, self.irc.channels[self.primarychan].users[to.lower()].nick))
             #self.win(ev.source, self.health)
             self.health[to.lower()] = -1
@@ -383,6 +389,8 @@ class Donger(object):
                 self.ascii("critical")
             damage = damage * 2
         
+        self.countstat(hfrom, "dmg", damage)
+        self.countstat(to, "gotdmg", damage)
         self.health[to.lower()] -= damage
         if hfrom.lower() == self.irc.nickname.lower() and hfrom.lower() not in self.health:
             fromhp = "999999999"
@@ -406,11 +414,9 @@ class Donger(object):
         
         self.getturn()
     
-    def heal(self, nick, modifier="none"):
-        try:
-            self.maxheal[nick.lower()]
-        except:
-            self.maxheal[nick.lower()] = 44
+    def heal(self, nick, modifier=None):
+        if modifier == None and self.turn.lower() != nick.lower():
+            return
         if self.maxheal[nick.lower()] <= 23:
             self.irc.privmsg(self.primarychan, "Sorry, bro. We don't have enough chopsticks to heal you.")
             return
@@ -418,6 +424,8 @@ class Donger(object):
         if modifier == "praise":
             healing = healing * 2
             self.ascii("whatever")
+        else:
+            self.countstat(nick, "heal")
         
         self.health[nick.lower()] += healing
         self.maxheal[nick.lower()] = self.maxheal[nick.lower()] - 5
@@ -453,20 +461,41 @@ class Donger(object):
     
     # Adds something on the stats
     # ctype = win/loss/quit
-    def countstat(self, nick, ctype):
+    def countstat(self, nick, ctype, amt=0):
         try:
-            stat = Stats.get(Stats.nick == nick.lower())
+            stat = Statsv2.get(Statsv2.nick == nick.lower())
         except:
-            stat = Stats.create(nick=nick.lower(), losses=0, quits=0, wins=0, realnick=nick)
+            stat = Statsv2.create(nick=nick.lower(), losses=0, quits=0, wins=0, idleouts=0, accepts=0,
+            dcaused=0, dreceived=0, easywins=0, fights=0, praises=0, realnick=nick, heals=0, hits=0)
         if ctype == "win":
             stat.wins += 1
         elif ctype == "loss":
             stat.losses += 1
         elif ctype == "quit":
             stat.quits += 1
+        elif ctype == "idleout":
+            stat.idleouts += 1
+        elif ctype == "fight":
+            stat.fights += 1
+        elif ctype == "gotdmg":
+            stat.dreceived += amt
+        elif ctype == "dmg":
+            stat.dcaused += amt
+        elif ctype == "easywin":
+            stat.easywins += 1
+        elif ctype == "accept":
+            stat.accepts += 1
+        elif ctype == "praise":
+            stat.praises += 1
+        elif ctype == "heal":
+            stat.heals += 1
+        elif ctype == "hit":
+            stat.hits += 1
+            
         stat.save()
     
-    def fight(self, cli, fighters):
+    def fight(self, cli, fighters, starter):
+        self.countstat(starter, "fight")
         cli.mode(self.primarychan, "+m")
         self.ascii("fight")
         cli.privmsg(self.primarychan, " V. ".join(fighters).upper())
@@ -479,8 +508,11 @@ class Donger(object):
         cli.privmsg(self.primarychan, "Use !praise [nick] to praise to the donger gods (once per game).")
         cli.voice(self.primarychan, fighters)
         for i in fighters:
+            self.maxheal[i.lower()] = 44
             self.health[i.lower()] = 100
             self.aliveplayers.append(i.lower())
+            if i.lower() != starter.lower():
+                self.countstat(i.lower(), "accept")
         self.haspraised = []
         self.gamerunning = True
         self.getturn()
@@ -544,6 +576,8 @@ class Donger(object):
         self.roundstart = 0
         if stats is True:
             self.countstat(self.irc.channels[self.primarychan].users[winner.lower()].nick, "win")
+        else:
+            self.countstat(self.irc.channels[self.primarychan].users[winner.lower()].nick, "easywin")
     
     def ascii(self, key, fancy=False): #Only used in fights
         if not fancy:
@@ -603,8 +637,11 @@ class Donger(object):
                 if time.time() - self.roundstart > 60:
                     self.irc.privmsg(self.primarychan, "\002{0}\002 forfeits due to idle.".format(self.turn))
                     self.irc.devoice(self.primarychan, self.turn)
+                    self.countstat(self.turn, "idleout")
                     self.aliveplayers.remove(self.turn)
                     self.health[self.turn] = -1
+                    if len(self.aliveplayers) == 1:
+                        self.countstat(self.aliveplayers[0], "easywin")
                     self.getturn()
         
 
@@ -629,6 +666,9 @@ class Statsv2(BaseModel):
     dcaused = peewee.IntegerField() # Total amount of damage caused
     dreceived = peewee.IntegerField() # Total amount of damage received
     praises = peewee.IntegerField() # !praise usage
+    idleouts = peewee.IntegerField() # >:(
+    heals = peewee.IntegerField() # !heal usage
+    hits = peewee.IntegerField() # !hit usage
     
 Statsv2.create_table(True) # Here we create the table
 
