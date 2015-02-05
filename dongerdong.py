@@ -343,7 +343,9 @@ class Donger(object):
             except:
                 raise
 
-    def hit(self, hfrom, to, modifier="none"):
+    def hit(self, hfrom, to, modifier=None):
+        if modifier == None and self.turn.lower() != hfrom.lower():
+            return
         self.maxheal[hfrom.lower()] = 44
 
         damage = random.randint(18, 35)
@@ -412,7 +414,9 @@ class Donger(object):
         
         self.getturn()
     
-    def heal(self, nick, modifier="none"):
+    def heal(self, nick, modifier=None):
+        if modifier == None and self.turn.lower() != nick.lower():
+            return
         if self.maxheal[nick.lower()] <= 23:
             self.irc.privmsg(self.primarychan, "Sorry, bro. We don't have enough chopsticks to heal you.")
             return
