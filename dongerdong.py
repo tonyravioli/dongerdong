@@ -686,6 +686,10 @@ class Donger(object):
             if self.health[self.irc.nickname.lower()] < 45 and self.health[tohit] > 29:
                 if self.verbose:
                     self.irc.privmsg(self.primarychan, "Verbose: AI: Less than 45 HP, opponent more than 30. Healing.")
+                if self.maxheal[self.irc.nickname.lower()] <= 23:
+                    if self.verbose:
+                        self.irc.privmsg(self.primarychan, "Verbose: AI: Not enough chopsticks. Hitting.")
+                    self.hit(self.irc.nickname.lower(), tohit)
                 self.irc.privmsg(self.primarychan, "!heal") 
                 self.heal(self.irc.nickname.lower())
             else:
