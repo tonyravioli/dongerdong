@@ -242,7 +242,7 @@ class Donger(object):
             self.userstats[ev.source.lower()]['hit'] -= self.availdefs[ev.splitd[1].lower()]['hit']
             self.userstats[ev.source.lower()]['chance'] = self.availdefs[ev.splitd[1].lower()]['chance']
             self.nodef.remove(ev.source.lower())
-            cli.privmsg(self.primarychan, "Now you have a {0}!".format(self.availweapons[ev.splitd[1].lower()]['name'] ))
+            cli.privmsg(self.primarychan, "Now you have a {0}!".format(self.availdefs[ev.splitd[1].lower()]['name'] ))
 
         elif ev.splitd[0] == "!weapon":
             if not self.gamerunning:
@@ -265,7 +265,7 @@ class Donger(object):
             
             self.availweapons[ev.splitd[1].lower()]['stock'] -= 1
             self.userstats[ev.source.lower()] = self.availweapons[ev.splitd[1].lower()]
-            self.userstats[ev.source.lower()]['def'] = 0
+            self.userstats[ev.source.lower()]['def'] = 1
             self.userstats[ev.source.lower()]['chance'] = 1
             self.noweap.remove(ev.source.lower())
             cli.privmsg(self.primarychan, "Now you have a {0}!".format(self.availweapons[ev.splitd[1].lower()]['name'] ))
@@ -429,15 +429,15 @@ class Donger(object):
             return
         self.maxheal[hfrom.lower()] = 44
 
-        damage = random.randint(18, 35)
-        criticalroll = random.randint(1, 12)
+        damage = random.randint(5, 11) * self.userstats[hfrom.lower()]['hit']
+        criticalroll = random.randint(1, 16 - self.userstats[hfrom.lower()]['crit'])
 
         if modifier == "praise":
             criticalroll = 1
         else:
             self.countstat(hfrom, "hit")
 
-        instaroll = random.randint(1, 50)
+        instaroll = random.randint(1, 64)
         if self.verbose:
             self.irc.privmsg(self.primarychan, "Verbose: instaroll is {0}/50 (1 for instakill)".format(instaroll))
             self.irc.privmsg(self.primarychan, "Verbose: criticalroll is {0}/12 (1 for critical)".format(criticalroll))
@@ -470,6 +470,9 @@ class Donger(object):
                 self.ascii("critical")
             damage = damage * 2
         
+        if random.randint(1, self.userstats[to.lower()]['chance']) == 1:
+            damage = damage * self.userstats[to.lower()]['def']
+        damage = round(damage, 2)
         self.countstat(hfrom, "dmg", damage)
         self.countstat(to, "gotdmg", damage)
         self.health[to.lower()] -= damage
@@ -621,6 +624,9 @@ class Donger(object):
         cli.privmsg(self.primarychan, "K, NOW EVERYBODY HAS A FUCKING MINUTE TO CHOSE A DEFENSIVE ITEM!")
         self.deflist = []
         self.nodef = copy.copy(self.aliveplayers)
+        for i in self.userstats:
+            if self.userstats[i]['noshield']:
+                self.nodef.remove(i)
         self.availdefs = {}
         poop = 0
         while poop <= (len(fighters)/2) + 1:
