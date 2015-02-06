@@ -43,10 +43,10 @@ class Donger(object):
         # crit = crit chances (15 = always crit)
         # noshield = this weapon won't allow shield (if True)
         self.weapons = [
-            {'name': 'shortsword', 'hit': 1.8, 'crit': 2, 'noshield': False, 'stock': 2},
+            {'name': 'knife', 'hit': 1.8, 'crit': 2, 'noshield': False, 'stock': 2},
             {'name': 'sword', 'hit': 2, 'crit': 4, 'noshield': False, 'stock': 2},
-            {'name': 'smallaxe', 'hit': 1.8, 'crit': 3, 'noshield': False, 'stock': 2},
-            {'name': 'bigaxe', 'hit': 2.3, 'crit': 6, 'noshield': True, 'stock': 2},
+            {'name': 'hatchet', 'hit': 1.8, 'crit': 3, 'noshield': False, 'stock': 2},
+            {'name': 'axe', 'hit': 2.3, 'crit': 6, 'noshield': True, 'stock': 2},
             {'name': 'bow', 'hit': 3.3, 'crit': 7, 'noshield': True, 'stock': 1},
             {'name': 'bat', 'hit': 1.5, 'crit': 1, 'noshield': False, 'stock': 3},
             {'name': 'crossbow', 'hit': 3.5, 'crit': 8, 'noshield': True, 'stock': 1},
