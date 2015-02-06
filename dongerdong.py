@@ -249,7 +249,7 @@ class Donger(object):
             self.availdefs[ev.splitd[1].lower()]['stock'] -= 1
             #self.userstats[ev.source.lower()] = self.availweapons[ev.splitd[0].lower()]
             self.userstats[ev.source.lower()]['def'] = self.availdefs[ev.splitd[1].lower()]['def']
-            self.userstats[ev.source.lower()]['hit'] -= self.availdefs[ev.splitd[1].lower()]['hit']
+            self.userstats[ev.source.lower()]['hit'] = self.userstats[ev.source.lower()]['hit'] * self.availdefs[ev.splitd[1].lower()]['hit']
             self.userstats[ev.source.lower()]['chance'] = self.availdefs[ev.splitd[1].lower()]['chance']
             self.userstats[ev.source.lower()]['deheal'] = self.availdefs[ev.splitd[1].lower()]['deheal']
             self.nodef.remove(ev.source.lower())
@@ -440,7 +440,7 @@ class Donger(object):
         if modifier == None and self.turn.lower() != hfrom.lower():
             return
         self.maxheal[hfrom.lower()] = int(44 * self.userstats[hfrom.lower()]['deheal'])
-
+        print(self.userstats[hfrom.lower()])
         damage = random.randint(12, 18) * self.userstats[hfrom.lower()]['hit']
         criticalroll = random.randint(1, 16 - self.userstats[hfrom.lower()]['crit'])
 
@@ -451,9 +451,9 @@ class Donger(object):
 
         instaroll = random.randint(1, 64)
         if self.verbose:
-            self.irc.privmsg(self.primarychan, "Verbose: instaroll is {0}/50 (1 for instakill)".format(instaroll))
-            self.irc.privmsg(self.primarychan, "Verbose: criticalroll is {0}/12 (1 for critical)".format(criticalroll))
-            self.irc.privmsg(self.primarychan, "Verbose: Regular damage is {0}/35".format(damage))
+            self.irc.privmsg(self.primarychan, "Verbose: instaroll is {0}/64 (1 for instakill)".format(instaroll))
+            self.irc.privmsg(self.primarychan, "Verbose: criticalroll is {0}/{1} (1 for critical)".format(criticalroll, 16 - self.userstats[hfrom.lower()]['crit']))
+            self.irc.privmsg(self.primarychan, "Verbose: Regular damage is {0}/{1}".format(damage, 18 * self.userstats[hfrom.lower()]['hit']))
             
         if instaroll == 1:
             self.ascii("instakill")
@@ -475,7 +475,7 @@ class Donger(object):
             return
         elif criticalroll == 1:
             if self.verbose:
-                self.irc.privmsg(self.primarychan, "Verbose: Critical hit, duplicating damage: {0}/70".format(damage*2))
+                self.irc.privmsg(self.primarychan, "Verbose: Critical hit, duplicating damage: {0}/{1}".format(damage*2, (18 * self.userstats[hfrom.lower()]['hit'])*2))
             if modifier == "praise":
                 self.ascii("FUCK YOU")
             else:
@@ -484,6 +484,8 @@ class Donger(object):
         
         if random.randint(1, self.userstats[to.lower()]['chance']) == 1:
             damage = damage * self.userstats[to.lower()]['def']
+            if self.verbose:
+                self.irc.privmsg(self.primarychan, "Verbose: Absorption {0}, total damage = {1}".format(self.userstats[to.lower()]['def'], damage))
         damage = int(damage)
         self.countstat(hfrom, "dmg", damage)
         self.countstat(to, "gotdmg", damage)
