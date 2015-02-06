@@ -493,6 +493,7 @@ class IRCClient:
         for i in self.channels:
             try:
                 self.channels[i].users[event.target.lower()] = self.channels[i].users[event.source.nick.lower()]
+                self.channels[i].users[event.target.lower()].nick = ev.target
                 del self.channels[i].users[event.source.nick.lower()]
             except:
                 pass
@@ -564,15 +565,14 @@ class Channel(object):
 
 
 class User(object):
-    nick = None
-    ident = None
-    host = None
-    gecos = None
-    op = False
-    voiced = False
-    account = None
-
     def __init__(self, nick, ident, host, gecos, status, account=None):
+        self.nick = None
+        self.ident = None
+        self.host = None
+        self.gecos = None
+        self.op = False
+        self.voiced = False
+        self.account = None
         self.update(nick, ident, host, gecos, status, account)
 
     def update(self, nick, ident, host, gecos, status, account=None):
