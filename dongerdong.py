@@ -43,24 +43,24 @@ class Donger(object):
         # crit = crit chances (15 = always crit)
         # noshield = this weapon won't allow shield (if True)
         self.weapons = [
-            {'name': 'knife', 'hit': 1.8, 'crit': 2, 'noshield': False, 'stock': 2},
-            {'name': 'sword', 'hit': 2, 'crit': 4, 'noshield': False, 'stock': 2},
-            {'name': 'hatchet', 'hit': 1.8, 'crit': 3, 'noshield': False, 'stock': 2},
-            {'name': 'axe', 'hit': 2.3, 'crit': 6, 'noshield': True, 'stock': 2},
-            {'name': 'bow', 'hit': 3.3, 'crit': 7, 'noshield': True, 'stock': 1},
-            {'name': 'bat', 'hit': 1.5, 'crit': 1, 'noshield': False, 'stock': 3},
-            {'name': 'crossbow', 'hit': 3.5, 'crit': 8, 'noshield': True, 'stock': 1},
-            {'name': 'chain', 'hit': 2.7, 'crit': 2, 'noshield': False, 'stock': 1}
+            {'name': 'knife', 'hit': 2, 'crit': 2, 'noshield': False, 'stock': 2},
+            {'name': 'sword', 'hit': 2.6, 'crit': 4, 'noshield': False, 'stock': 2},
+            {'name': 'hatchet', 'hit': 2, 'crit': 3, 'noshield': False, 'stock': 2},
+            {'name': 'axe', 'hit': 2.7, 'crit': 6, 'noshield': True, 'stock': 2},
+            {'name': 'bow', 'hit': 3.5, 'crit': 7, 'noshield': True, 'stock': 1},
+            {'name': 'bat', 'hit': 1.9, 'crit': 1, 'noshield': False, 'stock': 3},
+            {'name': 'crossbow', 'hit': 3.8, 'crit': 8, 'noshield': True, 'stock': 1},
+            {'name': 'chain', 'hit': 3, 'crit': 2, 'noshield': False, 'stock': 1}
         ]
         # hit = hit multiplier (0 = doesn't affect hitting)
         # def = defense (0 = no damage, 1 = full damage)
         # chance = chances of "acting" (1 = always, 2 = 1 every 2, etc)
         # deheal = reduction of the healings
         self.shields = [
-            {'name': 'shield', 'def': 0.60, 'hit': 0.95, 'chance': 2, 'deheal': 1, 'stock': 3},
-            {'name': 'leatherset', 'def': 0.75, 'hit': 0.98, 'chance': 1, 'deheal': 0.98, 'stock': 3},
-            {'name': 'chainmail', 'def': 0.55, 'hit': 0.9, 'chance': 1, 'deheal': 0.9, 'stock': 2},
-            {'name': 'platearmor', 'def': 0.45, 'hit': 0.8, 'chance': 1, 'deheal': 0.8, 'stock': 2}
+            {'name': 'shield', 'def': 0.75, 'hit': 0.95, 'chance': 2, 'deheal': 1, 'stock': 3},
+            {'name': 'leatherset', 'def': 0.80, 'hit': 0.98, 'chance': 1, 'deheal': 0.98, 'stock': 3},
+            {'name': 'chainmail', 'def': 0.65, 'hit': 0.9, 'chance': 1, 'deheal': 0.9, 'stock': 2},
+            {'name': 'platearmor', 'def': 0.60, 'hit': 0.8, 'chance': 1, 'deheal': 0.8, 'stock': 2}
         ]
         
         # thread for timeouts
@@ -440,7 +440,7 @@ class Donger(object):
             return
         self.maxheal[hfrom.lower()] = 44 * self.userstats[hfrom.lower()]['deheal']
 
-        damage = random.randint(5, 11) * self.userstats[hfrom.lower()]['hit']
+        damage = random.randint(7, 14) * self.userstats[hfrom.lower()]['hit']
         criticalroll = random.randint(1, 16 - self.userstats[hfrom.lower()]['crit'])
 
         if modifier == "praise":
