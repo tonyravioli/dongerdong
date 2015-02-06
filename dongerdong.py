@@ -608,7 +608,7 @@ class Donger(object):
             self.aliveplayers.append(i.lower())
             if i.lower() != starter.lower():
                 self.countstat(i.lower(), "accept")
-            self.userstats[i] = {'hit': 1, 'def': 1, 'crit': 0, 'chance': 0, 'deheal': 1, 'noshield': False}
+            self.userstats[i.lower()] = {'hit': 1, 'def': 1, 'crit': 0, 'chance': 0, 'deheal': 1, 'noshield': False}
         
         self.haspraised = []
         cli.privmsg(self.primarychan, "EVERYBODY HAS ONE MINUTE TO CHOOSE A WEAPON!!!!")
