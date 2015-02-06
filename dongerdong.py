@@ -278,6 +278,7 @@ class Donger(object):
             self.userstats[ev.source.lower()] = self.availweapons[ev.splitd[1].lower()]
             self.userstats[ev.source.lower()]['def'] = 1
             self.userstats[ev.source.lower()]['chance'] = 1
+            self.userstats[ev.source.lower()]['deheal'] = 1
             self.noweap.remove(ev.source.lower())
             cli.privmsg(self.primarychan, "Now you have a {0}!".format(self.availweapons[ev.splitd[1].lower()]['name'] ))
             
