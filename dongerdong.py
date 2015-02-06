@@ -47,9 +47,9 @@ class Donger(object):
             {'name': 'sword', 'hit': 2, 'crit': 4, 'noshield': False, 'stock': 2},
             {'name': 'hatchet', 'hit': 1.9, 'crit': 3, 'noshield': False, 'stock': 2},
             {'name': 'axe', 'hit': 2.2, 'crit': 6, 'noshield': True, 'stock': 2},
-            {'name': 'bow', 'hit': 3, 'crit': 7, 'noshield': True, 'stock': 1},
+            {'name': 'bow', 'hit': 2.6, 'crit': 7, 'noshield': True, 'stock': 1},
             {'name': 'bat', 'hit': 1.7, 'crit': 1, 'noshield': False, 'stock': 3},
-            {'name': 'crossbow', 'hit': 3.2, 'crit': 8, 'noshield': True, 'stock': 1},
+            {'name': 'crossbow', 'hit': 2.7, 'crit': 8, 'noshield': True, 'stock': 1},
             {'name': 'chain', 'hit': 2.3, 'crit': 2, 'noshield': False, 'stock': 1}
         ]
         # hit = hit multiplier (0 = doesn't affect hitting)
@@ -59,8 +59,8 @@ class Donger(object):
         self.shields = [
             {'name': 'shield', 'def': 0.75, 'hit': 0.95, 'chance': 2, 'deheal': 1, 'stock': 3},
             {'name': 'leatherset', 'def': 0.80, 'hit': 0.98, 'chance': 1, 'deheal': 0.98, 'stock': 3},
-            {'name': 'chainmail', 'def': 0.65, 'hit': 0.9, 'chance': 1, 'deheal': 0.9, 'stock': 2},
-            {'name': 'platearmor', 'def': 0.60, 'hit': 0.8, 'chance': 1, 'deheal': 0.8, 'stock': 2}
+            {'name': 'chainmail', 'def': 0.70, 'hit': 0.9, 'chance': 1, 'deheal': 0.9, 'stock': 2},
+            {'name': 'platearmor', 'def': 0.65, 'hit': 0.8, 'chance': 1, 'deheal': 0.8, 'stock': 2}
         ]
         
         # thread for timeouts
