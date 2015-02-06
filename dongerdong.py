@@ -43,12 +43,12 @@ class Donger(object):
         # crit = crit chances (15 = always crit)
         # noshield = this weapon won't allow shield (if True)
         self.weapons = [
-            {'name': 'knife', 'hit': 2, 'crit': 2, 'noshield': False, 'stock': 2},
-            {'name': 'sword', 'hit': 2.6, 'crit': 4, 'noshield': False, 'stock': 2},
-            {'name': 'hatchet', 'hit': 2, 'crit': 3, 'noshield': False, 'stock': 2},
+            {'name': 'knife', 'hit': 2.8, 'crit': 3, 'noshield': False, 'stock': 2},
+            {'name': 'sword', 'hit': 3.1, 'crit': 4, 'noshield': False, 'stock': 2},
+            {'name': 'hatchet', 'hit': 2.4, 'crit': 3, 'noshield': False, 'stock': 2},
             {'name': 'axe', 'hit': 2.7, 'crit': 6, 'noshield': True, 'stock': 2},
             {'name': 'bow', 'hit': 3.5, 'crit': 7, 'noshield': True, 'stock': 1},
-            {'name': 'bat', 'hit': 1.9, 'crit': 1, 'noshield': False, 'stock': 3},
+            {'name': 'bat', 'hit': 2.1, 'crit': 1, 'noshield': False, 'stock': 3},
             {'name': 'crossbow', 'hit': 3.8, 'crit': 8, 'noshield': True, 'stock': 1},
             {'name': 'chain', 'hit': 3, 'crit': 2, 'noshield': False, 'stock': 1}
         ]
@@ -440,7 +440,7 @@ class Donger(object):
             return
         self.maxheal[hfrom.lower()] = 44 * self.userstats[hfrom.lower()]['deheal']
 
-        damage = random.randint(7, 14) * self.userstats[hfrom.lower()]['hit']
+        damage = random.randint(7, 16) * self.userstats[hfrom.lower()]['hit']
         criticalroll = random.randint(1, 16 - self.userstats[hfrom.lower()]['crit'])
 
         if modifier == "praise":
