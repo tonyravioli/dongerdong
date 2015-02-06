@@ -438,9 +438,9 @@ class Donger(object):
     def hit(self, hfrom, to, modifier=None):
         if modifier == None and self.turn.lower() != hfrom.lower():
             return
-        self.maxheal[hfrom.lower()] = 44 * self.userstats[hfrom.lower()]['deheal']
+        self.maxheal[hfrom.lower()] = int(44 * self.userstats[hfrom.lower()]['deheal'])
 
-        damage = random.randint(7, 16) * self.userstats[hfrom.lower()]['hit']
+        damage = random.randint(12, 20) * self.userstats[hfrom.lower()]['hit']
         criticalroll = random.randint(1, 16 - self.userstats[hfrom.lower()]['crit'])
 
         if modifier == "praise":
