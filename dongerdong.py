@@ -214,6 +214,16 @@ class Donger(object):
                 cli.privmsg(self.primarychan, "GET OUT OR I'LL KILL YOU! INTRUDER INTRUDER INTRUDER")
             
             self.heal(ev.source)
+        elif ev.splitd[0] == "!choose":
+            if not self.gamerunning:
+                return
+            if self.deflist != []:
+                ev.splitd[0] = "!shield"
+            elif self.weaponlist != []:
+                ev.splitd[0] = "!weapon"
+            else:
+                return
+            self._pubmsg(cli, ev)
         elif ev.splitd[0] == "!shield":
             if not self.gamerunning:
                 return
