@@ -142,7 +142,7 @@ class Donger(object):
             try: # Check if the challenged user is on the channel..
                 cli.channels[self.primarychan].users[ev.splitd[1]]
             except:
-                cli.privmsg(self.primarychan, "They're not here anymore - maybe they were intimidated by your massive donger.")
+                cli.privmsg(self.primarychan, "They're not here anymore - maybe they were intimidated by your donger.")
                 del self.pending[ev.splitd[1]]
                 return
             
