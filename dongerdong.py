@@ -25,8 +25,10 @@ class Donger(object):
     def __init__(self):
         # For future usage
         self.pending = {} # pending['Polsaker'] = 'ravioli'
+        self.deathmatchpending = {}
         self.health = {} # health['ravioli'] = 69
         self.gamerunning = False
+        self.deathmatch = False
         self.verbose = False
         self.turn = ""
         self._turnleft = []
@@ -80,7 +82,7 @@ class Donger(object):
             finally:
                 self.lastheardfrom[ev.source] = time.time()
                 self.sourcehistory.append(ev.source)
-        if ev.splitd[0] == "!fight":
+        if ev.splitd[0] == "!fight" or ev.splitd[0] == "!deathmatch":
             if ev.target in self.auxchans:
                 return
  
@@ -89,14 +91,22 @@ class Donger(object):
                 return
                 
             if len(ev.splitd) == 1 or ev.splitd[1] == "": # I hate you
-                cli.privmsg(self.primarychan, "Can you read? It's !fight <nick> [othernick] ...")
+                cli.privmsg(self.primarychan, "Can you read? It's {0} <nick> [othernick] ...".format(ev.splitd[0]))
                 return
             
             if "--verbose" in ev.splitd:
                 ev.splitd.remove("--verbose")
                 self.verbose = True
                 cli.privmsg(self.primarychan, "Verbose mode activated (Will deactivate when a game ends)")
-
+            if ev.splitd[0] == "!deathmatch":
+                if cli.nickname in ev.splitd:
+                    cli.privmsg(self.primarychan, "Sorry, but {0} is unavailable for a deathmatch.".format(cli.nickname))
+                    return
+                elif len(ev.splitd) != 2:
+                    cli.privmsg(self.primarychan, "Deathmatches are 1 v 1 only.")
+                    return
+                else:
+                    self.deathmatch = True
             
             players = copy.copy(ev.splitd)
             del players[0]
@@ -115,6 +125,9 @@ class Donger(object):
                 pplayers.append(cli.channels[self.primarychan].users[i.lower()].nick)
             pplayers.append(ev.source)
             self.pending[ev.source.lower()] = pplayers
+            if self.deathmatch == True:
+                self.deathmatchpending[ev.source.lower()] = ev.splitd[1]
+
             self._paccept[ev.source2.nick.lower()] = copy.copy(pplayers)
             self._paccept[ev.source2.nick.lower()].remove(ev.source)
             if cli.nickname.lower() in players:
@@ -126,6 +139,8 @@ class Donger(object):
             
             cli.privmsg(self.primarychan, "{1}: \002{0}\002 has challenged you. To accept, use '!accept {0}'".format(ev.source, ", ".join(self._paccept[ev.source2.nick.lower()])))
         elif ev.splitd[0] == "!accept":
+            self.deathmatch = False #We'll do this and check later if it's a deathmatch.
+
             if self.gamerunning:
                 cli.privmsg(self.primarychan, "WAIT TILL THIS FUCKING GAME ENDS")
                 return
@@ -149,8 +164,13 @@ class Donger(object):
             
             self._paccept[ev.splitd[1].lower()].remove(ev.source)
             if self._paccept[ev.splitd[1].lower()] == []:
+                try:
+                    if self.deathmatchpending[ev.splitd[1].lower()] == ev.source:
+                        self.deathmatch = True
+                except IndexError:
+                    self.deathmatch = False
                 # Start the fight!!!
-                self.fight(cli, self.pending[ev.splitd[1]], ev.splitd[1])
+                self.fight(cli, self.pending[ev.splitd[1]], ev.splitd[1], self.deathmatch)
                 del self.pending[ev.splitd[1]]
                 del self._paccept[ev.splitd[1].lower()]
         elif ev.splitd[0] == "!hit":
@@ -381,6 +401,7 @@ class Donger(object):
             self.countstat(hfrom, "hit")
 
         instaroll = random.randint(1, 50)
+
         if self.verbose:
             self.irc.privmsg(self.primarychan, "Verbose: instaroll is {0}/50 (1 for instakill)".format(instaroll))
             self.irc.privmsg(self.primarychan, "Verbose: criticalroll is {0}/12 (1 for critical)".format(criticalroll))
@@ -402,6 +423,8 @@ class Donger(object):
             self.getturn()
             self.countstat(self.irc.channels[self.primarychan].users[to.lower()].nick, "loss")
             if to.lower() != self.irc.nickname.lower():
+                if self.deathmatch == True:
+                    self.irc.privmsg("CHANSERV", "AKICK {0} ADD *!*@{1} !T 6h FUCKIN REKT| Lost deathmatch".format(self.primarychan, self.irc.channels[self.primarychan].users[to.lower()].host))
                 self.irc.kick(self.primarychan, to, "REKT")
             return
         elif criticalroll == 1:
@@ -433,8 +456,9 @@ class Donger(object):
                 pass
             self.countstat(self.irc.channels[self.primarychan].users[to.lower()].nick, "loss")
             if to.lower() != self.irc.nickname.lower():
+                if self.deathmatch == True:
+                    self.irc.privmsg("CHANSERV", "AKICK {0} ADD *!*@{1} !T 6h FUCKIN REKT| Lost deathmatch".format(self.primarychan, self.irc.channels[self.primarychan].users[to.lower()].host))
                 self.irc.kick(self.primarychan, to, "REKT")
-            
         
         self.getturn()
     
@@ -518,7 +542,7 @@ class Donger(object):
             
         stat.save()
     
-    def fight(self, cli, fighters, starter):
+    def fight(self, cli, fighters, starter, deathmatch = False):
         self.countstat(starter, "fight")
         cli.mode(self.primarychan, "+m")
 
@@ -607,6 +631,7 @@ class Donger(object):
         self.health = {}
         self._turnleft = []
         self.gamerunning = False
+        self.deathmatch = False
         self.turn = 0
         self.roundstart = 0
         if stats is True:
