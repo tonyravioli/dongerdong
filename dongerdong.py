@@ -219,7 +219,7 @@ class Donger(object):
                 nick = ev.source.lower()
 
             praiseroll=random.randint(1, 3)
-            self.countstat(nick, "praise")
+            self.countstat(ev.source.lower(), "praise")
             self.haspraised.append(ev.source.lower())
             if nick.lower() == cli.nickname.lower():
                 praiseroll = 2
