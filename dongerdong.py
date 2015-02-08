@@ -497,7 +497,7 @@ class Donger(object):
     def fight(self, cli, fighters, starter):
         self.countstat(starter, "fight")
         cli.mode(self.primarychan, "+m")
-        self.ascii("fight")
+        self.ascii("FIGHT")
         cli.privmsg(self.primarychan, " V. ".join(fighters).upper())
         cli.privmsg(self.primarychan, "RULES:")
         cli.privmsg(self.primarychan, "1. Wait your turn. One person at a time.")
@@ -579,11 +579,8 @@ class Donger(object):
         else:
             self.countstat(self.irc.channels[self.primarychan].users[winner.lower()].nick, "easywin")
     
-    def ascii(self, key, fancy=False): #Only used in fights
-        if not fancy:
-            self.irc.privmsg(self.primarychan, Figlet("smslant").renderText(key.upper()))
-        else:
-            self.irc.privmsg(self.primarychan, Figlet(random.choice(['slant', 'smslant'])).renderText(key.upper()))
+    def ascii(self, key, font="smslant"): #Only used in fights
+        self.irc.privmsg(self.primarychan, Figlet(font).renderText(key.upper()))
     
     def randomLine(self, type):
         if type == "excuse":
