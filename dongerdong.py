@@ -346,7 +346,26 @@ class Donger(object):
 
     def _privmsg(self, cli, ev):
         if ev.splitd[0] == "!join":
+            self.join(cli, ev.source)
             cli.privmsg(ev.source, "Testing")
+
+    def join(self, cli, fighter):
+        if not self.gamerunning:
+            cli.privmsg(ev.source, "THE FUCKING GAME IS NOT RUNNING")
+            return
+        if fighter in self.aliveplayers:
+            cli.privmsg(ev.source, "You're already playing, you dumb shit.")
+            return
+        self.playershealth = []
+        for p in self.aliveplayers:
+            self.playershealth.append(self.health[p])
+
+        #Set joining player's health to the average health of current players
+        self.health[fighter.lower()] = sum(self.playershealth, 0.0) / len(self.playershealth)
+        self.maxheal[fighter.lower()] = 44
+        self.aliveplayers.append(fighter.lower())
+        cli.voice(self.primarychan, fighter)
+        cli.privmsg(self.primarychan, "\002{0}\002 JOINS THE FIGHT".format(fighter.upper()))
 
 
     def hit(self, hfrom, to, modifier=None):
