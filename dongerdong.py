@@ -497,8 +497,11 @@ class Donger(object):
     def fight(self, cli, fighters, starter):
         self.countstat(starter, "fight")
         cli.mode(self.primarychan, "+m")
-        self.ascii("FIGHT")
-        cli.privmsg(self.primarychan, " V. ".join(fighters).upper())
+
+        if len(fighters) == 2:
+            self.ascii(" V. ".join(fighters).upper(), "mini")
+        else:
+            cli.privmsg(self.primarychan, " V. ".join(fighters).upper())
         cli.privmsg(self.primarychan, "RULES:")
         cli.privmsg(self.primarychan, "1. Wait your turn. One person at a time.")
         cli.privmsg(self.primarychan, "2. Be a dick about it.")
@@ -506,6 +509,7 @@ class Donger(object):
         cli.privmsg(self.primarychan, "Use !hit [nick] to strike.")
         cli.privmsg(self.primarychan, "Use !heal to heal yourself.")
         cli.privmsg(self.primarychan, "Use !praise [nick] to praise to the donger gods (once per game).")
+        self.ascii("FIGHT", "usaflag")
         cli.voice(self.primarychan, fighters)
         for i in fighters:
             self.maxheal[i.lower()] = 44
