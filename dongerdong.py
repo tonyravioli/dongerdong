@@ -37,31 +37,6 @@ class Donger(object):
         self.haspraised = []
         self.lastheardfrom = {}
         self.sourcehistory = []
-        self.userstats = {}
-        # stock = amount of weapons available
-        # hit = hit multiplier (base = 7 ~ 14)
-        # crit = crit chances (15 = always crit)
-        # noshield = this weapon won't allow shield (if True)
-        self.weapons = [
-            {'name': 'knife', 'hit': 1.8, 'crit': 3, 'noshield': False, 'stock': 2},
-            {'name': 'sword', 'hit': 2, 'crit': 4, 'noshield': False, 'stock': 2},
-            {'name': 'hatchet', 'hit': 1.9, 'crit': 3, 'noshield': False, 'stock': 2},
-            {'name': 'axe', 'hit': 2.2, 'crit': 6, 'noshield': True, 'stock': 2},
-            {'name': 'bow', 'hit': 2.6, 'crit': 7, 'noshield': True, 'stock': 1},
-            {'name': 'bat', 'hit': 1.7, 'crit': 1, 'noshield': False, 'stock': 3},
-            {'name': 'crossbow', 'hit': 2.7, 'crit': 8, 'noshield': True, 'stock': 1},
-            {'name': 'chain', 'hit': 2.3, 'crit': 2, 'noshield': False, 'stock': 1}
-        ]
-        # hit = hit multiplier (0 = doesn't affect hitting)
-        # def = defense (0 = no damage, 1 = full damage)
-        # chance = chances of "acting" (1 = always, 2 = 1 every 2, etc)
-        # deheal = reduction of the healings
-        self.shields = [
-            {'name': 'shield', 'def': 0.75, 'hit': 0.95, 'chance': 2, 'deheal': 1, 'stock': 3},
-            {'name': 'leatherset', 'def': 0.80, 'hit': 0.98, 'chance': 1, 'deheal': 0.98, 'stock': 3},
-            {'name': 'chainmail', 'def': 0.70, 'hit': 0.9, 'chance': 1, 'deheal': 0.9, 'stock': 2},
-            {'name': 'platearmor', 'def': 0.65, 'hit': 0.8, 'chance': 1, 'deheal': 0.8, 'stock': 2}
-        ]
         
         # thread for timeouts
         _thread.start_new_thread(self._timeouts, ())
@@ -93,6 +68,7 @@ class Donger(object):
     
     def _pubmsg(self, cli, ev):
         # Processing commands here
+
         if ev.splitd[0].startswith("!") or ev.arguments[0].startswith(cli.nickname):
             try:
                 if ev.target != self.primarychan and ev.source == self.sourcehistory[-2] and ev.source == self.sourcehistory[-1] and time.time() - self.lastheardfrom[ev.source] < 10:
@@ -214,75 +190,7 @@ class Donger(object):
                 cli.privmsg(self.primarychan, "GET OUT OR I'LL KILL YOU! INTRUDER INTRUDER INTRUDER")
             
             self.heal(ev.source)
-        elif ev.splitd[0] == "!choose":
-            if not self.gamerunning:
-                return
-            if self.deflist != []:
-                ev.splitd[0] = "!shield"
-            elif self.weaponlist != []:
-                ev.splitd[0] = "!weapon"
-            else:
-                return
-            self._pubmsg(cli, ev)
-        elif ev.splitd[0] == "!shield":
-            if not self.gamerunning:
-                return
-            if self.deflist == []:
-                cli.privmsg(self.primarychan, "You shall not choose weapons now")
-                return
-            
-            if ev.source.lower() not in self.nodef:
-                cli.privmsg(self.primarychan, "NOPE NOPE, YOU'LL KEEP THAT ONE")
-                return
-            
-            if ev.splitd[1].lower() not in self.deflist:
-                cli.privmsg(self.primarychan, "I don't have that one")
-                return
-            
-            if self.availdefs[ev.splitd[1].lower()]['stock'] == 0:
-                cli.privmsg(self.primarychan, "I ran out of those")
-                return
-            if self.userstats[ev.source.lower()]['noshield'] is True:
-                cli.privmsg(self.primarychan, "You can't use a shield with that weapon")
-                return
-                
-            self.availdefs[ev.splitd[1].lower()]['stock'] -= 1
-            #self.userstats[ev.source.lower()] = self.availweapons[ev.splitd[0].lower()]
-            self.userstats[ev.source.lower()]['def'] = self.availdefs[ev.splitd[1].lower()]['def']
-            self.userstats[ev.source.lower()]['hit'] = self.userstats[ev.source.lower()]['hit'] * self.availdefs[ev.splitd[1].lower()]['hit']
-            self.userstats[ev.source.lower()]['chance'] = self.availdefs[ev.splitd[1].lower()]['chance']
-            self.userstats[ev.source.lower()]['deheal'] = self.availdefs[ev.splitd[1].lower()]['deheal']
-            self.nodef.remove(ev.source.lower())
-            cli.privmsg(self.primarychan, "Now you have a {0}!".format(self.availdefs[ev.splitd[1].lower()]['name'] ))
-
-        elif ev.splitd[0] == "!weapon":
-            if not self.gamerunning:
-                return
-            if self.weaponlist == []:
-                cli.privmsg(self.primarychan, "You shall not choose weapons now")
-                return
-            
-            if ev.source.lower() not in self.noweap:
-                cli.privmsg(self.primarychan, "NOPE NOPE, YOU'LL KEEP THAT ONE")
-                return
-        
-            if ev.splitd[1].lower() not in self.weaponlist:
-                cli.privmsg(self.primarychan, "I don't have that one")
-                return
-            
-            if self.availweapons[ev.splitd[1].lower()]['stock'] == 0:
-                cli.privmsg(self.primarychan, "I ran out of those")
-                return
-            
-            self.availweapons[ev.splitd[1].lower()]['stock'] -= 1
-            self.userstats[ev.source.lower()] = self.availweapons[ev.splitd[1].lower()]
-            self.userstats[ev.source.lower()]['def'] = 1
-            self.userstats[ev.source.lower()]['chance'] = 1
-            self.userstats[ev.source.lower()]['deheal'] = 1
-            self.noweap.remove(ev.source.lower())
-            cli.privmsg(self.primarychan, "Now you have a {0}!".format(self.availweapons[ev.splitd[1].lower()]['name'] ))
-            
-        elif ev.splitd[0] == "!praise": 
+        elif ev.splitd[0] == "!praise":
             if not self.gamerunning:
                 return
                 
@@ -310,7 +218,7 @@ class Donger(object):
                 nick = ev.source.lower()
 
             praiseroll=random.randint(1, 3)
-            self.countstat(ev.source.lower(), "praise")
+            self.countstat(nick, "praise")
             self.haspraised.append(ev.source.lower())
             if nick.lower() == cli.nickname.lower():
                 praiseroll = 2
@@ -376,7 +284,6 @@ class Donger(object):
             cli.privmsg(ev.source, "  !fight <nickname> [othernicknames]: Challenge another player")
             cli.privmsg(ev.source, "  !ascii <text>: Turns any text 13 characters or less into ascii art")
             cli.privmsg(ev.source, "  !cancel: Cancels a !fight")
-            cli.privmsg(ev.source, "  !accept <player> [role]: Accepts a fight")
             cli.privmsg(ev.source, "  !reject <nick>: Cowardly rejects a !fight")
             cli.privmsg(ev.source, "Commands available everywhere:")
             cli.privmsg(ev.source, "  !raise: Commands users to raise their dongers")
@@ -439,21 +346,21 @@ class Donger(object):
     def hit(self, hfrom, to, modifier=None):
         if modifier == None and self.turn.lower() != hfrom.lower():
             return
-        self.maxheal[hfrom.lower()] = int(44 * self.userstats[hfrom.lower()]['deheal'])
-        print(self.userstats[hfrom.lower()])
-        damage = random.randint(12, 18) * self.userstats[hfrom.lower()]['hit']
-        criticalroll = random.randint(1, 16 - self.userstats[hfrom.lower()]['crit'])
+        self.maxheal[hfrom.lower()] = 44
+
+        damage = random.randint(18, 35)
+        criticalroll = random.randint(1, 12)
 
         if modifier == "praise":
             criticalroll = 1
         else:
             self.countstat(hfrom, "hit")
 
-        instaroll = random.randint(1, 64)
+        instaroll = random.randint(1, 50)
         if self.verbose:
-            self.irc.privmsg(self.primarychan, "Verbose: instaroll is {0}/64 (1 for instakill)".format(instaroll))
-            self.irc.privmsg(self.primarychan, "Verbose: criticalroll is {0}/{1} (1 for critical)".format(criticalroll, 16 - self.userstats[hfrom.lower()]['crit']))
-            self.irc.privmsg(self.primarychan, "Verbose: Regular damage is {0}/{1}".format(damage, 18 * self.userstats[hfrom.lower()]['hit']))
+            self.irc.privmsg(self.primarychan, "Verbose: instaroll is {0}/50 (1 for instakill)".format(instaroll))
+            self.irc.privmsg(self.primarychan, "Verbose: criticalroll is {0}/12 (1 for critical)".format(criticalroll))
+            self.irc.privmsg(self.primarychan, "Verbose: Regular damage is {0}/35".format(damage))
             
         if instaroll == 1:
             self.ascii("instakill")
@@ -475,18 +382,13 @@ class Donger(object):
             return
         elif criticalroll == 1:
             if self.verbose:
-                self.irc.privmsg(self.primarychan, "Verbose: Critical hit, duplicating damage: {0}/{1}".format(damage*2, (18 * self.userstats[hfrom.lower()]['hit'])*2))
+                self.irc.privmsg(self.primarychan, "Verbose: Critical hit, duplicating damage: {0}/70".format(damage*2))
             if modifier == "praise":
                 self.ascii("FUCK YOU")
             else:
                 self.ascii("critical")
             damage = damage * 2
         
-        if random.randint(1, self.userstats[to.lower()]['chance']) == 1:
-            damage = damage * self.userstats[to.lower()]['def']
-            if self.verbose:
-                self.irc.privmsg(self.primarychan, "Verbose: Absorption {0}, total damage = {1}".format(self.userstats[to.lower()]['def'], damage))
-        damage = int(damage)
         self.countstat(hfrom, "dmg", damage)
         self.countstat(to, "gotdmg", damage)
         self.health[to.lower()] -= damage
@@ -515,7 +417,7 @@ class Donger(object):
     def heal(self, nick, modifier=None):
         if modifier == None and self.turn.lower() != nick.lower():
             return
-        if self.maxheal[nick.lower()] <= 20:
+        if self.maxheal[nick.lower()] <= 23:
             self.irc.privmsg(self.primarychan, "Sorry, bro. We don't have enough chopsticks to heal you.")
             return
         healing = random.randint(22, self.maxheal[nick.lower()])
@@ -606,79 +508,13 @@ class Donger(object):
         cli.privmsg(self.primarychan, "Use !praise [nick] to praise to the donger gods (once per game).")
         cli.voice(self.primarychan, fighters)
         for i in fighters:
-            self.maxheal[i.lower()] = random.randint(35, 40)
+            self.maxheal[i.lower()] = 44
             self.health[i.lower()] = 100
             self.aliveplayers.append(i.lower())
             if i.lower() != starter.lower():
                 self.countstat(i.lower(), "accept")
-            self.userstats[i.lower()] = {'hit': 1, 'def': 1, 'crit': 0, 'chance': 0, 'deheal': 1, 'noshield': False}
-        
         self.haspraised = []
-        cli.privmsg(self.primarychan, "EVERYBODY HAS ONE MINUTE TO CHOOSE A WEAPON!!!!")
-        self.weaponlist = []
-        self.noweap = copy.copy(self.aliveplayers)
-        self.availweapons = {}
-        poop = 0
         self.gamerunning = True
-        while poop <= (len(fighters)/2) + 1:
-            i = random.choice(self.weapons)
-            if i['name'] in self.weaponlist:
-                continue
-            self.weaponlist.append(i['name'])
-            self.availweapons[i['name']] = i
-            poop += 1
-        cli.privmsg(self.primarychan, "WEAPONS AVAILABLE: {0}. Choose one with !weapon <name>".format(", ".join(self.weaponlist).upper()))
-        if cli.nickname in fighters and self.userstats[cli.nickname.lower()]['noshield'] is False:
-            # too lazy to do it right
-            dongweapon = random.choice(self.weaponlist)
-            cli.privmsg(self.primarychan, "!weapon " + dongweapon)
-            self._pubmsg(cli, client.Event("pubmsg", client.NickMask(cli.nickname + "!dong@dong"), self.primarychan, ["!weapon " + dongweapon]))
-        kkk = 0
-        while kkk != 60:
-            time.sleep(1)
-            if self.noweap == []:
-                break
-            kkk += 1
-        
-        doweap = False
-        for i in self.userstats:
-            if self.userstats[i]['noshield'] is False:
-                doweap = True
-                break
-        
-        if doweap:
-            self.noweap = []
-            cli.privmsg(self.primarychan, "K, NOW EVERYBODY HAS A FUCKING MINUTE TO CHOSE A DEFENSIVE ITEM!")
-            self.deflist = []
-            self.nodef = copy.copy(self.aliveplayers)
-            for i in self.userstats:
-                if self.userstats[i]['noshield']:
-                    self.nodef.remove(i)
-            self.availdefs = {}
-            poop = 0
-            while poop <= (len(fighters)/2) + 1:
-                i = random.choice(self.shields)
-                if i['name'] in self.deflist:
-                    continue
-                self.deflist.append(i['name'])
-                self.availdefs[i['name']] = i
-                poop += 1
-                
-            cli.privmsg(self.primarychan, "SHIELDS AVAILABLE: {0}. Choose one with !shield <name>".format(", ".join(self.deflist).upper()))
-            if cli.nickname in fighters:
-                # too lazy to do it right
-                dongweapon = random.choice(self.deflist)
-                cli.privmsg(self.primarychan, "!shield " + dongweapon)
-                self._pubmsg(cli, client.Event("pubmsg", client.NickMask(cli.nickname + "!dong@dong"), self.primarychan, ["!shield " + dongweapon]))
-            kkk = 0
-            while kkk != 60:
-                time.sleep(1)
-                if self.nodef == []:
-                    break
-                kkk += 1
-            self.nodef = []
-        cli.privmsg(self.primarychan, "K, NOW FUCKING FIGHT!!")
-        
         self.getturn()
         
     def getturn(self):
@@ -718,10 +554,6 @@ class Donger(object):
             if self.health[self.irc.nickname.lower()] < 45 and self.health[tohit] > 29:
                 if self.verbose:
                     self.irc.privmsg(self.primarychan, "Verbose: AI: Less than 45 HP, opponent more than 30. Healing.")
-                if self.maxheal[self.irc.nickname.lower()] <= 20:
-                    if self.verbose:
-                        self.irc.privmsg(self.primarychan, "Verbose: AI: Not enough chopsticks. Hitting.")
-                    self.hit(self.irc.nickname.lower(), tohit)
                 self.irc.privmsg(self.primarychan, "!heal") 
                 self.heal(self.irc.nickname.lower())
             else:
@@ -854,3 +686,4 @@ while dongerdong.irc.connected == True and dongerdong.irc.imayreconnect == True:
         dongerdong.irc.send("QUIT :{0}".format(excuse.upper()), True)
         print("exit due to keyboard interrupt")
         break  # >:D PURE EVIL
+
