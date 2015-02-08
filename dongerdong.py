@@ -347,7 +347,6 @@ class Donger(object):
     def _privmsg(self, cli, ev):
         if ev.splitd[0] == "!join":
             self.join(cli, ev.source)
-            cli.privmsg(ev.source, "Testing")
 
     def join(self, cli, fighter):
         if not self.gamerunning:
