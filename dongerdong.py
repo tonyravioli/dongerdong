@@ -59,9 +59,11 @@ class Donger(object):
         self.irc.addhandler("authenticate", self._auth) # for SASL!!!1
         self.irc.addhandler("welcome", self._welcome) # For the autojoin
         self.irc.addhandler("pubmsg", self._pubmsg) # For commands
+        self.irc.addhandler("privmsg", self._privmsg) # For private commands
         self.irc.addhandler("part", self._coward) # Coward extermination
         self.irc.addhandler("quit", self._coward) # ^
         self.irc.addhandler("join", self._join) # For custom messages on join
+
         
         # Connect to the IRC
         self.irc.connect()
@@ -78,7 +80,6 @@ class Donger(object):
             finally:
                 self.lastheardfrom[ev.source] = time.time()
                 self.sourcehistory.append(ev.source)
-
         if ev.splitd[0] == "!fight":
             if ev.target in self.auxchans:
                 return
@@ -342,6 +343,11 @@ class Donger(object):
                 cli.privmsg(ev.target, stringtosend)
             except:
                 raise
+
+    def _privmsg(self, cli, ev):
+        if ev.splitd[0] == "!join":
+            cli.privmsg(ev.source, "Testing")
+
 
     def hit(self, hfrom, to, modifier=None):
         if modifier == None and self.turn.lower() != hfrom.lower():
