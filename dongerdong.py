@@ -136,8 +136,10 @@ class Donger(object):
                 if self._paccept[ev.source2.nick.lower()] == []:
                     self.fight(cli, pplayers, ev.source2.nick.lower())
                     return
-            
-            cli.privmsg(self.primarychan, "{1}: \002{0}\002 has challenged you. To accept, use '!accept {0}'".format(ev.source, ", ".join(self._paccept[ev.source2.nick.lower()])))
+            if self.deathmatch = True:
+                cli.privmsg(self.primarychan, "{1}: \002{0}\002 has challenged you to a deathmatch. The loser will be bant for 6 hours. To accept, use '!accept {0}'".format(ev.source, ", ".join(self._paccept[ev.source2.nick.lower()])))
+            else:
+                cli.privmsg(self.primarychan, "{1}: \002{0}\002 has challenged you. To accept, use '!accept {0}'".format(ev.source, ", ".join(self._paccept[ev.source2.nick.lower()])))
         elif ev.splitd[0] == "!accept":
             self.deathmatch = False #We'll do this and check later if it's a deathmatch.
 
@@ -545,7 +547,8 @@ class Donger(object):
     def fight(self, cli, fighters, starter, deathmatch = False):
         self.countstat(starter, "fight")
         cli.mode(self.primarychan, "+m")
-
+        if deathmatch = True:
+            self.ascii("DEATHMATCH")
         if len(fighters) == 2:
             self.ascii(" V. ".join(fighters).upper(), "straight")
         else:
