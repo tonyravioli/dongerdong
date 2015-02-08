@@ -523,7 +523,7 @@ class Donger(object):
         cli.mode(self.primarychan, "+m")
 
         if len(fighters) == 2:
-            self.ascii(" V. ".join(fighters).upper(), "mini")
+            self.ascii(" V. ".join(fighters).upper(), "straight")
         else:
             cli.privmsg(self.primarychan, " V. ".join(fighters).upper())
         cli.privmsg(self.primarychan, "RULES:")
