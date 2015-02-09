@@ -428,6 +428,7 @@ class Donger(object):
                 if self.deathmatch == True:
                     self.irc.privmsg("CHANSERV", "AKICK {0} ADD *!*@{1} !T 6h FUCKIN REKT| Lost deathmatch".format(self.primarychan, self.irc.channels[self.primarychan].users[to.lower()].host))
                 self.irc.kick(self.primarychan, to, "REKT")
+            self.deathmatch = False
             return
         elif criticalroll == 1:
             if self.verbose:
@@ -461,7 +462,7 @@ class Donger(object):
                 if self.deathmatch == True:
                     self.irc.privmsg("CHANSERV", "AKICK {0} ADD *!*@{1} !T 6h FUCKIN REKT| Lost deathmatch".format(self.primarychan, self.irc.channels[self.primarychan].users[to.lower()].host))
                 self.irc.kick(self.primarychan, to, "REKT")
-        
+            self.deathmatch = False
         self.getturn()
     
     def heal(self, nick, modifier=None):
