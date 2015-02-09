@@ -263,8 +263,12 @@ class Donger(object):
             if self.gamerunning:
                 cli.privmsg(self.primarychan, "THE FIGHT WAS ALREADY STARTED, IF YOU'RE A COWARD USE !QUIT")
                 return
+            self.deathmatchpending = {}
+            self.deathmatch = False
             del self.pending[ev.source.lower()]
             del self._paccept[ev.source.lower()]
+            self.deathmatchpending = {}
+            self.deathmatch = False
             cli.privmsg(self.primarychan, "{0}'s fight cancelled".format(ev.source))
         elif ev.splitd[0] == "!reject":
             if self.gamerunning:
