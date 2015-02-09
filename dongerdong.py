@@ -169,7 +169,7 @@ class Donger(object):
                 try:
                     if self.deathmatchpending[ev.splitd[1].lower()] == ev.source:
                         self.deathmatch = True
-                except IndexError:
+                except KeyError:
                     self.deathmatch = False
                 # Start the fight!!!
                 self.fight(cli, self.pending[ev.splitd[1]], ev.splitd[1], self.deathmatch)
