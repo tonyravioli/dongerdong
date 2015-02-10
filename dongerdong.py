@@ -351,6 +351,7 @@ class Donger(object):
             for player in players:
                 cli.privmsg(ev.target, "{0} - \002{1}\002 (\002{2}\002)".format(c, player.nick.upper(), player.wins))
                 c += 1
+            cli.privmsg(ev.target, "More stats are available at http://www.donger.org/stats.php")
         elif ev.splitd[0] == "!mystats" or ev.splitd[0] == "!stats":
             if len(ev.splitd) != 1:
                 nick = ev.splitd[1]
