@@ -310,6 +310,7 @@ class Donger(object):
             cli.privmsg(ev.target, "PM'd you my commands.")
             cli.privmsg(ev.source, "Commands available only in {0}:".format(self.primarychan))
             cli.privmsg(ev.source, "  !fight <nickname> [othernicknames]: Challenge another player")
+            cli.privmsg(ev.source, "  !deathmatch <nickname>: Same as fight, but only 1v1, and loser is bant for 20 minutes.")
             cli.privmsg(ev.source, "  !ascii <text>: Turns any text 13 characters or less into ascii art")
             cli.privmsg(ev.source, "  !cancel: Cancels a !fight")
             cli.privmsg(ev.source, "  !reject <nick>: Cowardly rejects a !fight")
