@@ -107,7 +107,8 @@ class Donger(object):
                     return
                 else:
                     self.deathmatch = True
-            
+            else:
+                self.deathmatch = False
             players = copy.copy(ev.splitd)
             del players[0]
             pplayers = []
