@@ -347,15 +347,13 @@ class Donger(object):
                 return
             cli.devoice(ev.target, ev.source)
             self._coward(cli, ev)
-        elif ev.splitd[0] == "!leaderboard" or ev.splitd[0] == "!top":
-            if ev.target not self.primarychan:
-                return
+        elif ev.splitd[0] == "!top" and ev.target == self.primarychan:
             players = Statsv2.select().order_by(Statsv2.wins.desc()).limit(3)
             c = 1
             for player in players:
                 cli.privmsg(ev.target, "{0} - \002{1}\002 (\002{2}\002)".format(c, player.nick.upper(), player.wins))
                 c += 1
-            cli.privmsg(ev.target, "More stats are available at {0}".format(self.statsurl)
+            cli.privmsg(ev.target, "More stats are available at {0}".format(self.statsurl))
         elif ev.splitd[0] == "!mystats" or ev.splitd[0] == "!stats":
             if len(ev.splitd) != 1:
                 nick = ev.splitd[1]
