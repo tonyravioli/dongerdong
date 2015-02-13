@@ -532,7 +532,7 @@ class Donger(object):
     # Adds something on the stats
     # ctype = win/loss/quit
     def countstat(self, nick, ctype, amt=0):
-        nick = self.irc.channels[self.primarychan.lower()].users[nick.lower].account
+        nick = self.irc.channels[self.primarychan.lower()].users[nick.lower()].account
         try:
             stat = Statsv2.get(Statsv2.nick == nick.lower())
         except:
