@@ -363,14 +363,14 @@ class IRCClient:
             self.mode(channel, mode + " " + users)
         elif type(users) == list:
             f1 = ""
-            count = 1
-            for i in users:
-                f1 += " " + i
-                if count == self.features.modes:
-                    self.mode(channel, "{2}{0} {1}".format(mode[1] * count, f1, mode[0]))
-                    count = 1
-                count += 1
-            self.mode(channel, "{2}{0} {1}".format(mode[1] * (count - 1), f1, mode[0]))
+            
+            while users != []:
+                if len(users[:self.features.modes]) == self.features.modes:
+                    self.mode(channel, "{0}{1} {2}".format(mode[0], mode[1] * self.features.modes, " ".join(users[:self.features.modes])))
+                    users = users[self.features.modes:]
+                else:
+                    self.mode(channel, "{0}{1} {2}".format(mode[0], mode[1] * len(users[:self.features.modes]), " ".join(users[:self.features.modes])))
+                    users = []
         else:
             raise
     
