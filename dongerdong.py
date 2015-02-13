@@ -367,7 +367,7 @@ class Donger(object):
                 nick = ev.splitd[1]
             else:
                 nick = ev.source
-            if cli.channels[ev.source.lower()].users[nick.lower()].account != None:
+            if cli.channels[ev.target.lower()].users[nick.lower()].account != None:
                 nick = cli.channels[ev.target.lower()].users[nick.lower()].account
                 
             try:
