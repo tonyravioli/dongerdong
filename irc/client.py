@@ -388,9 +388,14 @@ class IRCClient:
             self.channels[event.target] = Channel(self, event.target)
         else:
             #print(self.channels)
+            try:
+                account = event.arguments[0]
+            except:
+                account = None
+                
             self.channels[event.target].users[event.source.nick.lower()] = User(
                 event.source.nick, event.source.user, event.source.host,
-                "", "")
+                "", "", account)
 
     def _on_topic(self, myself, event):
         self.channels[event.arguments[0]].topicChange(event.source,
@@ -580,8 +585,7 @@ class User(object):
         self.ident = ident
         self.host = host
         self.gecos = gecos
-
-        if account == "0":
+        if account == "0" or account == "" or account == "*":
             self.account = None
         else:
             self.account = account

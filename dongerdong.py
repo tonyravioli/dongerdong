@@ -66,6 +66,7 @@ class Donger(object):
         self.irc.addhandler("part", self._coward) # Coward extermination
         self.irc.addhandler("quit", self._coward) # ^
         self.irc.addhandler("join", self._join) # For custom messages on join
+        self.irc.addhandler("account", self._account) # account-notify stuff
 
         
         # Connect to the IRC
@@ -95,6 +96,10 @@ class Donger(object):
                 cli.privmsg(self.primarychan, "Can you read? It's {0} <nick> [othernick] ...".format(ev.splitd[0]))
                 return
             
+            if cli.channels[ev.target.lower()].users[ev.source.lower()].account is None:
+                cli.privmsg(self.primarychan, "You must be identified with nickserv to play!")
+                return
+            
             if "--verbose" in ev.splitd:
                 ev.splitd.remove("--verbose")
                 self.verbose = True
@@ -118,6 +123,9 @@ class Donger(object):
                     cli.channels[self.primarychan].users[i.lower()]
                 except:
                     cli.privmsg(self.primarychan, "There's no one named {0} on this channel".format(i))
+                    return
+                if cli.channels[self.primarychan].users[i.lower()].account is None:
+                    cli.privmsg(self.primarychan, "\002{0}\002 is not identified with nickserv!".format(i))
                     return
             
                 if cli.channels[self.primarychan].users[i.lower()].host == ev.source2.host:
@@ -668,7 +676,7 @@ class Donger(object):
     def _connect(self, cli, ev):
         # Starting with the SASL authentication
         # Note: If services are down, the bot won't connect
-        cli.send("CAP REQ :sasl")
+        cli.send("CAP REQ :sasl extended-join account-notify")
         cli.send("AUTHENTICATE PLAIN")
 
     def _join(self, cli, ev):
@@ -693,6 +701,15 @@ class Donger(object):
                                                 .encode()).decode()))
         cli.send("CAP END")
     
+    def _account(self, cli, ev):
+        if ev.target == "*":
+            ev.target = None
+        for i in cli.channels:
+            try:
+                cli.channels[i].users[ev.source.nick.lower()].account = ev.target
+            except:
+                pass
+
     def _welcome(self, cli, ev):
         cli.join(self.config['channel'])
         for channel in self.auxchans:
