@@ -367,8 +367,11 @@ class Donger(object):
                 nick = ev.splitd[1]
             else:
                 nick = ev.source
+            if cli.channels[ev.source.lower()].users[nick.lower()].account != None:
+                nick = cli.channels[ev.source.lower()].users[nick.lower()].account
+                
             try:
-                player = Statsv2.get(Statsv2.nick == nick.lower())
+                player = Statsv2.get(Statsv2.nick == )
                 cli.privmsg(ev.target, "\002{0}\002's stats: \002{1}\002 wins, \002{4}\002 easy wins, \002{2}\002 losses, \002{3}\002 coward quits, \002{5}\002 idle-outs, \002{6}\002 !praises, \002{7}\002 fights started, joined \002{8}\002 fights (\002{9}\002 total fights), \002{10}\002 !hits, \002{11}\002 !heals, \002{12}\002HP of damage dealt and \002{13}\002 damage received. More at {14}".format(
                                         player.realnick, player.wins, player.losses, player.quits, player.easywins, player.idleouts, player.praises, player.fights, player.accepts, (player.fights + player.accepts), player.hits, player.heals, player.dcaused, player.dreceived, self.statsurl))
             except:
@@ -529,6 +532,7 @@ class Donger(object):
     # Adds something on the stats
     # ctype = win/loss/quit
     def countstat(self, nick, ctype, amt=0):
+        nick = self.irc.channels[self.primarychan.lower()].users[nick.lower].account
         try:
             stat = Statsv2.get(Statsv2.nick == nick.lower())
         except:
