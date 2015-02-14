@@ -34,6 +34,7 @@ class Donger(object):
         self._turnleft = []
         self._paccept = {}
         self.aliveplayers = []
+        self.deadplayers = []
         self.maxheal = {} # maxheal['Polsaker'] = -6
         self.roundstart = 0
         self.haspraised = []
@@ -396,6 +397,9 @@ class Donger(object):
         if fighter in self.aliveplayers:
             cli.privmsg(ev.source, "You're already playing, you dumb shit.")
             return
+        if fighter in self.deadplayers:
+            cli.privmsg(ev.source, "You can't rejoin a game after you've been killed.")
+            return
         self.playershealth = []
         for p in self.aliveplayers:
             self.playershealth.append(self.health[p])
@@ -436,6 +440,7 @@ class Donger(object):
             self.irc.privmsg(self.primarychan, "\002{0}\002 REKT {1}!".format(self.irc.channels[self.primarychan].users[hfrom.lower()].nick, self.irc.channels[self.primarychan].users[to.lower()].nick))
             #self.win(ev.source, self.health)
             self.health[to.lower()] = -1
+            self.deadplayers.append(to.lower())
             self.aliveplayers.remove(to.lower())
             try:
                 self._turnleft.remove(to.lower())
@@ -472,6 +477,7 @@ class Donger(object):
             self.ascii("rekt")
             self.irc.privmsg(self.primarychan, "\002{0}\002 REKT {1}!".format(self.irc.channels[self.primarychan].users[hfrom.lower()].nick, self.irc.channels[self.primarychan].users[to.lower()].nick))
             self.aliveplayers.remove(to.lower())
+            self.deadplayers.append(to.lower())
             try:
                 self._turnleft.remove(to.lower())
             except:
@@ -516,6 +522,7 @@ class Donger(object):
                 self.ascii("coward")
                 self.irc.privmsg(self.primarychan, "The coward is dead!")
                 self.aliveplayers.remove(ev.source2.nick.lower())
+                self.deadplayers.append(ev.source2.nick.lower())
                 self.health[ev.source2.nick.lower()] = -1
                 try:
                     self._turnleft.remove(ev.source2.nick.lower())
@@ -591,6 +598,7 @@ class Donger(object):
             if i.lower() != starter.lower():
                 self.countstat(i.lower(), "accept")
         self.haspraised = []
+        self.deadplayers = []
         self.gamerunning = True
         self.getturn()
         
@@ -652,6 +660,7 @@ class Donger(object):
         if len(list(self.health)) > 2:
             self.irc.privmsg(self.primarychan, "{0} REKT {1}!".format(self.irc.channels[self.primarychan].users[winner.lower()].nick, self._dusers(winner)))
         self.aliveplayers = []
+        self.deadplayers = []
         self.health = {}
         self._turnleft = []
         self.gamerunning = False
@@ -729,6 +738,7 @@ class Donger(object):
                     self.irc.devoice(self.primarychan, self.turn)
                     self.countstat(self.turn, "idleout")
                     self.aliveplayers.remove(self.turn)
+                    self.deadplayers.append(self.turn)
                     self.health[self.turn] = -1
                     if len(self.aliveplayers) == 1:
                         self.countstat(self.aliveplayers[0], "easywin")
