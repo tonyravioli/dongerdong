@@ -334,8 +334,10 @@ class Donger(object):
             cli.privmsg(ev.target, self.randomLine("excuse"))
         elif ev.splitd[0] == "!jaden":
             cli.privmsg(ev.target, self.randomLine("jaden"))
-        elif ev.splitd[0] == "!raise" or ev.splitd[0] == "!dong":
+        elif ev.splitd[0] == "!raise":
             cli.privmsg(ev.target, "ヽ༼ຈل͜ຈ༽ﾉ RAISE YOUR DONGERS ヽ༼ຈل͜ຈ༽ﾉ")
+        elif ev.splitd[0] == "!dong":
+            cli.privmsg(ev.target, self.randomLine("donger"))
         elif ev.splitd[0] == "!ascii":
             if ev.target in self.auxchans:
                 return
@@ -682,6 +684,8 @@ class Donger(object):
             file = "excuse_list.txt"
         elif type == "jaden":
             file = "jaden_list.txt"
+        elif type == "donger":
+            file = "listofdongers.txt"
         try:
             return random.choice(list(open(file)))
         except:
