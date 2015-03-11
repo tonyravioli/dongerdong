@@ -330,7 +330,7 @@ class Donger(object):
             cli.privmsg(ev.source, "  !jaden: Outputs random Jaden Smith tweet")
             cli.privmsg(ev.source, "  !stats [player]: Outputs player's game stats (or your own stats)")
             cli.privmsg(ev.source, "  !top: Shows the three players with most wins")
-        elif ev.splitd[0] == "!excuse":
+        elif ev.splitd[0] == "!excuse" or ev.splitd[0].startswith("why"):
             cli.privmsg(ev.target, self.randomLine("excuse"))
         elif ev.splitd[0] == "!jaden":
             cli.privmsg(ev.target, self.randomLine("jaden"))
