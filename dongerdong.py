@@ -395,13 +395,13 @@ class Donger(object):
 
     def join(self, cli, fighter):
         if not self.gamerunning:
-            cli.privmsg(ev.source, "THE FUCKING GAME IS NOT RUNNING")
+            cli.privmsg(fighter, "THE FUCKING GAME IS NOT RUNNING")
             return
         if fighter in self.aliveplayers:
-            cli.privmsg(ev.source, "You're already playing, you dumb shit.")
+            cli.privmsg(fighter, "You're already playing, you dumb shit.")
             return
         if fighter in self.deadplayers:
-            cli.privmsg(ev.source, "You can't rejoin a game after you've been killed.")
+            cli.privmsg(fighter, "You can't rejoin a game after you've been killed.")
             return
         self.playershealth = []
         for p in self.aliveplayers:
