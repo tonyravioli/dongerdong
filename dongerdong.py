@@ -390,7 +390,7 @@ class Donger(object):
                 raise
 
     def _privmsg(self, cli, ev):
-        if ev.splitd[0] == "!join":
+        if ev.splitd[0] == "!joingreaergreaergreaergreaerg":
             self.join(cli, ev.source)
 
     def join(self, cli, fighter):
