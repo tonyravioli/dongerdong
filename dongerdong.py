@@ -371,8 +371,11 @@ class Donger(object):
                 nick = ev.splitd[1]
             else:
                 nick = ev.source
-            if cli.channels[ev.target.lower()].users[nick.lower()].account != None:
-                nick = cli.channels[ev.target.lower()].users[nick.lower()].account
+            try:
+                if cli.channels[ev.target.lower()].users[nick.lower()].account != None:
+                    nick = cli.channels[ev.target.lower()].users[nick.lower()].account
+            except:
+                pass  # >_>
                 
             try:
                 player = Statsv2.get(Statsv2.nick == nick.lower())
