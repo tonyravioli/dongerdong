@@ -40,6 +40,7 @@ class Donger(object):
         self.haspraised = []
         self.lastheardfrom = {}
         self.sourcehistory = []
+        self.accountsseenonthisgame = [] # hi,thisisanextremellylongvariablename
         
         # thread for timeouts
         _thread.start_new_thread(self._timeouts, ())
@@ -100,6 +101,7 @@ class Donger(object):
             if cli.channels[ev.target.lower()].users[ev.source.lower()].account is None:
                 cli.privmsg(self.primarychan, "You must be identified with nickserv to play!")
                 return
+            
             
             if "--verbose" in ev.splitd:
                 ev.splitd.remove("--verbose")
@@ -400,6 +402,9 @@ class Donger(object):
         if not self.gamerunning:
             cli.privmsg(fighter, "THE FUCKING GAME IS NOT RUNNING")
             return
+        if cli.channels[self.primarychan.lower()].users[fighter.lower()].account in self.accountsseenonthisgame:
+            cli.privmsg(fighter, "Stop trying to cheat, you dumb shit.")
+            return 
         if fighter.lower() in self.aliveplayers:
             cli.privmsg(fighter, "You're already playing, you dumb shit.")
             return
@@ -599,13 +604,20 @@ class Donger(object):
         cli.privmsg(self.primarychan, "Use '/msg {0} !join' to join a game mid-fight.".format(cli.nickname))
         cli.privmsg(self.primarychan, ".")
         self.ascii("FIGHT")
-        cli.voice(self.primarychan, fighters)
+        
         for i in fighters:
+            if cli.channels[self.primarychan.lower()].users[i.lower()].account in self.accountsseenonthisgame:
+                cli.privmsg(self.primarychan, "..... WAIT, WHAT?! Looks like somebody tried to play with two clones")
+                cli.mode(self.primarychan, "-m")
+                return
+            self.accountsseenonthisgame.append(cli.channels[self.primarychan.lower()].users[i.lower()].account)
+
             self.maxheal[i.lower()] = 44
             self.health[i.lower()] = 100
             self.aliveplayers.append(i.lower())
             if i.lower() != starter.lower():
                 self.countstat(i.lower(), "accept")
+        cli.voice(self.primarychan, fighters)
         self.haspraised = []
         self.deadplayers = []
         self.gamerunning = True
@@ -671,6 +683,7 @@ class Donger(object):
         self.aliveplayers = []
         self.deadplayers = []
         self.health = {}
+        self.accountsseenonthisgame = []
         self._turnleft = []
         self.gamerunning = False
         self.deathmatch = False
