@@ -437,6 +437,7 @@ class Donger(object):
             
         if instaroll == 1:
             self.ascii("instakill")
+            self.irc.devoice(self.primarychan, to.lower())
             self.ascii("rekt")
             self.countstat(hfrom, "dmg", self.health[to.lower()])
             self.countstat(to, "gotdmg", self.health[to.lower()])
@@ -477,6 +478,7 @@ class Donger(object):
                                     str(fromhp), str(damage), self.irc.channels[self.primarychan].users[to.lower()].nick, str(self.health[to.lower()])))
 
         if self.health[to.lower()] <= 0:
+            self.irc.devoice(self.primarychan, to.lower())
             self.ascii("rekt")
             self.irc.privmsg(self.primarychan, "\002{0}\002 REKT {1}!".format(self.irc.channels[self.primarychan].users[hfrom.lower()].nick, self.irc.channels[self.primarychan].users[to.lower()].nick))
             self.aliveplayers.remove(to.lower())
