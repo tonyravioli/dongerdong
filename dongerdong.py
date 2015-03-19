@@ -453,7 +453,7 @@ class Donger(object):
             self.countstat(self.irc.channels[self.primarychan].users[to.lower()].nick, "loss")
             if to.lower() != self.irc.nickname.lower():
                 if self.deathmatch == True:
-                    self.irc.privmsg("CHANSERV", "AKICK {0} ADD *!*@{1} !T 20h FUCKIN REKT| Lost deathmatch".format(self.primarychan, self.irc.channels[self.primarychan].users[to.lower()].host))
+                    self.irc.privmsg("CHANSERV", "AKICK {0} ADD *!*@{1} !T 20m FUCKIN REKT| Lost deathmatch".format(self.primarychan, self.irc.channels[self.primarychan].users[to.lower()].host))
                 self.irc.kick(self.primarychan, to, "REKT")
             self.deathmatch = False
             return
@@ -669,6 +669,7 @@ class Donger(object):
         self._turnleft = []
         self.gamerunning = False
         self.deathmatch = False
+        self.deathmatchpending = {}
         self.turn = 0
         self.roundstart = 0
         if stats is True:
@@ -679,13 +680,14 @@ class Donger(object):
     def ascii(self, key, font="smslant"): #Only used in fights
         self.irc.privmsg(self.primarychan, Figlet(font).renderText(key.upper()))
     
+    # god, this is so shitty
     def randomLine(self, type):
         if type == "excuse":
-            file = "excuse_list.txt"
+            file = "stuff/excuse_list.txt"
         elif type == "jaden":
-            file = "jaden_list.txt"
+            file = "stuff/jaden_list.txt"
         elif type == "donger":
-            file = "listofdongers.txt"
+            file = "stuff/listofdongers.txt"
         try:
             return random.choice(list(open(file)))
         except:
