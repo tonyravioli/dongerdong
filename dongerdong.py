@@ -390,17 +390,17 @@ class Donger(object):
                 raise
 
     def _privmsg(self, cli, ev):
-        if ev.splitd[0] == "!joingreaergreaergreaergreaerg":
+        if ev.splitd[0] == "!join":
             self.join(cli, ev.source)
 
     def join(self, cli, fighter):
         if not self.gamerunning:
             cli.privmsg(fighter, "THE FUCKING GAME IS NOT RUNNING")
             return
-        if fighter in self.aliveplayers:
+        if fighter.lower() in self.aliveplayers:
             cli.privmsg(fighter, "You're already playing, you dumb shit.")
             return
-        if fighter in self.deadplayers:
+        if fighter.lower() in self.deadplayers:
             cli.privmsg(fighter, "You can't rejoin a game after you've been killed.")
             return
         self.playershealth = []
