@@ -462,7 +462,7 @@ class Donger(object):
             self.countstat(self.irc.channels[self.primarychan].users[to.lower()].nick, "loss")
             if to.lower() != self.irc.nickname.lower():
                 if self.deathmatch == True:
-                    self.irc.privmsg("CHANSERV", "AKICK {0} ADD *!*@{1} !T 20m FUCKIN REKT| Lost deathmatch".format(self.primarychan, self.irc.channels[self.primarychan].users[to.lower()].host))
+                    self.irc.privmsg("CHANSERV", "AKICK {0} ADD *!*@{1} !T 20 FUCKIN REKT| Lost deathmatch".format(self.primarychan, self.irc.channels[self.primarychan].users[to.lower()].host))
                 self.irc.kick(self.primarychan, to, "REKT")
             self.deathmatch = False
             return
