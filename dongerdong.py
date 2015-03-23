@@ -344,6 +344,8 @@ class Donger(object):
         elif ev.splitd[0] == "!ascii":
             if ev.target in self.auxchans:
                 return
+            if self.gamerunning:
+                return
             if len(ev.splitd) > 1 and len(' '.join(ev.splitd[1:])) < 14:
                 cli.privmsg(ev.target, Figlet("smslant").renderText(' '.join(ev.splitd[1:])))
             elif len(ev.splitd) > 1:
