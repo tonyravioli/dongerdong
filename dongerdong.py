@@ -546,7 +546,7 @@ class Donger(object):
         
         self.health[nick.lower()] += healing
         if self.verbose:
-            self.irc.privmsg(self.primarychan, "Verbose: Regular healing is {0}/{1}(/44)".format(healing, self.maxheal[nick.lower()]))ç
+            self.irc.privmsg(self.primarychan, "Verbose: Regular healing is {0}/{1}(/44)".format(healing, self.maxheal[nick.lower()]))
         self.maxheal[nick.lower()] = self.maxheal[nick.lower()] - 5
 
         if self.health[nick.lower()] > 100:
