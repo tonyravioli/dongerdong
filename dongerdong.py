@@ -14,6 +14,7 @@ import time
 import logging
 import random
 import copy
+import operator
 import _thread
 import moduoli
 
@@ -361,10 +362,20 @@ class Donger(object):
             cli.devoice(ev.target, ev.source)
             self._coward(cli, ev)
         elif ev.splitd[0] == "!top" and ev.target == self.primarychan:
-            players = Statsv2.select().order_by(Statsv2.wins.desc()).limit(3)
-            c = 1
+            players = Statsv2.select()
+            # K, now we have to make our own arranging of stuff, damnit
+            p = {}
             for player in players:
-                cli.privmsg(ev.target, "{0} - \002{1}\002 (\002{2}\002)".format(c, player.nick.upper(), player.wins))
+                if (player.fights + player.accepts) < 5:
+                    continue # not counting players with less than 5 fights
+                
+                p[player.nick] = (player.wins - player.losses)
+            
+            p = sorted(p.items(), key=operator.itemgetter(1))
+                
+            c = 1
+            for player in p:
+                cli.privmsg(ev.target, "{0} - \002{1}\002 (\002{2}\002)".format(c, player.upper(), player[p]))
                 c += 1
             if self.statsurl != "":
                 cli.privmsg(ev.target, "More stats are available at {0}".format(self.statsurl))
