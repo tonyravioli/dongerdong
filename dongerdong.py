@@ -411,6 +411,9 @@ class Donger(object):
         if fighter.lower() in self.deadplayers:
             cli.privmsg(fighter, "You can't rejoin a game after you've been killed.")
             return
+        if self.deathmatch == True:
+            cli.privmsg(fighter, "You can't join a deathmatch.")
+            return
         self.playershealth = []
         for p in self.aliveplayers:
             self.playershealth.append(self.health[p])
