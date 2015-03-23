@@ -419,11 +419,11 @@ class Donger(object):
             self.playershealth.append(self.health[p])
 
         #Set joining player's health to the average health of current players
-        self.health[fighter.lower()] = sum(self.playershealth, 0.0) / len(self.playershealth)
+        self.health[fighter.lower()] = int(sum(self.playershealth, 0.0) / len(self.playershealth))
         self.maxheal[fighter.lower()] = 44
         self.aliveplayers.append(fighter.lower())
         cli.voice(self.primarychan, fighter)
-        cli.privmsg(self.primarychan, "\002{0}\002 JOINS THE FIGHT".format(fighter.upper()))
+        cli.privmsg(self.primarychan, "\002{0}\002 JOINS THE FIGHT (\002{1}\002HP)".format(fighter.upper(), self.health[fighter.lower()]))
 
 
     def hit(self, hfrom, to, modifier=None):
