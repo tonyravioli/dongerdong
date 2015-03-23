@@ -600,12 +600,12 @@ class Donger(object):
         cli.privmsg(self.primarychan, "RULES:")
         cli.privmsg(self.primarychan, "1. Wait your turn. One person at a time.")
         cli.privmsg(self.primarychan, "2. Be a dick about it.")
-        cli.privmsg(self.primarychan, ".")
+        cli.privmsg(self.primarychan, " ")
         cli.privmsg(self.primarychan, "Use !hit [nick] to strike.")
         cli.privmsg(self.primarychan, "Use !heal to heal yourself.")
         cli.privmsg(self.primarychan, "Use !praise [nick] to praise to the donger gods (once per game).")
         cli.privmsg(self.primarychan, "Use '/msg {0} !join' to join a game mid-fight.".format(cli.nickname))
-        cli.privmsg(self.primarychan, ".")
+        cli.privmsg(self.primarychan, " ")
         self.ascii("FIGHT")
         
         for i in fighters:
