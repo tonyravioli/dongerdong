@@ -377,7 +377,7 @@ class Donger(object):
                 
             c = 1
             for player in p:
-                cli.privmsg(ev.target, "{0} - \002{1}\002 (\002{2}\002)".format(c, player[1].upper(), player[0]))
+                cli.privmsg(ev.target, "{0} - \002{1}\002 (\002{2}\002)".format(c, player[0].upper(), player[1]))
                 c += 1
             if self.statsurl != "":
                 cli.privmsg(ev.target, "More stats are available at {0}".format(self.statsurl))
