@@ -446,6 +446,8 @@ class Donger(object):
         criticalroll = random.randint(1, 12)
 
         if modifier == "praise":
+            if self.verbose:
+                self.irc.privmsg(self.primarychan, "Verbose: Praise. Forcing critical")
             criticalroll = 1
         else:
             self.countstat(hfrom, "hit")
@@ -458,6 +460,8 @@ class Donger(object):
             self.irc.privmsg(self.primarychan, "Verbose: Regular damage is {0}/35".format(damage))
             
         if instaroll == 1:
+            if self.verbose:
+                self.irc.privmsg(self.primarychan, "Verbose: Instakill. Removing player.".format(instaroll))
             self.ascii("instakill")
             self.irc.devoice(self.primarychan, to.lower())
             self.ascii("rekt")
@@ -476,6 +480,8 @@ class Donger(object):
             self.countstat(self.irc.channels[self.primarychan].users[to.lower()].nick, "loss")
             if to.lower() != self.irc.nickname.lower():
                 if self.deathmatch == True:
+                    if self.verbose:
+                        self.irc.privmsg(self.primarychan, "Verbose: Deathmatch lost. Adding akick.".format(instaroll))
                     self.irc.privmsg("CHANSERV", "AKICK {0} ADD *!*@{1} !T 20 FUCKIN REKT| Lost deathmatch".format(self.primarychan, self.irc.channels[self.primarychan].users[to.lower()].host))
                 self.irc.kick(self.primarychan, to, "REKT")
             self.deathmatch = False
@@ -503,6 +509,8 @@ class Donger(object):
             self.irc.devoice(self.primarychan, to.lower())
             self.ascii("rekt")
             self.irc.privmsg(self.primarychan, "\002{0}\002 REKT {1}!".format(self.irc.channels[self.primarychan].users[hfrom.lower()].nick, self.irc.channels[self.primarychan].users[to.lower()].nick))
+            if self.verbose:
+                self.irc.privmsg(self.primarychan, "Verbose: Removing dead player.".format(instaroll))
             self.aliveplayers.remove(to.lower())
             self.deadplayers.append(to.lower())
             try:
@@ -512,6 +520,8 @@ class Donger(object):
             self.countstat(self.irc.channels[self.primarychan].users[to.lower()].nick, "loss")
             if to.lower() != self.irc.nickname.lower():
                 if self.deathmatch == True:
+                    if self.verbose:
+                        self.irc.privmsg(self.primarychan, "Verbose: Deathmatch lost. Adding akick.".format(instaroll))
                     self.irc.privmsg("CHANSERV", "AKICK {0} ADD *!*@{1} !T 20 FUCKIN REKT| Lost deathmatch".format(self.primarychan, self.irc.channels[self.primarychan].users[to.lower()].host))
                 self.irc.kick(self.primarychan, to, "REKT")
             self.deathmatch = False
@@ -526,14 +536,17 @@ class Donger(object):
         healing = random.randint(22, self.maxheal[nick.lower()])
         if modifier == "praise":
             healing = healing * 2
+            if self.verbose:
+                self.irc.privmsg(self.primarychan, "Verbose: Praise. Forcing critical heal.")
             self.ascii("whatever")
         else:
             self.countstat(nick, "heal")
         
         self.health[nick.lower()] += healing
-        self.maxheal[nick.lower()] = self.maxheal[nick.lower()] - 5
         if self.verbose:
-            self.irc.privmsg(self.primarychan, "Verbose: Regular healing is {0}/{1}".format(healing, self.maxheal[nick.lower()]))
+            self.irc.privmsg(self.primarychan, "Verbose: Regular healing is {0}/{1}(/44)".format(healing, self.maxheal[nick.lower()]))ç
+        self.maxheal[nick.lower()] = self.maxheal[nick.lower()] - 5
+
         if self.health[nick.lower()] > 100:
             self.health[nick.lower()] = 100
             self.irc.privmsg(self.primarychan, "\002{0}\002 heals for \002{1}HP\002, bringing them to \002100HP\002".format(nick, healing))
