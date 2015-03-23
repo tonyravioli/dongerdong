@@ -699,7 +699,7 @@ class Donger(object):
             self.countstat(self.irc.channels[self.primarychan].users[winner.lower()].nick, "easywin")
     
     def ascii(self, key, font="smslant"): #Only used in fights
-        self.irc.privmsg(self.primarychan, Figlet(font).renderText(key.upper()))
+        self.irc.privmsg(self.primarychan, "\n".join(Figlet(font).renderText(key.upper()).split("\n")[:-1]))
     
     # god, this is so shitty
     def randomLine(self, type):
