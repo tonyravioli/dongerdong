@@ -216,7 +216,6 @@ class Donger(object):
             self.hit(ev.source.lower(), nick)
         elif ev.splitd[0] == "!heal":
             if not self.gamerunning:
-                #cli.privmsg(self.primarychan, "THE FUCKING GAME IS NOT RUNNING")
                 return
                 
             if self.turn != ev.source.lower():
@@ -352,7 +351,6 @@ class Donger(object):
                 cli.privmsg(ev.target, "Text must be 13 characters or less (that was {0} characters). Syntax: !ascii Fuck You".format(len(' '.join(ev.splitd[1:]))))
         elif ev.splitd[0] == "!health":
             if not self.gamerunning:
-                #cli.privmsg(ev.target, "THE FUCKING GAME IS NOT RUNNING")
                 return
             if len(ev.splitd[0]) > 1 or ev.splitd[1] == "":
                 ev.splitd[1] = ev.source
@@ -413,7 +411,7 @@ class Donger(object):
         if ev.splitd[0] == "!join":
             self.join(cli, ev.source, ev)
 
-    def join(self, cli, fighter):
+    def join(self, cli, fighter, ev):
         
         if not self.gamerunning:
             cli.privmsg(fighter, "THE FUCKING GAME IS NOT RUNNING")
