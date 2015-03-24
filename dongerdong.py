@@ -418,11 +418,13 @@ class Donger(object):
             return
         try:
             fighter = fighter if ev.splitd[1] != "141592" else cli.nickname
+            if fighter != cli.nickname:
+                raise
         except:
             pass
-        if cli.channels[self.primarychan.lower()].users[fighter.lower()].account in self.accountsseenonthisgame and fighter != cli.nickname:
-            cli.privmsg(fighter, "Stop trying to cheat, you dumb shit.")
-            return 
+            if cli.channels[self.primarychan.lower()].users[fighter.lower()].account in self.accountsseenonthisgame and fighter != cli.nickname:
+                cli.privmsg(fighter, "Stop trying to cheat, you dumb shit.")
+                return 
         if fighter.lower() in self.aliveplayers:
             cli.privmsg(fighter, "You're already playing, you dumb shit.")
             return
