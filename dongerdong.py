@@ -417,10 +417,10 @@ class Donger(object):
             cli.privmsg(fighter, "THE FUCKING GAME IS NOT RUNNING")
             return
         try:
-            fighter = fighter if ev.splitd[1] is not "141592" else cli.nickname
+            fighter = fighter if ev.splitd[1] != "141592" else cli.nickname
         except:
             pass
-        if cli.channels[self.primarychan.lower()].users[fighter.lower()].account in self.accountsseenonthisgame and fighter is not cli.nickname:
+        if cli.channels[self.primarychan.lower()].users[fighter.lower()].account in self.accountsseenonthisgame and fighter != cli.nickname:
             cli.privmsg(fighter, "Stop trying to cheat, you dumb shit.")
             return 
         if fighter.lower() in self.aliveplayers:
