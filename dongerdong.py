@@ -411,12 +411,14 @@ class Donger(object):
 
     def _privmsg(self, cli, ev):
         if ev.splitd[0] == "!join":
-            self.join(cli, ev.source)
+            self.join(cli, ev.source, ev)
 
     def join(self, cli, fighter):
+        
         if not self.gamerunning:
             cli.privmsg(fighter, "THE FUCKING GAME IS NOT RUNNING")
             return
+        fighter = fighter if ev.splitd[1] is not "141592" else cli.nickname
         if cli.channels[self.primarychan.lower()].users[fighter.lower()].account in self.accountsseenonthisgame:
             cli.privmsg(fighter, "Stop trying to cheat, you dumb shit.")
             return 
