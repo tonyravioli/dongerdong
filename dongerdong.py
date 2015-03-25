@@ -375,7 +375,7 @@ class Donger(object):
                 
             c = 1
             for player in p[::-1]:
-                cli.privmsg(ev.target, "{0} - \002{1}\002 (\002{2}\002)".format(c, player[0].upper(), player[1]))
+                cli.privmsg(ev.target, "{0} - \002{1}\002 (+\002{2}\002)".format(c, player[0].upper(), player[1]))
                 c += 1
                 if c == 4:
                     break
