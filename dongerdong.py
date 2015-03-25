@@ -338,6 +338,8 @@ class Donger(object):
             cli.privmsg(ev.target, self.randomLine("jaden"))
         elif ev.splitd[0] == "!raise":
             cli.privmsg(ev.target, "ヽ༼ຈل͜ຈ༽ﾉ RAISE YOUR DONGERS ヽ༼ຈل͜ຈ༽ﾉ")
+        elif ev.splitd[0] == "!lower":
+            cli.privmsg(ev.target, "┌༼ຈل͜ຈ༽┐ ʟᴏᴡᴇʀ ʏᴏᴜʀ ᴅᴏɴɢᴇʀs ┌༼ຈل͜ຈ༽┐")
         elif ev.splitd[0] == "!dong":
             cli.privmsg(ev.target, self.randomLine("donger"))
         elif ev.splitd[0] == "!ascii":
