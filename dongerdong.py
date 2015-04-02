@@ -238,7 +238,7 @@ class Donger(object):
                 cli.privmsg(self.primarychan, "GET OUT OR I'LL KILL YOU! INTRUDER INTRUDER INTRUDER")
                 return
 
-            if ev.source.lower() in self.haspraised:
+            if ev.source.lower() in self.haspraised or self.deathmatch:
                 cli.privmsg(self.primarychan, "Your praises bore me.")
                 return
             
