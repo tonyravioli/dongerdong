@@ -463,7 +463,7 @@ class Donger(object):
         else:
             self.countstat(hfrom, "hit")
 
-        instaroll = random.randint(1, 50)
+        instaroll = random.randint(1, 50) if self.deathmatch else 50
 
         if self.verbose:
             self.irc.privmsg(self.primarychan, "Verbose: instaroll is {0}/50 (1 for instakill)".format(instaroll))
@@ -489,13 +489,6 @@ class Donger(object):
                 pass
             self.getturn()
             self.countstat(self.irc.channels[self.primarychan].users[to.lower()].nick, "loss")
-            if to.lower() != self.irc.nickname.lower():
-                if self.deathmatch == True:
-                    if self.verbose:
-                        self.irc.privmsg(self.primarychan, "Verbose: Deathmatch lost. Adding akick.".format(instaroll))
-                    self.irc.privmsg("CHANSERV", "AKICK {0} ADD *!*@{1} !T 20 FUCKIN REKT| Lost deathmatch".format(self.primarychan, self.irc.channels[self.primarychan].users[to.lower()].host))
-                self.irc.kick(self.primarychan, to, "REKT")
-            self.deathmatch = False
             return
         elif criticalroll == 1:
             if self.verbose:
