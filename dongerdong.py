@@ -244,7 +244,7 @@ class Donger(object):
                 cli.privmsg(self.primarychan, "GET OUT OR I'LL KILL YOU! INTRUDER INTRUDER INTRUDER")
                 return
 
-            if ev.source.lower() in self.haspraised or self.deathmatch:
+            if ev.source.lower() in self.haspraised or self.deathmatch or ev.source.lower() in self.zombies:
                 cli.privmsg(self.primarychan, "Your praises bore me.")
                 return
             
@@ -473,7 +473,7 @@ class Donger(object):
         self.maxheal[hfrom.lower()] = 44
 
         damage = random.randint(18, 35)
-        criticalroll = random.randint(1, 12)
+        criticalroll = random.randint(1, 12) if hfrom.lower not in self.zombies else 12
 
         if modifier == "praise":
             if self.verbose:
@@ -482,7 +482,7 @@ class Donger(object):
         else:
             self.countstat(hfrom, "hit")
 
-        instaroll = random.randint(1, 50) if self.deathmatch else 50
+        instaroll = random.randint(1, 50) if not self.deathmatch or hfrom.lower not in self.zombies else 50
 
         if self.verbose:
             self.irc.privmsg(self.primarychan, "Verbose: instaroll is {0}/50 (1 for instakill)".format(instaroll))
