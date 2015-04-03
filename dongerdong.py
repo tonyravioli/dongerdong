@@ -448,9 +448,13 @@ class Donger(object):
         self.maxheal[fighter.lower()] = 44
         if ev.splitd[1] == "zombie": # ooo zombie
             self.health[fighter.lower()] = int(self.health[fighter.lower()] / 1.3)
+            cli.privmsg(self.primarychan, "\002{0}\002's ZOMBIE JOINS THE FIGHT (\002{1}\002HP)".format(fighter.upper(), self.health[fighter.lower()]))
+
+        else:
+            cli.privmsg(self.primarychan, "\002{0}\002 JOINS THE FIGHT (\002{1}\002HP)".format(fighter.upper(), self.health[fighter.lower()]))
+
         self.aliveplayers.append(fighter.lower())
         cli.voice(self.primarychan, fighter)
-        cli.privmsg(self.primarychan, "\002{0}\002 JOINS THE FIGHT (\002{1}\002HP)".format(fighter.upper(), self.health[fighter.lower()]))
 
 
     def hit(self, hfrom, to, modifier=None):
