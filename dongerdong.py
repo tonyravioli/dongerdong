@@ -225,6 +225,11 @@ class Donger(object):
             
             if ev.source.lower() not in self.aliveplayers:
                 cli.privmsg(self.primarychan, "GET OUT OR I'LL KILL YOU! INTRUDER INTRUDER INTRUDER")
+                return
+            
+            if ev.source.lower() in self.zombies:
+                cli.privmsg(self.primarychan, "Zombies can't heal")
+                return
             
             self.heal(ev.source)
         elif ev.splitd[0] == "!praise":
@@ -436,6 +441,8 @@ class Donger(object):
             return
         elif ev.splitd[1] == "zombie":
             self.zombies.append(fighter.lower())
+        if fighter.lower in self.zombies:
+            return
         if self.deathmatch == True:
             cli.privmsg(fighter, "You can't join a deathmatch.")
             return
