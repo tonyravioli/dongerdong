@@ -425,7 +425,7 @@ class Donger(object):
                 raise
         except:
             pass
-            if cli.channels[self.primarychan.lower()].users[fighter.lower()].account in self.accountsseenonthisgame and fighter != cli.nickname:
+            if cli.channels[self.primarychan.lower()].users[fighter.lower()].account in self.accountsseenonthisgame and fighter != cli.nickname and ev.splitd[1] != "zombie":
                 cli.privmsg(fighter, "Stop trying to cheat, you dumb shit.")
                 return 
         if fighter.lower() in self.aliveplayers:
