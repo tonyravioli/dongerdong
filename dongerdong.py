@@ -41,6 +41,7 @@ class Donger(object):
         self.haspraised = []
         self.lastheardfrom = {}
         self.sourcehistory = []
+        self.zombies = []
         self.accountsseenonthisgame = [] # hi,thisisanextremellylongvariablename
         
         # thread for timeouts
@@ -430,9 +431,11 @@ class Donger(object):
         if fighter.lower() in self.aliveplayers:
             cli.privmsg(fighter, "You're already playing, you dumb shit.")
             return
-        if fighter.lower() in self.deadplayers:
+        if fighter.lower() in self.deadplayers and ev.splitd[1] != "zombie" and fighter.lower() not in self.zombies:
             cli.privmsg(fighter, "You can't rejoin a game after you've been killed.")
             return
+        else if ev.splitd[1] == "zombie":
+            self.zombies.append(fighter.lower())
         if self.deathmatch == True:
             cli.privmsg(fighter, "You can't join a deathmatch.")
             return
@@ -443,6 +446,8 @@ class Donger(object):
         #Set joining player's health to the average health of current players
         self.health[fighter.lower()] = int(sum(self.playershealth, 0.0) / len(self.playershealth))
         self.maxheal[fighter.lower()] = 44
+        if ev.splitd[1] == "zombie": # ooo zombie
+            self.health[fighter.lower()] = int(self.health[fighter.lower()] / 1.3)
         self.aliveplayers.append(fighter.lower())
         cli.voice(self.primarychan, fighter)
         cli.privmsg(self.primarychan, "\002{0}\002 JOINS THE FIGHT (\002{1}\002HP)".format(fighter.upper(), self.health[fighter.lower()]))
@@ -713,6 +718,7 @@ class Donger(object):
             self.irc.privmsg(self.primarychan, "{0} REKT {1}!".format(self.irc.channels[self.primarychan].users[winner.lower()].nick, self._dusers(winner)))
         self.aliveplayers = []
         self.deadplayers = []
+        self.zombies = []
         self.health = {}
         self.accountsseenonthisgame = []
         self._turnleft = []
