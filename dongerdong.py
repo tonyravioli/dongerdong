@@ -436,7 +436,7 @@ class Donger(object):
         if fighter.lower() in self.aliveplayers:
             cli.privmsg(fighter, "You're already playing, you dumb shit.")
             return
-        if fighter.lower() in self.deadplayers and ev.splitd[1] != "zombie" and fighter.lower() not in self.zombies:
+        if fighter.lower() in self.deadplayers and ev.splitd[1] != "zombie":
             cli.privmsg(fighter, "You can't rejoin a game after you've been killed.")
             return
         elif ev.splitd[1] == "zombie":
