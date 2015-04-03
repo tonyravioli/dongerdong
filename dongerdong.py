@@ -441,6 +441,9 @@ class Donger(object):
             return
         elif ev.splitd[1] == "zombie":
             self.zombies.append(fighter.lower())
+            if random.randint(1, 5) > 2:
+                cli.privmsg(fighter, "You have no brain and your zombie dies")
+                return
         if fighter.lower in self.zombies:
             return
         if self.deathmatch == True:
