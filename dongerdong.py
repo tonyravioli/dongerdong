@@ -482,7 +482,7 @@ class Donger(object):
         else:
             self.countstat(hfrom, "hit")
 
-        instaroll = random.randint(1, 50) if not self.deathmatch or hfrom.lower not in self.zombies else 50
+        instaroll = random.randint(1, 50) if not self.deathmatch and hfrom.lower not in self.zombies else 50
 
         if self.verbose:
             self.irc.privmsg(self.primarychan, "Verbose: instaroll is {0}/50 (1 for instakill)".format(instaroll))
