@@ -424,6 +424,12 @@ class Donger(object):
         if not self.gamerunning:
             cli.privmsg(fighter, "THE FUCKING GAME IS NOT RUNNING")
             return
+            
+        try:
+            ev.splitd[1]
+        except:
+            ev.splitd[1] = ""
+            
         try:
             fighter = fighter if ev.splitd[1] != "141592" else cli.nickname
             if fighter != cli.nickname:
