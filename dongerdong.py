@@ -715,9 +715,9 @@ class Donger(object):
             tohit = random.choice(playerstohit)
             requiredbothp = 40
             requiredtohithp = 29
-            if self.health[self.irc.nickname.lower()] < requiredbothp and self.health[tohit] > requireduserhp:
+            if self.health[self.irc.nickname.lower()] < requiredbothp and self.health[tohit] > requiredtohithp:
                 if self.verbose:
-                    self.irc.privmsg(self.primarychan, "Verbose: AI: Less than {0} HP, opponent more than {1}. Healing.".format(requiredbothp, requireduserhp))
+                    self.irc.privmsg(self.primarychan, "Verbose: AI: Less than {0} HP, opponent more than {1}. Healing.".format(requiredbothp, requiredtohithp))
                 if self.maxheal[self.irc.nickname.lower()] <= 20:
                     if self.verbose:		
                         self.irc.privmsg(self.primarychan, "Verbose: AI: Not enough chopsticks. Hitting.")
@@ -728,7 +728,7 @@ class Donger(object):
                     self.heal(self.irc.nickname.lower())
             else:
                 if self.verbose:
-                    self.irc.privmsg(self.primarychan, "Verbose: AI: More than {0} HP or opponent less than {1}. Attacking.".format(requiredbothp, requireduserhp))
+                    self.irc.privmsg(self.primarychan, "Verbose: AI: More than {0} HP or opponent less than {1}. Attacking.".format(requiredbothp, requiredtohithp))
                 self.irc.privmsg(self.primarychan, "!hit " + tohit) 
                 self.hit(self.irc.nickname.lower(), tohit)
     
