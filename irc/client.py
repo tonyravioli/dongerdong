@@ -497,7 +497,7 @@ class IRCClient:
     def _on_nick(self, myself, event):
         for i in self.channels:
             self.channels[i].users[event.target.lower()] = self.channels[i].users[event.source.nick.lower()]
-            self.channels[i].users[event.target.lower()].nick = ev.target
+            self.channels[i].users[event.target.lower()].nick = event.target
             del self.channels[i].users[event.source.nick.lower()]
 
     def _on_kick(self, myself, event):
