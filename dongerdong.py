@@ -428,7 +428,7 @@ class Donger(object):
         try:
             ev.splitd[1]
         except:
-            ev.splitd[1] = ""
+            ev.splitd.append("")
             
         try:
             fighter = fighter if ev.splitd[1] != "141592" else cli.nickname
