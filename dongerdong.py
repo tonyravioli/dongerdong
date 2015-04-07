@@ -562,7 +562,7 @@ class Donger(object):
         if self.maxheal[nick.lower()] <= 23 and modifier != "praise":
             self.irc.privmsg(self.primarychan, "Sorry, bro. We don't have enough chopsticks to heal you.")
             return
-        healing = random.randint(22, self.maxheal[nick.lower()] if modifier == "praise" else 40)
+        healing = random.randint(22, self.maxheal[nick.lower()] if modifier != "praise" else 40)
         if modifier == "praise":
             healing = healing * 2
             if self.verbose:
