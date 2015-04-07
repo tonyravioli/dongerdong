@@ -551,7 +551,7 @@ class Donger(object):
                 if self.deathmatch == True:
                     if self.verbose:
                         self.irc.privmsg(self.primarychan, "Verbose: Deathmatch lost. Adding akick.".format(instaroll))
-                    self.irc.privmsg("CHANSERV", "AKICK {0} ADD *!*@{1} !T 20 FUCKIN REKT| Lost deathmatch".format(self.primarychan, self.irc.channels[self.primarychan].users[to.lower()].host))
+                    self.irc.privmsg("CHANSERV", "AKICK {0} ADD {1} !T 20 FUCKIN REKT| Lost deathmatch".format(self.primarychan, self.irc.channels[self.primarychan].users[to.lower()].account))
                 self.irc.kick(self.primarychan, to, "REKT")
             self.deathmatch = False
         self.getturn()
