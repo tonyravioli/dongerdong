@@ -450,7 +450,7 @@ class Donger(object):
             if random.randint(1, 5) > 2:
                 cli.privmsg(fighter, "You have no brain and your zombie dies")
                 return
-        if fighter.lower in self.zombies:
+        if fighter.lower() in self.zombies:
             return
         if self.deathmatch == True:
             cli.privmsg(fighter, "You can't join a deathmatch.")
@@ -479,7 +479,7 @@ class Donger(object):
         self.maxheal[hfrom.lower()] = 44
 
         damage = random.randint(18, 35)
-        criticalroll = random.randint(1, 12) if hfrom.lower not in self.zombies else 12
+        criticalroll = random.randint(1, 12) if hfrom.lower() not in self.zombies else 12
 
         if modifier == "praise":
             if self.verbose:
