@@ -512,6 +512,7 @@ class Donger(object):
                 self._turnleft.remove(to.lower())
             except:
                 pass
+            self.irc.kick(self.primarychan, to, "REKT")
             self.getturn()
             self.countstat(self.irc.channels[self.primarychan].users[to.lower()].nick, "loss")
             return
