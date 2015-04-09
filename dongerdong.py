@@ -104,6 +104,7 @@ class Donger(object):
                 cli.privmsg(self.primarychan, "You must be identified with nickserv to play!")
                 return
             
+            self.deathmatch = False
             
             if "--verbose" in ev.splitd:
                 ev.splitd.remove("--verbose")
@@ -116,10 +117,8 @@ class Donger(object):
                 elif len(ev.splitd) != 2:
                     cli.privmsg(self.primarychan, "Deathmatches are 1 v 1 only.")
                     return
-                else:
-                    self.deathmatch = True
-            else:
-                self.deathmatch = False
+                self.deathmatch = True
+
             players = copy.copy(ev.splitd)
             del players[0]
             pplayers = []
