@@ -401,8 +401,8 @@ class Donger(object):
                 
             try:
                 player = Statsv2.get(Statsv2.nick == nick.lower())
-                totaljoins = (player.wins + player.losses + player.quits) - (player.fights + player.accepts)
-                cli.privmsg(ev.target, "\002{0}\002's stats: \002{1}\002 wins, \002{4}\002 easy wins, \002{2}\002 losses, \002{3}\002 coward quits, \002{5}\002 idle-outs, \002{6}\002 !praises, \002{7}\002 fights started, accepted \002{8}\002 fights, !joined {15} fights (\002{9}\002 total fights), \002{10}\002 !hits, \002{11}\002 !heals, \002{12}\002HP of damage dealt and \002{13}\002 damage received. {14}".format(
+                totaljoins = (player.wins + player.losses + player.quits + player.easywins) - (player.fights + player.accepts)
+                cli.privmsg(ev.target, "\002{0}\002's stats: \002{1}\002 wins, \002{4}\002 easy wins, \002{2}\002 losses, \002{3}\002 coward quits, \002{5}\002 idle-outs, \002{6}\002 !praises, \002{7}\002 fights started, accepted \002{8}\002 fights, !joined \002{15}\002 fights (\002{9}\002 total fights), \002{10}\002 !hits, \002{11}\002 !heals, \002{12}\002HP of damage dealt and \002{13}\002 damage received. {14}".format(
                                         player.realnick, player.wins, player.losses, player.quits, player.easywins, player.idleouts, player.praises, player.fights, player.accepts, (player.wins + player.losses + player.quits), player.hits, player.heals, player.dcaused, player.dreceived, self.statsurl, totaljoins))
             except:
                 cli.privmsg(ev.target, "There are no registered stats for \002{0}\002".format(nick))   
