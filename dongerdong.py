@@ -445,13 +445,14 @@ class Donger(object):
         if fighter.lower() in self.deadplayers and ev.splitd[1] != "zombie":
             cli.privmsg(fighter, "You can't rejoin a game after you've been killed.")
             return
+        if fighter.lower() in self.zombies:
+            return
         elif ev.splitd[1] == "zombie":
             self.zombies.append(fighter.lower())
             if random.randint(1, 5) > 2:
                 cli.privmsg(fighter, "You have no brain and your zombie dies")
                 return
-        if fighter.lower() in self.zombies:
-            return
+        
         if self.deathmatch == True:
             cli.privmsg(fighter, "You can't join a deathmatch.")
             return
