@@ -699,12 +699,12 @@ class Donger(object):
         #        self.irc.privmsg(self.primarychan, "Verbose: No turns left, refreshing list")
         #    self._turnleft = copy.copy(self.aliveplayers)
         
-        if (len(self.turnindex) - 1) > self.uselessvariable:
+        if self.turninde > (len(self.uselessvariable) - 1):
             self.turnindex = 0
         
         while self.uselessvariable[self.turnindex] not in self.aliveplayers:
             self.turnindex += 1
-            if (len(self.turnindex) - 1) > self.uselessvariable:
+            if self.turninde > (len(self.uselessvariable) - 1):
                 self.turnindex = 0
         
         
