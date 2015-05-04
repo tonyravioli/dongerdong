@@ -32,6 +32,8 @@ class Donger(object):
         self.deathmatch = False
         self.verbose = False
         self.turn = ""
+        self.turnindex = 0
+        self.uselessvariable = []
         self._turnleft = []
         self._paccept = {}
         self.aliveplayers = []
@@ -678,6 +680,7 @@ class Donger(object):
 
             self.maxheal[i.lower()] = 44
             self.health[i.lower()] = 100
+            self.uselessvariable.append(i.lower())
             self.aliveplayers.append(i.lower())
             if i.lower() != starter.lower():
                 self.countstat(i.lower(), "accept")
@@ -690,11 +693,20 @@ class Donger(object):
     def getturn(self):
         if self.verbose:
             self.irc.privmsg(self.primarychan, "Verbose: Getting turns")
-            
-        if len(self._turnleft) == 0:
-            if self.verbose:
-                self.irc.privmsg(self.primarychan, "Verbose: No turns left, refreshing list")
-            self._turnleft = copy.copy(self.aliveplayers)
+        
+        #if len(self._turnleft) == 0:
+        #    if self.verbose:
+        #        self.irc.privmsg(self.primarychan, "Verbose: No turns left, refreshing list")
+        #    self._turnleft = copy.copy(self.aliveplayers)
+        
+        if (len(self.turnindex) - 1) > self.uselessvariable:
+            self.turnindex = 0
+        
+        while self.uselessvariable[self.turnindex] not in self.aliveplayers:
+            self.turnindex += 1
+            if (len(self.turnindex) - 1) > self.uselessvariable:
+                self.turnindex = 0
+        
         
         if len(self.aliveplayers) == 1:
             if self.verbose:
@@ -702,16 +714,15 @@ class Donger(object):
             self.win(self.aliveplayers[0])
             return
         
-        self.newturn = random.choice(self._turnleft)
-        if self.verbose:
-            self.irc.privmsg(self.primarychan, "Verbose: Got turn: {0}".format(self.newturn))
-        while self.turn == self.newturn or self.newturn not in self.aliveplayers:
-            self.newturn = random.choice(self._turnleft)
-            if self.verbose:
-                self.irc.privmsg(self.primarychan, "Verbose: Getting turns again (last turn was dead or turned recently): {0}".format(self.newturn))
+        #self.newturn = random.choice(self._turnleft)
+        #if self.verbose:
+        #    self.irc.privmsg(self.primarychan, "Verbose: Got turn: {0}".format(self.newturn))
+        #while self.turn == self.newturn or self.newturn not in self.aliveplayers:
+        #    self.newturn = random.choice(self._turnleft)
+        #    if self.verbose:
+        #        self.irc.privmsg(self.primarychan, "Verbose: Getting turns again (last turn was dead or turned recently): {0}".format(self.newturn))
                 
-        self.turn = self.newturn
-        self._turnleft.remove(self.turn)
+        self.turn = self.uselessvariable[self.turnindex]
         self.roundstart = time.time()
         self.irc.privmsg(self.primarychan, "It is \002{0}\002's turn".format(self.irc.channels[self.primarychan].users[self.turn].nick))
         
@@ -756,6 +767,7 @@ class Donger(object):
         self.deathmatch = False
         self.deathmatchpending = {}
         self.turn = 0
+        self.turnindex = 0
         self.roundstart = 0
         if stats is True:
             self.countstat(self.irc.channels[self.primarychan].users[winner.lower()].nick, "win")
