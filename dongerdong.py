@@ -33,7 +33,7 @@ class Donger(object):
         self.verbose = False
         self.turn = ""
         self.turnindex = 0
-        self.uselessvariable = []
+        self.allplayers = []
         self._turnleft = []
         self._paccept = {}
         self.aliveplayers = []
@@ -211,9 +211,9 @@ class Donger(object):
                     return
                 nick = ev.splitd[1]
             else:
-                allplayers = copy.deepcopy(self.aliveplayers)
-                allplayers.remove(ev.source.lower())
-                nick = random.choice(list(allplayers))
+                allaliveplayers = copy.deepcopy(self.aliveplayers)
+                allaliveplayers.remove(ev.source.lower())
+                nick = random.choice(list(allaliveplayers))
                 
             self.hit(ev.source.lower(), nick)
         elif ev.splitd[0] == "!heal":
@@ -472,7 +472,7 @@ class Donger(object):
         else:
             cli.privmsg(self.primarychan, "\002{0}\002 JOINS THE FIGHT (\002{1}\002HP)".format(fighter.upper(), self.health[fighter.lower()]))
 
-        self.uselessvariable.append(fighter.lower())
+        self.allplayers.append(fighter.lower())
         self.aliveplayers.append(fighter.lower())
         cli.voice(self.primarychan, fighter)
 
@@ -681,7 +681,7 @@ class Donger(object):
 
             self.maxheal[i.lower()] = 44
             self.health[i.lower()] = 100
-            self.uselessvariable.append(i.lower())
+            self.allplayers.append(i.lower())
             self.aliveplayers.append(i.lower())
             if i.lower() != starter.lower():
                 self.countstat(i.lower(), "accept")
@@ -700,12 +700,12 @@ class Donger(object):
         #        self.irc.privmsg(self.primarychan, "Verbose: No turns left, refreshing list")
         #    self._turnleft = copy.copy(self.aliveplayers)
         
-        if self.turnindex > (len(self.uselessvariable) - 1):
+        if self.turnindex > (len(self.allplayers) - 1):
             self.turnindex = 0
         
-        while self.uselessvariable[self.turnindex] not in self.aliveplayers:
+        while self.allplayers[self.turnindex] not in self.aliveplayers:
             self.turnindex += 1
-            if self.turnindex > (len(self.uselessvariable) - 1):
+            if self.turnindex > (len(self.allplayers) - 1):
                 self.turnindex = 0
         
         
@@ -723,7 +723,7 @@ class Donger(object):
         #    if self.verbose:
         #        self.irc.privmsg(self.primarychan, "Verbose: Getting turns again (last turn was dead or turned recently): {0}".format(self.newturn))
                 
-        self.turn = self.uselessvariable[self.turnindex]
+        self.turn = self.allplayers[self.turnindex]
         self.turnindex += 1
         self.roundstart = time.time()
         self.irc.privmsg(self.primarychan, "It is \002{0}\002's turn".format(self.irc.channels[self.primarychan].users[self.turn].nick))
