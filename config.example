@@ -5,5 +5,6 @@
     "auxchans": ["#auxchannel1", "#auxchannel2"],
     "stats-url": "http://example.org",
     "nickserv-user": "botusername",
-    "nickserv-pass": "botpassword"
+    "nickserv-pass": "botpassword",
+    "modules": ["example"]
 }

@@ -882,6 +882,14 @@ Statsv2.create_table(True) # Here we create the table
 # Start donging
 dongerdong = Donger()
 
+# Load modules
+for module in dongerdong.config['modules']:
+    # get tha modulah
+    modulesb = getattr(__import__("modules.{0}".format(module)), module)
+    
+    # execute tah modulah functioh
+    modulesb.loadModule(dongerdong) # and that's all
+
 while dongerdong.irc.connected == True and dongerdong.irc.imayreconnect == True:
     try:
         time.sleep(1) # Infinite loop of awesomeness
