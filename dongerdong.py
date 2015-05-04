@@ -472,6 +472,7 @@ class Donger(object):
         else:
             cli.privmsg(self.primarychan, "\002{0}\002 JOINS THE FIGHT (\002{1}\002HP)".format(fighter.upper(), self.health[fighter.lower()]))
 
+        self.uselessvariable.append(fighter.lower())
         self.aliveplayers.append(fighter.lower())
         cli.voice(self.primarychan, fighter)
 
