@@ -723,6 +723,7 @@ class Donger(object):
         #        self.irc.privmsg(self.primarychan, "Verbose: Getting turns again (last turn was dead or turned recently): {0}".format(self.newturn))
                 
         self.turn = self.uselessvariable[self.turnindex]
+        self.turnindex += 1
         self.roundstart = time.time()
         self.irc.privmsg(self.primarychan, "It is \002{0}\002's turn".format(self.irc.channels[self.primarychan].users[self.turn].nick))
         
