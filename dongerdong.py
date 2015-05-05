@@ -692,11 +692,17 @@ class Donger(object):
         #    self._turnleft = copy.copy(self.aliveplayers)
         
         if self.turnindex > (len(self.allplayers) - 1):
+            if self.verbose:
+                self.irc.privmsg(self.primarychan, "Verbose: turnindex is greater than allplayers length minus 1 (first instance). Resetting turnindex to 0.")
             self.turnindex = 0
         
         while self.allplayers[self.turnindex] not in self.aliveplayers:
+            if self.verbose:
+                self.irc.privmsg(self.primarychan, "Verbose: Advancing turnindex by 1")
             self.turnindex += 1
             if self.turnindex > (len(self.allplayers) - 1):
+                if self.verbose:
+                    self.irc.privmsg(self.primarychan, "Verbose: turnindex is greater than allplayers length minus 1 (second instance). Resetting turnindex to 0.")
                 self.turnindex = 0
         
         
