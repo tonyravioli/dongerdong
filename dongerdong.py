@@ -667,6 +667,7 @@ class Donger(object):
             if cli.channels[self.primarychan.lower()].users[i.lower()].account in self.accountsseenonthisgame:
                 cli.privmsg(self.primarychan, "..... WAIT, WHAT?! Looks like somebody tried to play with two clones")
                 cli.mode(self.primarychan, "-m")
+                self.allplayers = []
                 return
             self.accountsseenonthisgame.append(cli.channels[self.primarychan.lower()].users[i.lower()].account)
 
