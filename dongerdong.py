@@ -16,7 +16,6 @@ import random
 import copy
 import operator
 import _thread
-import moduoli
 
 # This is for debugging. It vomits on the screen all the irc stuff
 logging.getLogger(None).setLevel(logging.DEBUG)
@@ -408,14 +407,6 @@ class Donger(object):
                                         player.realnick, player.wins, player.losses, player.quits, player.easywins, player.idleouts, player.praises, player.fights, player.accepts, (player.wins + player.losses + player.quits), player.hits, player.heals, player.dcaused, player.dreceived, self.statsurl, totaljoins))
             except:
                 cli.privmsg(ev.target, "There are no registered stats for \002{0}\002".format(nick))   
-
-        elif ev.splitd[0].startswith("!") and 1 == 0: #Disabling this cause it's dumb.
-            try:
-                command = ev.splitd[0].replace("!", "").lower()
-                stringtosend=getattr(moduoli.Module, command)()
-                cli.privmsg(ev.target, stringtosend)
-            except:
-                raise
 
     def _privmsg(self, cli, ev):
         if ev.splitd[0] == "!join":
