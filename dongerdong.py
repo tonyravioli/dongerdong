@@ -686,11 +686,6 @@ class Donger(object):
         if self.verbose:
             self.irc.privmsg(self.primarychan, "Verbose: Getting turns")
         
-        #if len(self._turnleft) == 0:
-        #    if self.verbose:
-        #        self.irc.privmsg(self.primarychan, "Verbose: No turns left, refreshing list")
-        #    self._turnleft = copy.copy(self.aliveplayers)
-        
         if self.turnindex > (len(self.allplayers) - 1):
             if self.verbose:
                 self.irc.privmsg(self.primarychan, "Verbose: turnindex is greater than allplayers length minus 1 (first instance). Resetting turnindex to 0.")
@@ -705,21 +700,13 @@ class Donger(object):
                     self.irc.privmsg(self.primarychan, "Verbose: turnindex is greater than allplayers length minus 1 (second instance). Resetting turnindex to 0.")
                 self.turnindex = 0
         
-        
         if len(self.aliveplayers) == 1:
             if self.verbose:
                 self.irc.privmsg(self.primarychan, "Verbose: Only one player left, ending the game")
+            self.allplayers = []  # adding this twice! WOO!
             self.win(self.aliveplayers[0])
             return
-        
-        #self.newturn = random.choice(self._turnleft)
-        #if self.verbose:
-        #    self.irc.privmsg(self.primarychan, "Verbose: Got turn: {0}".format(self.newturn))
-        #while self.turn == self.newturn or self.newturn not in self.aliveplayers:
-        #    self.newturn = random.choice(self._turnleft)
-        #    if self.verbose:
-        #        self.irc.privmsg(self.primarychan, "Verbose: Getting turns again (last turn was dead or turned recently): {0}".format(self.newturn))
-                
+                        
         self.turn = self.allplayers[self.turnindex]
         self.turnindex += 1
         self.roundstart = time.time()
@@ -758,6 +745,7 @@ class Donger(object):
             self.irc.privmsg(self.primarychan, "{0} REKT {1}!".format(self.irc.channels[self.primarychan].users[winner.lower()].nick, self._dusers(winner)))
         self.aliveplayers = []
         self.deadplayers = []
+        self.allplayers = []
         self.zombies = []
         self.health = {}
         self.accountsseenonthisgame = []
