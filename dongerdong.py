@@ -45,6 +45,8 @@ class Donger(object):
         self.zombies = []
         self.accountsseenonthisgame = [] # hi,thisisanextremellylongvariablename
         
+        self.extracommands = {} # Commands declarated by modules
+        
         # thread for timeouts
         _thread.start_new_thread(self._timeouts, ())
         
@@ -336,19 +338,7 @@ class Donger(object):
                 cli.privmsg(ev.target, ev.arguments[0].replace(cli.nickname, ev.source))
 
         elif ev.splitd[0] == "!help":
-            cli.privmsg(ev.target, "PM'd you my commands.")
-            cli.privmsg(ev.source, "Commands available only in {0}:".format(self.primarychan))
-            cli.privmsg(ev.source, "  !fight <nickname> [othernicknames]: Challenge another player")
-            cli.privmsg(ev.source, "  !deathmatch <nickname>: Same as fight, but only 1v1, and loser is bant for 20 minutes.")
-            cli.privmsg(ev.source, "  !ascii <text>: Turns any text 13 characters or less into ascii art")
-            cli.privmsg(ev.source, "  !cancel: Cancels a !fight")
-            cli.privmsg(ev.source, "  !reject <nick>: Cowardly rejects a !fight")
-            cli.privmsg(ev.source, "Commands available everywhere:")
-            cli.privmsg(ev.source, "  !raise: Commands users to raise their dongers")
-            cli.privmsg(ev.source, "  !excuse: Outputs random BOFH excuse")
-            cli.privmsg(ev.source, "  !jaden: Outputs random Jaden Smith tweet")
-            cli.privmsg(ev.source, "  !stats [player]: Outputs player's game stats (or your own stats)")
-            cli.privmsg(ev.source, "  !top: Shows the three players with most wins")
+            self.commandHelp(cli, ev)
         elif ev.splitd[0] == "!excuse":
             cli.privmsg(ev.target, self.randomLine("excuse"))
         elif ev.splitd[0] == "!jaden":
@@ -417,8 +407,28 @@ class Donger(object):
                 cli.privmsg(ev.target, "\002{0}\002's stats: \002{1}\002 wins, \002{4}\002 easy wins, \002{2}\002 losses, \002{3}\002 coward quits, \002{5}\002 idle-outs, \002{6}\002 !praises, \002{7}\002 fights started, accepted \002{8}\002 fights, !joined \002{15}\002 fights (\002{9}\002 total fights), \002{10}\002 !hits, \002{11}\002 !heals, \002{12}\002HP of damage dealt and \002{13}\002 damage received. {14}".format(
                                         player.realnick, player.wins, player.losses, player.quits, player.easywins, player.idleouts, player.praises, player.fights, player.accepts, (player.wins + player.losses + player.quits), player.hits, player.heals, player.dcaused, player.dreceived, self.statsurl, totaljoins))
             except:
-                cli.privmsg(ev.target, "There are no registered stats for \002{0}\002".format(nick))   
-
+                cli.privmsg(ev.target, "There are no registered stats for \002{0}\002".format(nick))
+        else:
+            try:
+                self.extracommands[ev.splitd[0]](self, cli, ev)
+            except:
+                pass
+    
+    def commandHelp(self, cli, ev):
+        cli.privmsg(ev.target, "PM'd you my commands.")
+        cli.privmsg(ev.source, "Commands available only in {0}:".format(self.primarychan))
+        cli.privmsg(ev.source, "  !fight <nickname> [othernicknames]: Challenge another player")
+        cli.privmsg(ev.source, "  !deathmatch <nickname>: Same as fight, but only 1v1, and loser is bant for 20 minutes.")
+        cli.privmsg(ev.source, "  !ascii <text>: Turns any text 13 characters or less into ascii art")
+        cli.privmsg(ev.source, "  !cancel: Cancels a !fight")
+        cli.privmsg(ev.source, "  !reject <nick>: Cowardly rejects a !fight")
+        cli.privmsg(ev.source, "Commands available everywhere:")
+        cli.privmsg(ev.source, "  !raise: Commands users to raise their dongers")
+        cli.privmsg(ev.source, "  !excuse: Outputs random BOFH excuse")
+        cli.privmsg(ev.source, "  !jaden: Outputs random Jaden Smith tweet")
+        cli.privmsg(ev.source, "  !stats [player]: Outputs player's game stats (or your own stats)")
+        cli.privmsg(ev.source, "  !top: Shows the three players with most wins")
+    
     def _privmsg(self, cli, ev):
         if ev.splitd[0] == "!join":
             self.join(cli, ev.source, ev)
