@@ -78,7 +78,8 @@ class Donger(object):
         self.irc.connect()
 
     def debug(self, stringtoprint): #This is going to replace the if self.verbose crap.
-        self.irc.privmsg(self.primarychan, stringtoprint)
+        if self.verbose:
+            self.irc.privmsg(self.primarychan, stringtoprint)
 
     def _pubmsg(self, cli, ev):
         # Processing commands here
@@ -491,11 +492,10 @@ class Donger(object):
 
         instaroll = random.randint(1, 50) if not self.deathmatch and hfrom.lower not in self.zombies else 50
 
-        if self.verbose:
-            self.irc.privmsg(self.primarychan, "Verbose: instaroll is {0}/50 (1 for instakill)".format(instaroll))
-            self.irc.privmsg(self.primarychan, "Verbose: criticalroll is {0}/12 (1 for critical)".format(criticalroll))
-            self.irc.privmsg(self.primarychan, "Verbose: Regular damage is {0}/35".format(damage))
-            
+        self.debug("Verbose: instaroll is {0}/50 (1 for instakill)".format(instaroll))
+        self.debug("Verbose: criticalroll is {0}/12 (1 for critical)".format(criticalroll))
+        self.debug("Verbose: Regular damage is {0}/35".format(damage))
+
         if instaroll == 1:
             self.debug("Verbose: Instakill. Removing player.".format(instaroll))
             self.ascii("instakill")
@@ -551,8 +551,7 @@ class Donger(object):
             self.countstat(self.irc.channels[self.primarychan].users[to.lower()].nick, "loss")
             if to.lower() != self.irc.nickname.lower():
                 if self.deathmatch == True:
-                    if self.verbose:
-                        self.irc.privmsg(self.primarychan, "Verbose: Deathmatch lost. Adding akick.".format(instaroll))
+                    self.debug("Verbose: Deathmatch lost. Adding akick.".format(instaroll))
                     self.irc.privmsg("CHANSERV", "AKICK {0} ADD {1} !T 20 FUCKIN REKT| Lost deathmatch".format(self.primarychan, self.irc.channels[self.primarychan].users[to.lower()].account))
                 self.irc.kick(self.primarychan, to, "REKT")
             self.deathmatch = False
@@ -573,8 +572,7 @@ class Donger(object):
             self.countstat(nick, "heal")
         
         self.health[nick.lower()] += healing
-        if self.verbose:
-            self.irc.privmsg(self.primarychan, "Verbose: Regular healing is {0}/{1}(/44)".format(healing, self.maxheal[nick.lower()]))
+        self.debug("Verbose: Regular healing is {0}/{1}(/44)".format(healing, self.maxheal[nick.lower()]))
         self.maxheal[nick.lower()] = self.maxheal[nick.lower()] - 5
 
         if self.health[nick.lower()] > 100:
@@ -686,8 +684,7 @@ class Donger(object):
         self.getturn()
         
     def getturn(self):
-        if self.verbose:
-            self.irc.privmsg(self.primarychan, "Verbose: Getting turns")
+        self.debug("Verbose: Getting turns")
         
         if self.turnindex > (len(self.allplayers) - 1):
             self.debug("Verbose: turnindex is greater than allplayers length minus 1 (first instance). Resetting turnindex to 0.")
@@ -697,8 +694,7 @@ class Donger(object):
             self.debug("Verbose: Advancing turnindex by 1")
             self.turnindex += 1
             if self.turnindex > (len(self.allplayers) - 1):
-                if self.verbose:
-                    self.irc.privmsg(self.primarychan, "Verbose: turnindex is greater than allplayers length minus 1 (second instance). Resetting turnindex to 0.")
+                self.debug("Verbose: turnindex is greater than allplayers length minus 1 (second instance). Resetting turnindex to 0.")
                 self.turnindex = 0
         
         if len(self.aliveplayers) == 1:
@@ -721,19 +717,16 @@ class Donger(object):
             requiredbothp = 40
             requiredtohithp = 29
             if self.health[self.irc.nickname.lower()] < requiredbothp and self.health[tohit] > requiredtohithp:
-                if self.verbose:
-                    self.irc.privmsg(self.primarychan, "Verbose: AI: Less than {0} HP, opponent more than {1}. Healing.".format(requiredbothp, requiredtohithp))
+                self.debug("Verbose: AI: Less than {0} HP, opponent more than {1}. Healing.".format(requiredbothp, requiredtohithp))
                 if self.maxheal[self.irc.nickname.lower()] <= 20:
-                    if self.verbose:		
-                        self.irc.privmsg(self.primarychan, "Verbose: AI: Not enough chopsticks. Hitting.")
+                    self.debug("Verbose: AI: Not enough chopsticks. Hitting.")
                     self.irc.privmsg(self.primarychan, "!hit " + tohit) 
                     self.hit(self.irc.nickname.lower(), tohit)
                 else:
                     self.irc.privmsg(self.primarychan, "!heal") 
                     self.heal(self.irc.nickname.lower())
             else:
-                if self.verbose:
-                    self.irc.privmsg(self.primarychan, "Verbose: AI: More than {0} HP or opponent less than {1}. Attacking.".format(requiredbothp, requiredtohithp))
+                self.debug("Verbose: AI: More than {0} HP or opponent less than {1}. Attacking.".format(requiredbothp, requiredtohithp))
                 self.irc.privmsg(self.primarychan, "!hit " + tohit) 
                 self.hit(self.irc.nickname.lower(), tohit)
     
