@@ -470,11 +470,12 @@ class Donger(object):
         if ev.splitd[1] == "zombie": # ooo zombie
             self.health[fighter.lower()] = int(self.health[fighter.lower()] / 1.3)
             cli.privmsg(self.primarychan, "\002{0}\002's ZOMBIE JOINS THE FIGHT (\002{1}\002HP)".format(fighter.upper(), self.health[fighter.lower()]))
-
         else:
             cli.privmsg(self.primarychan, "\002{0}\002 JOINS THE FIGHT (\002{1}\002HP)".format(fighter.upper(), self.health[fighter.lower()]))
+        
+        if fighter.lower() not in self.allplayers:
+            self.allplayers.append(fighter.lower())
 
-        self.allplayers.append(fighter.lower())
         self.aliveplayers.append(fighter.lower())
         cli.voice(self.primarychan, fighter)
 
