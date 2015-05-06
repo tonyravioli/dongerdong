@@ -725,24 +725,27 @@ class Donger(object):
         # AI
         if self.turn.lower() == self.irc.nickname.lower():
             time.sleep(random.randint(2, 4))
-            playerstohit = copy.copy(self.aliveplayers)
-            playerstohit.remove(self.irc.nickname.lower())
-            tohit = random.choice(playerstohit)
-            requiredbothp = 40
-            requiredtohithp = 29
-            if self.health[self.irc.nickname.lower()] < requiredbothp and self.health[tohit] > requiredtohithp:
-                self.debug("Verbose: AI: Less than {0} HP, opponent more than {1}. Healing.".format(requiredbothp, requiredtohithp))
-                if self.maxheal[self.irc.nickname.lower()] <= 20:
-                    self.debug("Verbose: AI: Not enough chopsticks. Hitting.")
-                    self.irc.privmsg(self.primarychan, "!hit " + tohit) 
-                    self.hit(self.irc.nickname.lower(), tohit)
-                else:
-                    self.irc.privmsg(self.primarychan, "!heal") 
-                    self.heal(self.irc.nickname.lower())
-            else:
-                self.debug("Verbose: AI: More than {0} HP or opponent less than {1}. Attacking.".format(requiredbothp, requiredtohithp))
+            self.processAI()
+            
+    def processAI(self):
+        playerstohit = copy.copy(self.aliveplayers)
+        playerstohit.remove(self.irc.nickname.lower())
+        tohit = random.choice(playerstohit)
+        requiredbothp = 40
+        requiredtohithp = 29
+        if self.health[self.irc.nickname.lower()] < requiredbothp and self.health[tohit] > requiredtohithp:
+            self.debug("Verbose: AI: Less than {0} HP, opponent more than {1}. Healing.".format(requiredbothp, requiredtohithp))
+            if self.maxheal[self.irc.nickname.lower()] <= 20:
+                self.debug("Verbose: AI: Not enough chopsticks. Hitting.")
                 self.irc.privmsg(self.primarychan, "!hit " + tohit) 
                 self.hit(self.irc.nickname.lower(), tohit)
+            else:
+                self.irc.privmsg(self.primarychan, "!heal") 
+                self.heal(self.irc.nickname.lower())
+        else:
+            self.debug("Verbose: AI: More than {0} HP or opponent less than {1}. Attacking.".format(requiredbothp, requiredtohithp))
+            self.irc.privmsg(self.primarychan, "!hit " + tohit) 
+            self.hit(self.irc.nickname.lower(), tohit)
     
     def win(self, winner, stats=True):
         self.verbose = False
