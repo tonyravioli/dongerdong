@@ -76,7 +76,10 @@ class Donger(object):
         
         # Connect to the IRC
         self.irc.connect()
-    
+
+    def debug(self, stringtoprint): #This is going to replace the if self.verbose crap.
+        self.irc.privmsg(self.primarychan, stringtoprint)
+
     def _pubmsg(self, cli, ev):
         # Processing commands here
 
@@ -764,7 +767,7 @@ class Donger(object):
     
     def ascii(self, key, font="smslant"): #Only used in fights
         self.irc.privmsg(self.primarychan, "\n".join([name for name in Figlet(font).renderText(key.upper()).split("\n")[:-1] if name.strip()]))
-    
+
     # god, this is so shitty
     def randomLine(self, type):
         if type == "excuse":
