@@ -244,8 +244,12 @@ class Donger(object):
                 cli.privmsg(self.primarychan, "GET OUT OR I'LL KILL YOU! INTRUDER INTRUDER INTRUDER")
                 return
 
-            if ev.source.lower() in self.haspraised or self.deathmatch or ev.source.lower() in self.zombies:
+            if ev.source.lower() in self.haspraised or ev.source.lower() in self.zombies:
                 cli.privmsg(self.primarychan, "Your praises bore me.")
+                return
+                
+            if self.deathmatch:
+                cli.privmsg(self.primarychan, "\"A dong's life is the most precious thing on the universe\". You can't praise on deathmatches.")
                 return
             
             if len(ev.splitd) != 1 and ev.splitd[1] != "":
