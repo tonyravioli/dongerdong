@@ -484,8 +484,7 @@ class Donger(object):
         criticalroll = random.randint(1, 12) if hfrom.lower() not in self.zombies else 12
 
         if modifier == "praise":
-            if self.verbose:
-                self.irc.privmsg(self.primarychan, "Verbose: Praise. Forcing critical")
+            self.debug("Verbose: Praise. Forcing critical")
             criticalroll = 1
         else:
             self.countstat(hfrom, "hit")
@@ -498,8 +497,7 @@ class Donger(object):
             self.irc.privmsg(self.primarychan, "Verbose: Regular damage is {0}/35".format(damage))
             
         if instaroll == 1:
-            if self.verbose:
-                self.irc.privmsg(self.primarychan, "Verbose: Instakill. Removing player.".format(instaroll))
+            self.debug("Verbose: Instakill. Removing player.".format(instaroll))
             self.ascii("instakill")
             self.irc.devoice(self.primarychan, to.lower())
             self.ascii("rekt")
@@ -522,8 +520,7 @@ class Donger(object):
             self.countstat(self.irc.channels[self.primarychan].users[to.lower()].nick, "loss")
             return
         elif criticalroll == 1:
-            if self.verbose:
-                self.irc.privmsg(self.primarychan, "Verbose: Critical hit, duplicating damage: {0}/70".format(damage*2))
+            self.debug("Verbose: Critical hit, duplicating damage: {0}/70".format(damage*2))
             if modifier == "praise":
                 self.ascii("FUCK YOU")
             else:
@@ -544,8 +541,7 @@ class Donger(object):
             self.irc.devoice(self.primarychan, to.lower())
             self.ascii("rekt")
             self.irc.privmsg(self.primarychan, "\002{0}\002 REKT {1}!".format(self.irc.channels[self.primarychan].users[hfrom.lower()].nick, self.irc.channels[self.primarychan].users[to.lower()].nick))
-            if self.verbose:
-                self.irc.privmsg(self.primarychan, "Verbose: Removing dead player.".format(instaroll))
+            self.debug("Verbose: Removing dead player.".format(instaroll))
             self.aliveplayers.remove(to.lower())
             self.deadplayers.append(to.lower())
             try:
@@ -571,8 +567,7 @@ class Donger(object):
         healing = random.randint(22, self.maxheal[nick.lower()] if modifier != "praise" else 40)
         if modifier == "praise":
             healing = healing * 2
-            if self.verbose:
-                self.irc.privmsg(self.primarychan, "Verbose: Praise. Forcing critical heal.")
+            self.debug("Verbose: Praise. Forcing critical heal.")
             self.ascii("whatever")
         else:
             self.countstat(nick, "heal")
@@ -695,13 +690,11 @@ class Donger(object):
             self.irc.privmsg(self.primarychan, "Verbose: Getting turns")
         
         if self.turnindex > (len(self.allplayers) - 1):
-            if self.verbose:
-                self.irc.privmsg(self.primarychan, "Verbose: turnindex is greater than allplayers length minus 1 (first instance). Resetting turnindex to 0.")
+            self.debug("Verbose: turnindex is greater than allplayers length minus 1 (first instance). Resetting turnindex to 0.")
             self.turnindex = 0
         
         while self.allplayers[self.turnindex] not in self.aliveplayers:
-            if self.verbose:
-                self.irc.privmsg(self.primarychan, "Verbose: Advancing turnindex by 1")
+            self.debug("Verbose: Advancing turnindex by 1")
             self.turnindex += 1
             if self.turnindex > (len(self.allplayers) - 1):
                 if self.verbose:
@@ -709,8 +702,7 @@ class Donger(object):
                 self.turnindex = 0
         
         if len(self.aliveplayers) == 1:
-            if self.verbose:
-                self.irc.privmsg(self.primarychan, "Verbose: Only one player left, ending the game")
+            self.debug("Verbose: Only one player left, ending the game")
             self.allplayers = []  # adding this twice! WOO!
             self.win(self.aliveplayers[0])
             return
