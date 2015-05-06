@@ -93,6 +93,9 @@ class Donger(object):
             finally:
                 self.lastheardfrom[ev.source] = time.time()
                 self.sourcehistory.append(ev.source)
+        else:
+            return # If this works the way I think it will, it won't need to parse anything unless it starts with a ! or the cli.nickname.
+        ev.splitd[0] = ev.splitd[0].lower() #Lower the commands.
         if ev.splitd[0] == "!fight" or ev.splitd[0] == "!deathmatch":
             if ev.target in self.auxchans:
                 return
