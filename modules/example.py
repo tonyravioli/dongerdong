@@ -16,3 +16,4 @@ def loadModule(dongerdong):
     
     # Override the core's join function
     dongerdong.join = fakeJoin
+

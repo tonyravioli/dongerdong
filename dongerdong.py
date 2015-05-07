@@ -410,9 +410,10 @@ class Donger(object):
                 cli.privmsg(ev.target, "There are no registered stats for \002{0}\002".format(nick))
         else:
             try:
-                self.extracommands[ev.splitd[0]](self, cli, ev)
+                self.extracommands[ev.splitd[0]]
             except:
-                pass
+                return
+            self.extracommands[ev.splitd[0]](self, cli, ev)
     
     def commandHelp(self, cli, ev):
         cli.privmsg(ev.target, "PM'd you my commands.")
