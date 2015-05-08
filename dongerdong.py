@@ -679,6 +679,7 @@ class Donger(object):
         cli.privmsg(self.primarychan, "Use '/msg {0} !join' to join a game mid-fight.".format(cli.nickname))
         cli.privmsg(self.primarychan, " ")
         self.ascii("FIGHT")
+        cli.privmsg(self.primarychan, " ")
         
         for i in fighters:
             if cli.channels[self.primarychan.lower()].users[i.lower()].account in self.accountsseenonthisgame:
