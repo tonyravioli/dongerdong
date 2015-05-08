@@ -117,7 +117,7 @@ def cashout(dong, cli, ev):
         credi = Balances.create(account = cli.channels[ev.target.lower()].users[ev.source.lower()].account, balance = 0)
     
     if (credi.balance /100) < int(ev.splitd[1]):
-        cli.privmsg(ev.target, "You don't have enough buttcoins to do that!")
+        cli.privmsg(ev.target, "You don't have enough dongcoins to do that!")
         return
     
     res = transfer(ev.source.lower(), ev.splitd[1], "cashout")
@@ -135,8 +135,62 @@ def cashout(dong, cli, ev):
             cli.privmsg(ev.target, "You don't have an account on the buttcoin central bank!")
         else:
             cli.privmsg(ev.target, "zomg, weird error!")
-            
 
+# !bounty command, to place bounties.
+def bounty(dong, cli, ev):
+    if len(ev.splitd) < 3:
+        cli.privmsg(ev.target, "Usage: !bounty <nick (NickServ account preferred)> <amount of dongcoins>")
+        return
+    
+    try:
+        if int(ev.splitd[2]) <= 0:
+            raise
+    except:
+        cli.privmsg(ev.target, "Usage: !bounty <nick (NickServ account preferred)> <amount of dongcoins>")
+        return
+
+    amount = int(ev.splitd[2])
+    try:
+        credi = Balances.get(Balances.account == cli.channels[ev.target.lower()].users[ev.source.lower()].account)
+        if not credi:
+            raise
+    except:
+        credi = Balances.create(account = cli.channels[ev.target.lower()].users[ev.source.lower()].account, balance = 0)
+
+    if credi.balance < amount:
+        cli.privmsg(ev.target, "You don't have enough dongcoins to do that!")
+        return
+
+    try:
+        nick = cli.channels[ev.target.lower()].users[ev.splitd[1].lower()].account
+    except:
+        nick = ev.splitd[1].lower()
+    
+    try:
+        credi = Bounties.get(Bounties.account == nick)
+        if not credi:
+            raise
+    except:
+        credi = Bounties.create(account = nick, amount = 0)
+    
+    credi.amount += amount
+    credi.save()
+    
+    cli.privmsg(ev.target, "Bounty placed.")
+
+# !wanted command, lists the 3 users with the highest bounties.
+def wanted(dong, cli, ev):
+    criminals = Bounties.select().order_by(Bounties.amount.desc())
+    i = 0
+    criminal_list = "Wanted: "
+    for criminal in criminals:
+        i += 1
+        criminal_list = criminal_list + "{0} (\002{1}\002), ".format(criminal.account, criminal.amount)
+        if i == 3:
+            break
+    
+    cli.privmsg(ev.target, criminal_list[:-2])
+    
 # create database tables and stuff
 
 database = peewee.SqliteDatabase('dongerdong.db')
@@ -146,10 +200,14 @@ class BaseModel(peewee.Model):
     class Meta:
         database = database
 
-# NEW Stats table
 class Balances(BaseModel):
     account = peewee.CharField()
     balance = peewee.IntegerField()
+
+class Bounties(BaseModel):
+    account = peewee.CharField()
+    amount = peewee.IntegerField()
+
 
 class ButtCoinPending(BaseModel):
     tid = peewee.CharField()  # Transaction ID
@@ -211,9 +269,13 @@ def loadModule(dong):
     dong.extracommands['!cashout'] = cashout
     dong.extracommands['!bet'] = bet
     
+    dong.extracommands['!bounty'] = bounty
+    dong.extracommands['!wanted'] = wanted
+    
     # Create tables
     Balances.create_table(True)
     ButtCoinPending.create_table(True)
+    Bounties.create_table(True)
     
     # Turn on the jet turbines
     httpd = http.server.HTTPServer(('', 8814), buttServer)
