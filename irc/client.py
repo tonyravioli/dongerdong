@@ -43,17 +43,17 @@ class IRCClient:
 
         # Internal handlers used to get user/channel information
         self.addhandler("join", self._on_join)
-        self.addhandler("currenttopic", self._on_topic)
-        self.addhandler("topic", self._on_topic)
-        self.addhandler("topicinfo", self._on_topicinfo)
+        #self.addhandler("currenttopic", self._on_topic)
+        #self.addhandler("topic", self._on_topic)
+        #self.addhandler("topicinfo", self._on_topicinfo)
         self.addhandler("whospcrpl", self._on_whox)
         self.addhandler("whoreply", self._on_who)
         self.addhandler("whoisloggedin", self._on_whoisaccount)
-        self.addhandler("mode", self._on_mode)
+        #self.addhandler("mode", self._on_mode)
         self.addhandler("quit", self._on_quit)
         self.addhandler("part", self._on_part)
         self.addhandler("kick", self._on_kick)
-        self.addhandler("banlist", self._on_banlist)
+        #self.addhandler("banlist", self._on_banlist)
         self.addhandler("kick", self._on_kick)
         self.addhandler("nick", self._on_nick)
 
@@ -531,9 +531,9 @@ class Channel(object):
         except:
             client.who(channelname)
         
-        client.mode(channelname, "b")
-        if "q" in client.features.chanmodes[0]:
-            client.mode(channelname, "q")
+        #client.mode(channelname, "b")
+        #if "q" in client.features.chanmodes[0]:
+        #    client.mode(channelname, "q")
 
     def topicChange(self, source, topic):
         self.topic = topic
