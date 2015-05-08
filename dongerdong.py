@@ -555,6 +555,7 @@ class Donger(object):
         self.getturn()
     
     def death(self, slayer, player):
+        self.debug("Verbose: Death. Slayer: {0}, player: {1}".format(slayer, player))
         self.irc.devoice(self.primarychan, player)
         self.ascii("rekt")
         self.irc.privmsg(self.primarychan, "\002{0}\002 REKT {1}!".format(self.irc.channels[self.primarychan].users[slayer.lower()].nick, self.irc.channels[self.primarychan].users[player.lower()].nick))

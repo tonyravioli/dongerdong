@@ -244,6 +244,35 @@ def fakewin(winner, stats=True):
     
     originalwin(winner, stats)
 
+def fakedeath(slayer, player):
+    global originaldeath
+    global dongerdong
+    
+    if slayer.lower() == player.lower():
+        originaldeath(slayer, player)
+        return
+    
+    try:
+        bounty = Bounties.get(Bounties.account == dongerdong.irc.channels[dongerdong.primarychan.lower()].users[player.lower()].account)
+        if not bounty:
+            raise
+        # ooo, player got a bounty :D
+        try:
+            credi = Balances.get(Balances.account == dongerdong.irc.channels[dongerdong.primarychan.lower()].users[slayer.lower()].account)
+            if not credi:
+                raise
+            credi.balance += bounty.amount
+            credi.save()
+        except:
+            credi = Balances.create(account = dongerdong.irc.channels[dongerdong.primarychan.lower()].users[slayer.lower()].account, balance = bounty.amount)
+        bounty.delete_instance()
+        dongerdong.irc.privmsg(dongerdong.primarychan, "\002{0}\002 got the \002{1}\002 dongs bounty for killing {2}".format(slayer, bounty.amount, player))
+    except Exception as poop:
+        print(poop)
+        pass
+    
+    originaldeath(slayer, player)
+
 def fakeprerules(self):
     global originalprerules
     global dongerdong
@@ -261,6 +290,7 @@ def bet(self):
 def loadModule(dong):
     global dongerdong
     global originalwin
+    global originaldeath
     dongerdong = dong
     
     # Declare commands
@@ -283,5 +313,7 @@ def loadModule(dong):
     
     # launch th... override functions
     originalwin = dong.win
+    originaldeath = dong.death
     dong.win = fakewin
+    dong.death = fakedeath
 
