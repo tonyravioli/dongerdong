@@ -120,6 +120,12 @@ class Donger(object):
                 ev.splitd.remove("--verbose")
                 self.verbose = True
                 cli.privmsg(self.primarychan, "Verbose mode activated (Will deactivate when a game ends)")
+
+            if "--nojoin" in ev.splitd:
+                ev.splitd.remove("--nojoin")
+                self.nojoin = True
+                cli.privmsg(self.primarychan, "This is a 1v1 match. No joins allowed.")
+
             if ev.splitd[0] == "!deathmatch":
                 if cli.nickname in ev.splitd:
                     cli.privmsg(self.primarychan, "Sorry, but {0} is unavailable for a deathmatch.".format(cli.nickname))
