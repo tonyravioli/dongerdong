@@ -12,6 +12,8 @@ dongerdong = None
 
 originalwin = None
 
+originalprerules = None
+
 cookiejar = http.cookiejar.CookieJar()
 opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cookiejar))
 
@@ -184,6 +186,19 @@ def fakewin(winner, stats=True):
     
     originalwin(winner, stats)
 
+def fakeprerules(self):
+    global originalprerules
+    global dongerdong
+
+    if dongerdong.deathmatch:
+        return
+
+    return
+    #cli.privmsg(ev.target, "Place your bets within next ten seconds! Syntax: !bet 5 <nickname>")
+
+def bet(self):
+    return
+
 
 def loadModule(dong):
     global dongerdong
@@ -194,6 +209,7 @@ def loadModule(dong):
     dong.extracommands['!deposit'] = deposit
     dong.extracommands['!balance'] = balance
     dong.extracommands['!cashout'] = cashout
+    dong.extracommands['!bet'] = bet
     
     # Create tables
     Balances.create_table(True)
