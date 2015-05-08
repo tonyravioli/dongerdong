@@ -155,6 +155,7 @@ class ButtCoinPending(BaseModel):
     secret = peewee.CharField() # Transaction secret
     amount = peewee.IntegerField()
 
+# Mini HTTP server to verify transactions
 class buttServer(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
         print(self.path)
@@ -206,4 +207,3 @@ def loadModule(dong):
     originalwin = dong.win
     dong.win = fakewin
 
-# Mini HTTP server to verify transactions
