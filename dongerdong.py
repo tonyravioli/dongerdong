@@ -516,19 +516,10 @@ class Donger(object):
         if instaroll == 1:
             self.debug("Verbose: Instakill. Removing player.".format(instaroll))
             self.ascii("instakill")
-            self.irc.devoice(self.primarychan, to.lower())
-            self.ascii("rekt")
-            self.countstat(hfrom, "dmg", self.health[to.lower()])
-            self.countstat(to, "gotdmg", self.health[to.lower()])
-            self.irc.privmsg(self.primarychan, "\002{0}\002 REKT {1}!".format(self.irc.channels[self.primarychan].users[hfrom.lower()].nick, self.irc.channels[self.primarychan].users[to.lower()].nick))
-            #self.win(ev.source, self.health)
+
+            self.death(hfrom, to)
             self.health[to.lower()] = -1
-            self.deadplayers.append(to.lower())
-            self.aliveplayers.remove(to.lower())
-            try:
-                self._turnleft.remove(to.lower())
-            except:
-                pass
+
             if to.lower() != self.irc.nickname:
                 self.irc.kick(self.primarychan, to, "REKT")
             else:
@@ -555,23 +546,27 @@ class Donger(object):
                                     str(fromhp), str(damage), self.irc.channels[self.primarychan].users[to.lower()].nick, str(self.health[to.lower()])))
 
         if self.health[to.lower()] <= 0:
-            self.irc.devoice(self.primarychan, to.lower())
-            self.ascii("rekt")
-            self.irc.privmsg(self.primarychan, "\002{0}\002 REKT {1}!".format(self.irc.channels[self.primarychan].users[hfrom.lower()].nick, self.irc.channels[self.primarychan].users[to.lower()].nick))
-            self.debug("Verbose: Removing dead player.".format(instaroll))
-            self.aliveplayers.remove(to.lower())
-            self.deadplayers.append(to.lower())
-            try:
-                self._turnleft.remove(to.lower())
-            except:
-                pass
-            self.countstat(self.irc.channels[self.primarychan].users[to.lower()].nick, "loss")
+            self.death(hfrom, to)
             if to.lower() != self.irc.nickname.lower():
                 if self.deathmatch == True:
                     self.debug("Verbose: Deathmatch lost. Adding akick.".format(instaroll))
                     self.irc.privmsg("CHANSERV", "AKICK {0} ADD {1} !T 20 FUCKIN REKT| Lost deathmatch".format(self.primarychan, self.irc.channels[self.primarychan].users[to.lower()].account))
                 self.irc.kick(self.primarychan, to, "REKT")
         self.getturn()
+    
+    def death(self, slayer, player):
+        self.irc.devoice(self.primarychan, player)
+        self.ascii("rekt")
+        self.irc.privmsg(self.primarychan, "\002{0}\002 REKT {1}!".format(self.irc.channels[self.primarychan].users[slayer.lower()].nick, self.irc.channels[self.primarychan].users[player.lower()].nick))
+        self.debug("Verbose: Removing dead player.")
+        self.aliveplayers.remove(player.lower())
+        self.deadplayers.append(player.lower())
+        try:
+            self._turnleft.remove(player.lower())
+        except:
+            pass
+        self.countstat(self.irc.channels[self.primarychan].users[player.lower()].nick, "loss")
+
     
     def heal(self, nick, modifier=None):
         if modifier == None and self.turn.lower() != nick.lower():
