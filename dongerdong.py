@@ -796,9 +796,9 @@ class Donger(object):
             return random.choice(list(open(file)))
         except:
             return "Error getting file {0}".format(file)
-    def prefight():
+    def prefight(self):
         return #For modules which do things before the FIGHT has started, after the rules.
-    def postfight():
+    def postfight(self):
         return #For modules which do things after the fight is over
 
     # For the record: cli = client and ev = event
