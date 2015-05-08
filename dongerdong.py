@@ -115,6 +115,7 @@ class Donger(object):
                 return
             
             self.deathmatch = False
+            self.verbose = False
             
             if "--verbose" in ev.splitd:
                 ev.splitd.remove("--verbose")
@@ -760,6 +761,13 @@ class Donger(object):
         self.irc.devoice(self.primarychan, winner)
         if len(list(self.health)) > 2:
             self.irc.privmsg(self.primarychan, "{0} REKT {1}!".format(self.irc.channels[self.primarychan].users[winner.lower()].nick, self._dusers(winner)))
+        self.reset()
+        if stats is True:
+            self.countstat(self.irc.channels[self.primarychan].users[winner.lower()].nick, "win")
+        else:
+            self.countstat(self.irc.channels[self.primarychan].users[winner.lower()].nick, "easywin")
+
+    def reset(self):
         self.aliveplayers = []
         self.deadplayers = []
         self.allplayers = []
@@ -773,10 +781,8 @@ class Donger(object):
         self.turn = 0
         self.turnindex = 0
         self.roundstart = 0
-        if stats is True:
-            self.countstat(self.irc.channels[self.primarychan].users[winner.lower()].nick, "win")
-        else:
-            self.countstat(self.irc.channels[self.primarychan].users[winner.lower()].nick, "easywin")
+        self.verbose = False
+        self.nojoin = False
     
     def ascii(self, key, font="smslant"): #Only used in fights
         self.irc.privmsg(self.primarychan, "\n".join([name for name in Figlet(font).renderText(key.upper()).split("\n")[:-1] if name.strip()]))
