@@ -691,6 +691,9 @@ class Donger(object):
             self.aliveplayers.append(i.lower())
             if i.lower() != starter.lower():
                 self.countstat(i.lower(), "accept")
+        
+        random.shuffle(self.allplayers) # randomize turns
+        
         cli.voice(self.primarychan, fighters)
         self.haspraised = []
         self.deadplayers = []
