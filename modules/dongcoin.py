@@ -82,12 +82,21 @@ def paid(pid):
 
 # !balance command, to check your own balance.
 def balance(dong, cli, ev):
+    if len(ev.splitd) < 1:
+        try:
+            nick = cli.channels[ev.target.lower()].users[ev.splitd[1].lower()].account
+        except:
+            nick = ev.splitd[1]
+
+    else:
+        nick = cli.channels[ev.target.lower()].users[ev.source.lower()].account
+
     try:
-        credi = Balances.get(Balances.account == cli.channels[ev.target.lower()].users[ev.source.lower()].account)
+        credi = Balances.get(Balances.account == nick)
         if not credi:
             raise
     except:
-        credi = Balances.create(account = cli.channels[ev.target.lower()].users[ev.source.lower()].account, balance = 0)
+        credi = Balances.create(account = nick, balance = 0)
         
     cli.privmsg(ev.target, "\002{0}\002's balance: \002{1}\002 dongcoins (\002{2}\002 buttcoins)".format(cli.channels[ev.target.lower()].users[ev.source.lower()].account,
                 credi.balance, round((credi.balance/100), 2)))
