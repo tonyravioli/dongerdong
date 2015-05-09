@@ -496,9 +496,16 @@ class IRCClient:
     
     def _on_nick(self, myself, event):
         for i in self.channels:
-            self.channels[i].users[event.target.lower()] = self.channels[i].users[event.source.nick.lower()]
-            self.channels[i].users[event.target.lower()].nick = event.target
-            del self.channels[i].users[event.source.nick.lower()]
+            try:
+                self.channels[i].users[event.target.lower()] = self.channels[i].users[event.source.nick.lower()]
+                self.channels[i].users[event.target.lower()].nick = event.target
+                del self.channels[i].users[event.source.nick.lower()]
+            except:
+                try:
+                    client.features.whox
+                    client.who(channelname, "%tcuhnfar,08")
+                except:
+                    client.who(channelname)
 
     def _on_kick(self, myself, event):
         if event.arguments[0] != self.nickname:
