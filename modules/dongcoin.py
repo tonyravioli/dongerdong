@@ -279,12 +279,26 @@ def fakedeath(slayer, player):
         except:
             credi = Balances.create(account = dongerdong.irc.channels[dongerdong.primarychan.lower()].users[slayer.lower()].account, balance = bounty.amount)
         bounty.delete_instance()
-        dongerdong.irc.privmsg(dongerdong.primarychan, "\002{0}\002 got the \002{1}\002 dongs bounty for killing {2}".format(slayer, bounty.amount, player))
+        dongerdong.irc.privmsg(dongerdong.primarychan, "\002{0}\002 got a \002{1} dong\002 bounty for killing {2}".format(slayer, bounty.amount, player))
     except Exception as poop:
         print(poop)
         pass
     
     originaldeath(slayer, player)
+
+def fakeprefight(self):
+    global originalprefight
+    global dongerdong
+    
+    for i in dongerdong.allplayers:
+        try:
+            bounty = Bounties.get(Bounties.account == dongerdong.irc.channels[dongerdong.primarychan.lower()].users[i].account)
+            if not bounty:
+                raise
+            dongerdong.irc.privmsg(dongerdong.primarychan, "There is a \002{0} dong\002 bounty on {1}'s head".format(bounty.amount, i))
+        except:
+            continue
+
 
 def fakeprerules(self):
     global originalprerules
@@ -304,6 +318,7 @@ def loadModule(dong):
     global dongerdong
     global originalwin
     global originaldeath
+    global originalprefight
     dongerdong = dong
     
     # Declare commands
@@ -327,6 +342,8 @@ def loadModule(dong):
     # launch th... override functions
     originalwin = dong.win
     originaldeath = dong.death
+    originalprefight = dong.prefight
     dong.win = fakewin
     dong.death = fakedeath
+    dong.prefight = fakeprefight
 
