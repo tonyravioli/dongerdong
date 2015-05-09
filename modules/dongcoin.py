@@ -82,7 +82,7 @@ def paid(pid):
 
 # !balance command, to check your own balance.
 def balance(dong, cli, ev):
-    if len(ev.splitd) > 0:
+    if len(ev.splitd) > 1:
         try:
             nick = cli.channels[ev.target.lower()].users[ev.splitd[1].lower()].account
         except:
