@@ -85,8 +85,8 @@ class Donger(object):
 
     def _pubmsg(self, cli, ev):
         # Processing commands here
-
-        if ev.splitd[0].startswith("!") or ev.arguments[0].startswith(cli.nickname):
+        
+        if ev.splitd[0].startswith("!") or ev.arguments[0].startswith(cli.nickname) or ev.arguments[0].startswith("fuck off"):
             try:
                 if ev.target != self.primarychan and ev.source == self.sourcehistory[-2] and ev.source == self.sourcehistory[-1] and time.time() - self.lastheardfrom[ev.source] < 10:
                     return #If the user was the last two users to speak and the last msg was within 10 seconds, don't do anything. Flood control.
@@ -338,7 +338,8 @@ class Donger(object):
                 cli.privmsg(ev.target, "No, {0}".format(ev.source)+ ev.arguments[0].replace(cli.nickname, ""))
             else:
                 cli.privmsg(ev.target, ev.arguments[0].replace(cli.nickname, ev.source))
-
+        elif ev.arguments[0].lower().startswith("fuck off " + cli.nickname):
+            cli.privmsg(ev.target, "\001ACTION fucks {0}\001".format(ev.source))
         elif ev.splitd[0] == "!help":
             self.commandHelp(cli, ev)
         elif ev.splitd[0] == "!excuse":
