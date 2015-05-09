@@ -152,7 +152,7 @@ def bounty(dong, cli, ev):
     amount = int(ev.splitd[2])
     try:
         user = Balances.get(Balances.account == cli.channels[ev.target.lower()].users[ev.source.lower()].account)
-        if not credi:
+        if not user:
             raise
     except:
         user = Balances.create(account = cli.channels[ev.target.lower()].users[ev.source.lower()].account, balance = 0)
