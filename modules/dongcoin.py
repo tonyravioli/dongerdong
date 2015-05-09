@@ -151,13 +151,13 @@ def bounty(dong, cli, ev):
 
     amount = int(ev.splitd[2])
     try:
-        credi = Balances.get(Balances.account == cli.channels[ev.target.lower()].users[ev.source.lower()].account)
+        user = Balances.get(Balances.account == cli.channels[ev.target.lower()].users[ev.source.lower()].account)
         if not credi:
             raise
     except:
-        credi = Balances.create(account = cli.channels[ev.target.lower()].users[ev.source.lower()].account, balance = 0)
+        user = Balances.create(account = cli.channels[ev.target.lower()].users[ev.source.lower()].account, balance = 0)
 
-    if credi.balance < amount:
+    if user.balance < amount:
         cli.privmsg(ev.target, "You don't have enough dongcoins to do that!")
         return
 
@@ -175,6 +175,10 @@ def bounty(dong, cli, ev):
     
     credi.amount += amount
     credi.save()
+    
+    user.balance -= amount
+    user.save()
+    
     
     cli.privmsg(ev.target, "Bounty placed.")
 
