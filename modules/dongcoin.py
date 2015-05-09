@@ -98,7 +98,7 @@ def balance(dong, cli, ev):
     except:
         credi = Balances.create(account = nick, balance = 0)
         
-    cli.privmsg(ev.target, "\002{0}\002's balance: \002{1}\002 dongcoins (\002{2}\002 buttcoins)".format(cli.channels[ev.target.lower()].users[ev.source.lower()].account,
+    cli.privmsg(ev.target, "\002{0}\002's balance: \002{1}\002 dongcoins (\002{2}\002 buttcoins)".format(nick,
                 credi.balance, round((credi.balance/100), 2)))
 
 # !cashout command, to convert your dongcoins into buttcoins.
