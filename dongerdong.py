@@ -674,7 +674,6 @@ class Donger(object):
         cli.privmsg(self.primarychan, "Use !praise [nick] to praise to the donger gods (once per game).")
         cli.privmsg(self.primarychan, "Use '/msg {0} !join' to join a game mid-fight.".format(cli.nickname))
         cli.privmsg(self.primarychan, " ")
-        self.prefight()
         self.ascii("FIGHT")
         cli.privmsg(self.primarychan, " ")
         
@@ -695,6 +694,8 @@ class Donger(object):
         
         random.shuffle(self.allplayers) # randomize turns
         
+        self.prefight()
+
         cli.voice(self.primarychan, fighters)
         self.haspraised = []
         self.deadplayers = []
