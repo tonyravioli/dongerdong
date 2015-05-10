@@ -286,7 +286,7 @@ def fakedeath(slayer, player):
     
     originaldeath(slayer, player)
 
-def fakeprefight(self):
+def fakeprefight():
     global originalprefight
     global dongerdong
     
