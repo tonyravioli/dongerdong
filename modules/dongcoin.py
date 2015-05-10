@@ -13,6 +13,7 @@ dongerdong = None
 originalwin = None
 
 originalprerules = None
+originalprefight = None
 
 cookiejar = http.cookiejar.CookieJar()
 opener = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(cookiejar))
