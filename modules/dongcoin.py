@@ -286,8 +286,8 @@ def fakedeath(slayer, player):
     
     originaldeath(slayer, player)
 
-def fakeprefight():
-    global originalprefight
+def fakefightstart():
+    global originalfightstart
     global dongerdong
     
     for i in dongerdong.allplayers:
@@ -299,6 +299,10 @@ def fakeprefight():
         except:
             continue
 
+def fakeprefight():
+    global originalprefight
+    global dongerdong
+    return
 
 def fakeprerules():
     global originalprerules
@@ -318,6 +322,7 @@ def loadModule(dong):
     global dongerdong
     global originalwin
     global originaldeath
+    global originalfightstart
     global originalprefight
     dongerdong = dong
     
@@ -342,8 +347,10 @@ def loadModule(dong):
     # launch th... override functions
     originalwin = dong.win
     originaldeath = dong.death
+    originalfightstart = dong.fightstart
     originalprefight = dong.prefight
     dong.win = fakewin
     dong.death = fakedeath
+    dong.fightstart = fakefightstart
     dong.prefight = fakeprefight
 
