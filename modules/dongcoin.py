@@ -300,7 +300,7 @@ def fakeprefight():
             continue
 
 
-def fakeprerules(self):
+def fakeprerules():
     global originalprerules
     global dongerdong
 
@@ -310,7 +310,7 @@ def fakeprerules(self):
     return
     #cli.privmsg(ev.target, "Place your bets within next ten seconds! Syntax: !bet 5 <nickname>")
 
-def bet(self):
+def bet():
     return
 
 
