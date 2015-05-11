@@ -260,7 +260,7 @@ class Donger(object):
                 return
                 
             if self.deathmatch:
-                cli.privmsg(self.primarychan, "\"A dong's life is the most precious thing on the universe\". You can't praise on deathmatches.")
+                cli.privmsg(self.primarychan, "\"A dong's life is the most precious thing in the universe\". You can't praise on deathmatches.")
                 return
             
             if len(ev.splitd) != 1 and ev.splitd[1] != "":
