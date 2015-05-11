@@ -378,8 +378,8 @@ class Donger(object):
             # K, now we have to make our own arranging of stuff, damnit
             p = {}
             for player in players:
-                if (player.fights + player.accepts) < 5:
-                    continue # not counting players with less than 5 fights
+                if (player.fights + player.accepts) < 10:
+                    continue # not counting players with less than 10 fights
                 
                 p[player.nick] = (player.wins - player.losses)
             
