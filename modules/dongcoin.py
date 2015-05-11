@@ -150,7 +150,7 @@ def bounty(dong, cli, ev):
     if len(ev.splitd) < 3:
         cli.privmsg(ev.target, "Usage: !bounty <nick (NickServ account preferred)> <amount of dongcoins>")
         return
-    
+
     try:
         if int(ev.splitd[2]) <= 0:
             raise
@@ -314,7 +314,17 @@ def fakeprerules():
     return
     #cli.privmsg(ev.target, "Place your bets within next ten seconds! Syntax: !bet 5 <nickname>")
 
-def bet():
+def bet(dong, cli, ev):
+    betusage = "Usage: !bet <numberofcoins> on <nickname>"
+    if len(ev.splitd) < 4:
+        cli.privmsg(ev.target, betusage)
+        return
+    try:
+        if int(ev.splitd[1]) <= 0:
+            raise
+    except:
+        cli.privmsg(ev.target, betusage)
+        return
     return
 
 
