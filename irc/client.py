@@ -502,10 +502,10 @@ class IRCClient:
                 del self.channels[i].users[event.source.nick.lower()]
             except:
                 try:
-                    client.features.whox
-                    client.who(channelname, "%tcuhnfar,08")
+                    self.features.whox
+                    self.who(i, "%tcuhnfar,08")
                 except:
-                    client.who(channelname)
+                    self.who(i)
 
     def _on_kick(self, myself, event):
         if event.arguments[0] != self.nickname:
