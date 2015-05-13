@@ -453,7 +453,6 @@ class Donger(object):
             if fighter != cli.nickname:
                 raise
         except:
-            pass
             if cli.channels[self.primarychan.lower()].users[fighter.lower()].account in self.accountsseenonthisgame and fighter != cli.nickname and ev.splitd[1] != "zombie":
                 cli.privmsg(fighter, "Stop trying to cheat, you dumb shit. To join as a zombie, say !join zombie")
                 return 
@@ -490,6 +489,7 @@ class Donger(object):
         if fighter.lower() not in self.allplayers:
             self.allplayers.append(fighter.lower())
 
+        self.accountsseenonthisgame.append(cli.channels[self.primarychan.lower()].users[fighter.lower()].account)
         self.aliveplayers.append(fighter.lower())
         cli.voice(self.primarychan, fighter)
 
