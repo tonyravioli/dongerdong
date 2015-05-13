@@ -19,7 +19,8 @@ import _thread
 
 # This is for debugging. It vomits on the screen all the irc stuff
 logging.getLogger(None).setLevel(logging.DEBUG)
-logging.basicConfig()
+logging.basicConfig(format="%(asctime)s: %(name)s: %(levelname)"
+                    "s (at %(filename)s:%(funcName)s:%(lineno)d): %(message)s")
 
 class Donger(object):
     def __init__(self):
