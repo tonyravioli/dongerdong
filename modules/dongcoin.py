@@ -176,11 +176,11 @@ def bounty(dong, cli, ev):
         nick = ev.splitd[1].lower()
     
     try:
-        credi = Bounties.get(Bounties.account == nick)
+        credi = Bounties.get(Bounties.account == nick.lower())
         if not credi:
             raise
     except:
-        credi = Bounties.create(account = nick, amount = 0)
+        credi = Bounties.create(account = nick.lower(), amount = 0)
     
     credi.amount += amount
     credi.save()
@@ -266,12 +266,12 @@ def fakedeath(slayer, player):
         return
     
     try:
-        bounty = Bounties.get(Bounties.account == dongerdong.irc.channels[dongerdong.primarychan.lower()].users[player.lower()].account)
+        bounty = Bounties.get(Bounties.account == dongerdong.irc.channels[dongerdong.primarychan.lower()].users[player.lower()].account.lower())
         if not bounty:
             raise
         # ooo, player got a bounty :D
         try:
-            credi = Balances.get(Balances.account == dongerdong.irc.channels[dongerdong.primarychan.lower()].users[slayer.lower()].account)
+            credi = Balances.get(Balances.account == dongerdong.irc.channels[dongerdong.primarychan.lower()].users[slayer.lower()].account.lower())
             if not credi:
                 raise
             credi.balance += bounty.amount
@@ -292,7 +292,7 @@ def fakefightstart():
     
     for i in dongerdong.allplayers:
         try:
-            bounty = Bounties.get(Bounties.account == dongerdong.irc.channels[dongerdong.primarychan.lower()].users[i].account)
+            bounty = Bounties.get(Bounties.account == dongerdong.irc.channels[dongerdong.primarychan.lower()].users[i].account.lower())
             if not bounty:
                 raise
             dongerdong.irc.privmsg(dongerdong.primarychan, "There is a \002{0} dong\002 bounty on {1}'s head".format(bounty.amount, i))
@@ -302,6 +302,7 @@ def fakefightstart():
 def fakeprefight():
     global originalprefight
     global dongerdong
+    originalprefight()
     return
 
 def fakeprerules():
