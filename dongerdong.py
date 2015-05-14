@@ -64,6 +64,7 @@ class Donger(object):
         self.irc.configure(server = self.config['server'],
                            nick = self.config['nick'],
                            ident = self.config['nick'],
+                           port = 6697,
                            gecos = "The supreme donger")
         # Create handlers and F U N stuff
         self.irc.addhandler("connect", self._connect) # for SASL
