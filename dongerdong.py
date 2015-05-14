@@ -358,10 +358,10 @@ class Donger(object):
                 return
             if self.gamerunning:
                 return
-            if len(ev.splitd) > 1 and len(' '.join(ev.splitd[1:])) < 14:
+            if len(ev.splitd) > 1 and len(' '.join(ev.splitd[1:])) < 16:
                 cli.privmsg(ev.target, Figlet("smslant").renderText(' '.join(ev.splitd[1:])))
             elif len(ev.splitd) > 1:
-                cli.privmsg(ev.target, "Text must be 13 characters or less (that was {0} characters). Syntax: !ascii Fuck You".format(len(' '.join(ev.splitd[1:]))))
+                cli.privmsg(ev.target, "Text must be 15 characters or less (that was {0} characters). Syntax: !ascii Fuck You".format(len(' '.join(ev.splitd[1:]))))
         elif ev.splitd[0] == "!health":
             if not self.gamerunning:
                 return
