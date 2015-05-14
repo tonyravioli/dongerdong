@@ -6,6 +6,7 @@ import re
 import time
 from . import numerics
 from . import features
+import ssl
 
 _rfc_1459_command_regexp = re.compile("^(:(?P<prefix>[^ ]+) +)?(?P<command>[" +
                                       "^ ]+)( *(?P<argument> .+))?")
@@ -74,6 +75,7 @@ class IRCClient:
         
         try:
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.socket = ssl.wrap_socket(self.socket)
             self.socket.connect((self.server, self.port))
         except socket.error as err:
             self.logger.error("Couldn't connect to {0}:{1}: {2}"
