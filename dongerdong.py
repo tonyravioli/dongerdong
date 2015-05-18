@@ -155,6 +155,11 @@ class Donger(object):
             self.pending[ev.source.lower()] = pplayers
             if self.deathmatch == True:
                 self.deathmatchpending[ev.source.lower()] = ev.splitd[1]
+            else:
+                try:
+                    del self.deathmatchpending[ev.source.lower()]
+                except:
+                    pass
 
             self._paccept[ev.source2.nick.lower()] = copy.copy(pplayers)
             self._paccept[ev.source2.nick.lower()].remove(ev.source)
