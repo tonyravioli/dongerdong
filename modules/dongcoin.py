@@ -199,7 +199,7 @@ def wanted(dong, cli, ev):
     for criminal in criminals:
         i += 1
         criminal_list = criminal_list + "{0} (\002{1}\002), ".format(criminal.account, criminal.amount)
-        if i == 3:
+        if i == 5:
             break
     
     cli.privmsg(ev.target, criminal_list[:-2])
