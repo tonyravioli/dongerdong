@@ -271,7 +271,7 @@ def fakedeath(slayer, player):
             raise
         # ooo, player got a bounty :D
         try:
-            credi = Balances.get(Balances.account == dongerdong.irc.channels[dongerdong.primarychan.lower()].users[slayer.lower()].account.lower())
+            credi = Balances.get(Balances.account == dongerdong.irc.channels[dongerdong.primarychan.lower()].users[slayer.lower()].account)
             if not credi:
                 raise
             credi.balance += bounty.amount
