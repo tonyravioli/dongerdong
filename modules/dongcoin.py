@@ -317,7 +317,7 @@ def fakeprerules():
 
 def bet(dong, cli, ev):
     betusage = "Usage: !bet <numberofcoins> on <nickname>"
-    if len(ev.splitd) < 4:
+    if len(ev.splitd) != 4:
         cli.privmsg(ev.target, betusage)
         return
     try:
@@ -326,6 +326,9 @@ def bet(dong, cli, ev):
     except:
         cli.privmsg(ev.target, betusage)
         return
+
+
+
     return
 
 
