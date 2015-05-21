@@ -321,7 +321,7 @@ def fakeprerules():
         time.sleep(1)
     endbetting()
 
-def endbetting(dong, cli, ev):
+def endbetting():
     global dongerdong
     bettingopen = False
     bettingopentime = 0
@@ -337,6 +337,9 @@ def bet(dong, cli, ev):
         return
 
     betusage = "Usage: !bet <numberofcoins> <nickname>"
+
+    if ev.target.lower() != ev.primarychan.lower():
+        return
 
     if len(ev.splitd) != 3:
         cli.privmsg(ev.target, betusage)
