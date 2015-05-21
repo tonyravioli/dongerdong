@@ -332,9 +332,13 @@ def bet(dong, cli, ev):
     better = ev.source.lower()
     betee = ev.splitd[2]
 
-
-
-
+    try:
+        bets[better]
+    except:
+        cli.privmsg(ev.target, "{0}, you can't place bets on more than one player.".format(better))
+    finally: # this probably doesn't work like this
+        bets[better] = {betee,betamount} # god this is awful
+        cli.privmsg(ev.target, "{0} placed bet of {1} on {2} (Not really, this feature doesnt work yet)".format(better,betamount,betee))
     return
 
 
