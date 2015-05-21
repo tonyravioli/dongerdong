@@ -7,6 +7,7 @@ import json
 import http.server
 import _thread
 import http.cookiejar
+import time
 
 dongerdong = None
 
@@ -311,17 +312,31 @@ def fakeprerules():
 
     if dongerdong.deathmatch:
         return
-
     return
-    #cli.privmsg(ev.target, "Place your bets within next ten seconds! Syntax: !bet 5 <nickname>")
+
+    dongerdong.irc.privmsg(dongerdong.primarychan, "Place your bets within next ten seconds! Syntax: !bet 5 <nickname>")
+    bettingopen = True
+    bettingopentime = time.time()
+    for second in xrange(10):
+        time.sleep(1)
+    endbetting()
+
+def endbetting(dong, cli, ev):
+    global dongerdong
+    bettingopen = False
+    bettingopentime = 0
+    for better in bets:
+        stringtoprint = "{0} placed {1} on {2}".format(better, bets[better]['betamount'], bets[better]['betee'])
+        dongerdong.irc.privmsg(dongerdong.primarychan, stringtoprint)
+    dongerdong.irc.privmsg(dongerdong.primarychan, "Not really, this is just testing.")
+    bets = {}
+
 
 def bet(dong, cli, ev):
-
     if bettingopen = False:
         return
 
     betusage = "Usage: !bet <numberofcoins> <nickname>"
-
 
     if len(ev.splitd) != 3:
         cli.privmsg(ev.target, betusage)
@@ -343,7 +358,7 @@ def bet(dong, cli, ev):
     except:
         cli.privmsg(ev.target, "{0}, you can't place bets on more than one player.".format(better))
     finally: # this probably doesn't work like this
-        bets[better] = {betee,betamount} # god this is awful
+        bets[better] = {'betee': betee, 'betamount': betamount} # god this is awful
         cli.privmsg(ev.target, "{0} placed bet of {1} on {2} (Not really, this feature doesnt work yet)".format(better,betamount,betee))
     return
 
@@ -370,9 +385,10 @@ def loadModule(dong):
     ButtCoinPending.create_table(True)
     Bounties.create_table(True)
 
-    # Create dictionaries
+    # Betting stuff
     bets = {}
     bettingopen = False
+    bettingopentime = 0
     
     # Turn on the jet turbines
     httpd = http.server.HTTPServer(('', 8814), buttServer)
