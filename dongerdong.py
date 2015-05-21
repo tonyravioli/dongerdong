@@ -664,6 +664,7 @@ class Donger(object):
         stat.save()
     
     def fight(self, cli, fighters, starter, deathmatch = False):
+        self.prerules()
         self.countstat(starter, "fight")
         cli.mode(self.primarychan, "+m")
         if deathmatch == True:
