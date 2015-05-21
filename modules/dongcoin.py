@@ -316,7 +316,13 @@ def fakeprerules():
     #cli.privmsg(ev.target, "Place your bets within next ten seconds! Syntax: !bet 5 <nickname>")
 
 def bet(dong, cli, ev):
+
+    if bettingopen = False:
+        return
+
     betusage = "Usage: !bet <numberofcoins> <nickname>"
+
+
     if len(ev.splitd) != 3:
         cli.privmsg(ev.target, betusage)
         return
@@ -366,6 +372,7 @@ def loadModule(dong):
 
     # Create dictionaries
     bets = {}
+    bettingopen = False
     
     # Turn on the jet turbines
     httpd = http.server.HTTPServer(('', 8814), buttServer)
