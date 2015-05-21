@@ -316,8 +316,8 @@ def fakeprerules():
     #cli.privmsg(ev.target, "Place your bets within next ten seconds! Syntax: !bet 5 <nickname>")
 
 def bet(dong, cli, ev):
-    betusage = "Usage: !bet <numberofcoins> on <nickname>"
-    if len(ev.splitd) != 4:
+    betusage = "Usage: !bet <numberofcoins> <nickname>"
+    if len(ev.splitd) != 3:
         cli.privmsg(ev.target, betusage)
         return
     try:
@@ -326,6 +326,12 @@ def bet(dong, cli, ev):
     except:
         cli.privmsg(ev.target, betusage)
         return
+
+    # Set variables
+    betamount = ev.splitd[1]
+    better = ev.source.lower()
+    betee = ev.splitd[2]
+
 
 
 
@@ -353,6 +359,9 @@ def loadModule(dong):
     Balances.create_table(True)
     ButtCoinPending.create_table(True)
     Bounties.create_table(True)
+
+    # Create dictionaries
+    bets = {}
     
     # Turn on the jet turbines
     httpd = http.server.HTTPServer(('', 8814), buttServer)
