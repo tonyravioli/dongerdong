@@ -314,12 +314,12 @@ def fakeprerules():
     if dongerdong.deathmatch:
         return
 
-    return
+    return #Move this to end of function to enable betting, by the way.
     dongerdong.irc.privmsg(dongerdong.primarychan, "Place your bets within next ten seconds! Syntax: !bet 5 <nickname>")
     bettingopen = True
     bettingopentime = time.time()
     second = 0
-    while second < 5
+    while second < 5:
         time.sleep(1)
         second += 1
     endbetting()
