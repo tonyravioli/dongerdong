@@ -309,6 +309,7 @@ def fakeprefight():
 def fakeprerules():
     global originalprerules
     global dongerdong
+    global bettingopen
 
     if dongerdong.deathmatch:
         return
@@ -325,6 +326,7 @@ def fakeprerules():
 
 def endbetting():
     global dongerdong
+    global bettingopen
     bettingopen = False
     bettingopentime = 0
     for better in bets:
@@ -335,6 +337,7 @@ def endbetting():
 
 
 def bet(dong, cli, ev):
+    global bettingopen
     if bettingopen == False:
         return
 
