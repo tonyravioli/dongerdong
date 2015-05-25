@@ -312,13 +312,15 @@ def fakeprerules():
 
     if dongerdong.deathmatch:
         return
-    return
 
+    return
     dongerdong.irc.privmsg(dongerdong.primarychan, "Place your bets within next ten seconds! Syntax: !bet 5 <nickname>")
     bettingopen = True
     bettingopentime = time.time()
-    for second in xrange(10):
+    second = 0
+    while second < 5
         time.sleep(1)
+        second += 1
     endbetting()
 
 def endbetting():
@@ -333,7 +335,7 @@ def endbetting():
 
 
 def bet(dong, cli, ev):
-    if bettingopen = False:
+    if bettingopen == False:
         return
 
     betusage = "Usage: !bet <numberofcoins> <nickname>"
@@ -402,8 +404,10 @@ def loadModule(dong):
     originaldeath = dong.death
     originalfightstart = dong.fightstart
     originalprefight = dong.prefight
+    originalprerules = dong.prerules
     dong.win = fakewin
     dong.death = fakedeath
     dong.fightstart = fakefightstart
     dong.prefight = fakeprefight
+    dong.prerules = fakeprerules
 
