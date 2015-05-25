@@ -312,12 +312,12 @@ def fakeprerules():
     global bettingopen
 
     if dongerdong.deathmatch:
+        originalprerules()
         return
 
     return #Move this to end of function to enable betting, by the way.
     dongerdong.irc.privmsg(dongerdong.primarychan, "Place your bets within next ten seconds! Syntax: !bet 5 <nickname>")
     bettingopen = True
-    bettingopentime = time.time()
     second = 0
     while second < 5:
         time.sleep(1)
@@ -327,6 +327,7 @@ def fakeprerules():
 def endbetting():
     global dongerdong
     global bettingopen
+    global bets
     bettingopen = False
     bettingopentime = 0
     for better in bets:
@@ -338,12 +339,13 @@ def endbetting():
 
 def bet(dong, cli, ev):
     global bettingopen
+    global bets
     if bettingopen == False:
         return
 
     betusage = "Usage: !bet <numberofcoins> <nickname>"
 
-    if ev.target.lower() != ev.primarychan.lower():
+    if ev.target.lower() != dong.primarychan.lower():
         return
 
     if len(ev.splitd) != 3:
@@ -396,7 +398,6 @@ def loadModule(dong):
     # Betting stuff
     bets = {}
     bettingopen = False
-    bettingopentime = 0
     
     # Turn on the jet turbines
     httpd = http.server.HTTPServer(('', 8814), buttServer)
