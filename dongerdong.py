@@ -836,7 +836,7 @@ class Donger(object):
             current_milli_time = int(round(time.time() * 1000))
             diff = current_milli_time - int(ev.arguments[1])
             secs = str(diff / 1000)
-            client.msg(self.lastpingreq, "{0}: {1} seconds".format(ev.source, secs))
+            cli.privmsg(self.lastpingreq, "{0}: {1} seconds".format(ev.source, secs))
             self.lastpingreq = None
         
     def _join(self, cli, ev):
