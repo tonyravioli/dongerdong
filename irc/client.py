@@ -103,6 +103,8 @@ class IRCClient:
             time.sleep(60)
             if (time.time() - self.lastping) > 600:
                 self.disconnect("IF YOU SEE THIS MESSAGE, IT IS BECAUSE SOMETHING IS FUCKED UP!!!1", False) # We're dead
+                self.imayreconnect = True
+                self.connect()
             
     def _process_forever(self):
         while self.connected:
