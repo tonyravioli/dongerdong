@@ -44,6 +44,7 @@ class Donger(object):
         self.lastheardfrom = {}
         self.sourcehistory = []
         self.zombies = []
+        self.lastpingreq = None
         self.accountsseenonthisgame = [] # hi,thisisanextremellylongvariablename
         
         self.extracommands = {} # Commands declarated by modules
@@ -76,6 +77,7 @@ class Donger(object):
         self.irc.addhandler("quit", self._coward) # ^
         self.irc.addhandler("join", self._join) # For custom messages on join
         self.irc.addhandler("account", self._account) # account-notify stuff
+        self.irc.addhandler("ctcpreply", self._ctcpreply) # ctcp shit
 
         
         # Connect to the IRC
@@ -355,6 +357,10 @@ class Donger(object):
             cli.privmsg(ev.target, self.randomLine("jaden"))
         elif ev.splitd[0] == "!raise":
             cli.privmsg(ev.target, "ヽ༼ຈل͜ຈ༽ﾉ RAISE YOUR DONGERS ヽ༼ຈل͜ຈ༽ﾉ")
+        elif ev.splitd[0] == "!ping":
+            current_milli_time = int(round(time.time() * 1000))
+            self.lastpingreq = ev.target
+            cli.privmsg(ev.source, "\001PING {0}\001".format(current_milli_time))
         elif ev.splitd[0] == "!lower":
             cli.privmsg(ev.target, "┌༼ຈل͜ຈ༽┐ ʟᴏᴡᴇʀ ʏᴏᴜʀ ᴅᴏɴɢᴇʀs ┌༼ຈل͜ຈ༽┐")
         elif ev.splitd[0] == "!dong":
@@ -822,6 +828,17 @@ class Donger(object):
         cli.send("CAP REQ :sasl extended-join account-notify")
         cli.send("AUTHENTICATE PLAIN")
 
+    def _ctcpreply(self, cli, ev):
+        if ev.arguments[0] == "PING":
+            if not self.lastpingreq:
+                return
+            
+            current_milli_time = int(round(time.time() * 1000))
+            diff = current_milli_time - int(ev.arguments[1])
+            secs = locale.str(diff / 1000)
+            client.msg(self.lastpingreq, "{0}: {1} seconds".format(ev.source, secs))
+            self.lastpingreq = None
+        
     def _join(self, cli, ev):
         if ev.source2.nick == cli.nickname and ev.target == self.primarychan:
             self.irc.privmsg(ev.target, "ヽ༼ຈل͜ຈ༽ﾉ RAISE YOUR DONGERS ヽ༼ຈل͜ຈ༽ﾉ")
