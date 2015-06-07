@@ -311,11 +311,11 @@ def fakeprerules():
     global dongerdong
     global bettingopen
 
-    return #Move this to end of function to enable betting, by the way.
     if dongerdong.deathmatch:
         originalprerules()
         return
 
+    return #Move this to end of function to enable betting, by the way.
     dongerdong.irc.privmsg(dongerdong.primarychan, "Place your bets within next ten seconds! Syntax: !bet 5 <nickname>")
     bettingopen = True
     second = 0
@@ -334,7 +334,7 @@ def endbetting():
         stringtoprint = "{0} placed {1} on {2}".format(better, bets[better]['betamount'], bets[better]['betee'])
         dongerdong.irc.privmsg(dongerdong.primarychan, stringtoprint)
     dongerdong.irc.privmsg(dongerdong.primarychan, "Not really, this is just testing.")
-    bets = {}
+
 
 
 def bet(dong, cli, ev):
@@ -360,16 +360,15 @@ def bet(dong, cli, ev):
 
     # Set variables
     betamount = ev.splitd[1]
-    better = ev.source.lower()
-    betee = ev.splitd[2]
+    better = ev.source.lower() #person making the bet
+    betee = ev.splitd[2] #person being wagered on
 
     try:
-        bets[better]
+        if bets[better]:
+            cli.privmsg(ev.target, "{0}, you can't place bets on more than one player.".format(better))
     except:
         bets[better] = {'betee': betee, 'betamount': betamount} # god this is awful
         cli.privmsg(ev.target, "{0} placed bet of {1} on {2} (Not really, this feature doesnt work yet)".format(better,betamount,betee))
-    finally: # this probably doesn't work like this
-        cli.privmsg(ev.target, "{0}, you can't place bets on more than one player.".format(better))
     return
 
 
