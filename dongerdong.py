@@ -688,9 +688,6 @@ class Donger(object):
         cli.privmsg(self.primarychan, "Use !praise [nick] to praise to the donger gods (once per game).")
         cli.privmsg(self.primarychan, "Use '/msg {0} !join' to join a game mid-fight.".format(cli.nickname))
         cli.privmsg(self.primarychan, " ")
-        self.prefight()
-        self.ascii("FIGHT")
-        cli.privmsg(self.primarychan, " ")
         
         for i in fighters:
             if cli.channels[self.primarychan.lower()].users[i.lower()].account in self.accountsseenonthisgame:
@@ -706,7 +703,9 @@ class Donger(object):
             self.aliveplayers.append(i.lower())
             if i.lower() != starter.lower():
                 self.countstat(i.lower(), "accept")
-        
+        self.prefight()
+        self.ascii("FIGHT")
+        cli.privmsg(self.primarychan, " ")
         random.shuffle(self.allplayers) # randomize turns
         
         self.fightstart()
