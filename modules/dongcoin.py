@@ -312,7 +312,6 @@ def fakeprerules():
     global bettingopen
 
     if dongerdong.deathmatch:
-        originalprerules()
         return
 
     return #Move this to end of function to enable betting, by the way.
