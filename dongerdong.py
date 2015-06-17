@@ -798,7 +798,7 @@ class Donger(object):
     def ascii(self, key, font="smslant"): #Only used in fights
         if "not gay".lower() in key.lower():
             key = key.upper()
-            key = key.replace('not', '')
+            key = key.replace('NOT', '')
         self.irc.privmsg(self.primarychan, "\n".join([name for name in Figlet(font).renderText(key.upper()).split("\n")[:-1] if name.strip()]))
 
     # god, this is so shitty
