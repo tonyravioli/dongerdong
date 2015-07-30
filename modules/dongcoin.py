@@ -167,6 +167,10 @@ def bounty(dong, cli, ev):
     except:
         user = Balances.create(account = cli.channels[ev.target.lower()].users[ev.source.lower()].account, balance = 0)
 
+    if amount < 10:
+        cli.privmsg(ev.target, "The minimum amount is 10 dongcoin.")
+        return
+
     if user.balance < amount:
         cli.privmsg(ev.target, "You don't have enough dongcoins to do that!")
         return
