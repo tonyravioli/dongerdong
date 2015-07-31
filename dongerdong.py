@@ -622,6 +622,7 @@ class Donger(object):
                     self._turnleft.remove(ev.source2.nick.lower())
                 except:
                     pass
+                self.irc.privmsg("CHANSERV", "AKICK {0} ADD {1} !T 20 FUCKIN REKT - Coward quit".format(self.primarychan, ev.source2.nick.lower()))
                     
                 if len(self.aliveplayers) == 1:
                     self.win(self.aliveplayers[0], stats=False)
