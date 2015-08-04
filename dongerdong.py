@@ -751,8 +751,8 @@ class Donger(object):
         playerstohit = copy.copy(self.aliveplayers)
         playerstohit.remove(self.irc.nickname.lower())
         tohit = random.choice(playerstohit)
-        requiredbothp = 40
-        requiredtohithp = 29
+        requiredbothp = 44
+        requiredtohithp = 24
         if self.health[self.irc.nickname.lower()] < requiredbothp and self.health[tohit] > requiredtohithp:
             self.verboseoutput("Verbose: AI: Less than {0} HP, opponent more than {1}. Healing.".format(requiredbothp, requiredtohithp))
             if self.maxheal[self.irc.nickname.lower()] <= 20:
