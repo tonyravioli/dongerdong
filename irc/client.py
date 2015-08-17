@@ -6,6 +6,7 @@ import re
 import time
 from . import numerics
 from . import features
+import ssl
 
 _rfc_1459_command_regexp = re.compile("^(:(?P<prefix>[^ ]+) +)?(?P<command>[" +
                                       "^ ]+)( *(?P<argument> .+))?")
@@ -43,17 +44,17 @@ class IRCClient:
 
         # Internal handlers used to get user/channel information
         self.addhandler("join", self._on_join)
-        self.addhandler("currenttopic", self._on_topic)
-        self.addhandler("topic", self._on_topic)
-        self.addhandler("topicinfo", self._on_topicinfo)
+        #self.addhandler("currenttopic", self._on_topic)
+        #self.addhandler("topic", self._on_topic)
+        #self.addhandler("topicinfo", self._on_topicinfo)
         self.addhandler("whospcrpl", self._on_whox)
         self.addhandler("whoreply", self._on_who)
         self.addhandler("whoisloggedin", self._on_whoisaccount)
-        self.addhandler("mode", self._on_mode)
+        #self.addhandler("mode", self._on_mode)
         self.addhandler("quit", self._on_quit)
         self.addhandler("part", self._on_part)
         self.addhandler("kick", self._on_kick)
-        self.addhandler("banlist", self._on_banlist)
+        #self.addhandler("banlist", self._on_banlist)
         self.addhandler("kick", self._on_kick)
         self.addhandler("nick", self._on_nick)
 
@@ -74,6 +75,7 @@ class IRCClient:
         
         try:
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.socket = ssl.wrap_socket(self.socket)
             self.socket.connect((self.server, self.port))
         except socket.error as err:
             self.logger.error("Couldn't connect to {0}:{1}: {2}"
@@ -99,8 +101,10 @@ class IRCClient:
     def _cookie_monster(self):
         while self.connected:
             time.sleep(60)
-            if (time.time() - self.lastping) > 300:
-                self.disconnect("", False) # We're dead
+            if (time.time() - self.lastping) > 600:
+                self.disconnect("IF YOU SEE THIS MESSAGE, IT IS BECAUSE SOMETHING IS FUCKED UP!!!1", False) # We're dead
+                self.imayreconnect = True
+                self.connect()
             
     def _process_forever(self):
         while self.connected:
@@ -363,14 +367,14 @@ class IRCClient:
             self.mode(channel, mode + " " + users)
         elif type(users) == list:
             f1 = ""
-            count = 1
-            for i in users:
-                f1 += " " + i
-                if count == self.features.modes:
-                    self.mode(channel, "{2}{0} {1}".format(mode[1] * count, f1, mode[0]))
-                    count = 1
-                count += 1
-            self.mode(channel, "{2}{0} {1}".format(mode[1] * (count - 1), f1, mode[0]))
+            
+            while users != []:
+                if len(users[:self.features.modes]) == self.features.modes:
+                    self.mode(channel, "{0}{1} {2}".format(mode[0], mode[1] * self.features.modes, " ".join(users[:self.features.modes])))
+                    users = users[self.features.modes:]
+                else:
+                    self.mode(channel, "{0}{1} {2}".format(mode[0], mode[1] * len(users[:self.features.modes]), " ".join(users[:self.features.modes])))
+                    users = []
         else:
             raise
     
@@ -388,9 +392,14 @@ class IRCClient:
             self.channels[event.target] = Channel(self, event.target)
         else:
             #print(self.channels)
+            try:
+                account = event.arguments[0]
+            except:
+                account = None
+                
             self.channels[event.target].users[event.source.nick.lower()] = User(
                 event.source.nick, event.source.user, event.source.host,
-                "", "")
+                "", "", account)
 
     def _on_topic(self, myself, event):
         self.channels[event.arguments[0]].topicChange(event.source,
@@ -493,9 +502,14 @@ class IRCClient:
         for i in self.channels:
             try:
                 self.channels[i].users[event.target.lower()] = self.channels[i].users[event.source.nick.lower()]
+                self.channels[i].users[event.target.lower()].nick = event.target
                 del self.channels[i].users[event.source.nick.lower()]
             except:
-                pass
+                try:
+                    self.features.whox
+                    self.who(i, "%tcuhnfar,08")
+                except:
+                    self.who(i)
 
     def _on_kick(self, myself, event):
         if event.arguments[0] != self.nickname:
@@ -528,9 +542,9 @@ class Channel(object):
         except:
             client.who(channelname)
         
-        client.mode(channelname, "b")
-        if "q" in client.features.chanmodes[0]:
-            client.mode(channelname, "q")
+        #client.mode(channelname, "b")
+        #if "q" in client.features.chanmodes[0]:
+        #    client.mode(channelname, "q")
 
     def topicChange(self, source, topic):
         self.topic = topic
@@ -564,15 +578,14 @@ class Channel(object):
 
 
 class User(object):
-    nick = None
-    ident = None
-    host = None
-    gecos = None
-    op = False
-    voiced = False
-    account = None
-
     def __init__(self, nick, ident, host, gecos, status, account=None):
+        self.nick = None
+        self.ident = None
+        self.host = None
+        self.gecos = None
+        self.op = False
+        self.voiced = False
+        self.account = None
         self.update(nick, ident, host, gecos, status, account)
 
     def update(self, nick, ident, host, gecos, status, account=None):
@@ -580,8 +593,7 @@ class User(object):
         self.ident = ident
         self.host = host
         self.gecos = gecos
-
-        if account == "0":
+        if account == "0" or account == "" or account == "*":
             self.account = None
         else:
             self.account = account
