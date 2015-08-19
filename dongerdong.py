@@ -907,7 +907,8 @@ class Donger(object):
                 channel.users[ev.source.nick.lower()].account = ev.target
 
     def _welcome(self, cli, ev):
-        cli.join(",".join(self.config["channel"], *self.auxchans))
+        cli.join(self.config["channel"])
+        cli.join(",".join(*self.auxchans))
 
     def _timeouts(self):
         while True:
