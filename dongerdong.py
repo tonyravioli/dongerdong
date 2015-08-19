@@ -56,7 +56,7 @@ class Donger(object):
 
         # thread for timeouts
         self.irc_lock = threading.RLock()
-        self.timeouts_thread = threading.Thread(self._timeouts)
+        self.timeouts_thread = threading.Thread(None, self._timeouts)
         self.timeouts_thread.start()
 
         # Load the config..
