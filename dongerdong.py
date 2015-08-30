@@ -258,9 +258,10 @@ class Donger(object):
                 elif player.lower() not in self.aliveplayers:
                     cli.privmsg(self.primarychan, "WHA?! \u0002{0}\u0002 is not playing!".format(player))
                     return
-
+                
+                self.hit(ev.source.lower(), player)
             else:
-                self.hit(ev.source.lower(), random.choice(list(self.aliveplayers.keys() - {ev.source.lower()})))
+                self.hit(ev.source.lower(), random.choice(list(set(self.aliveplayers) - {ev.source.lower()})))
 
         elif command == "heal":
             if not self.gamerunning:
