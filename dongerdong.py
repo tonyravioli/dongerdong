@@ -257,7 +257,7 @@ class Donger(BaseClient):
         self.message("ChanServ", "AKICK {0} ADD {1} !T {2} {3}".format(self.channel, user, time, message))
     
     def heal(self, target, critical=False):
-        if self.players[target.lower()]['heals'] == 0 and not critical:
+        if not self.players[target.lower()]['heals'] and not critical:
             self.message(self.channel, "You can't heal.")
             return
         
@@ -372,8 +372,35 @@ class Donger(BaseClient):
         if self.players[self.turnlist[self.currentTurn].lower()]['hp'] > 0: # it's alive!
             self.turnStart = time.time()
             self.message(self.channel, "It's \002{0}\002's turn.".format(self.turnlist[self.currentTurn]))
+            if self.turnlist[self.currentTurn] == config['nick']:
+                self.processAI()
         else: # It's dead, try again.
             self.getTurn()
+    
+    def processAI(self):
+        myself = self.players[config['nick']]
+        # 1 - We will always hit a player with LESS than 25 HP.
+        for i in self.players:
+            if i == config['nick'].lower():
+                continue
+            if self.players[i]['hp'] > 0 and self.players[i]['hp'] < 25:
+                self.message(self.channel, "!hit {0}".format(self.players[i]['nick']))
+                self.hit(config['nick'], self.players[i]['nick'])
+                return
+        
+        if myself['hp'] < 44 and myself['heals']:
+            self.message(self.channel, "!heal")
+            self.heal(config['nick'])
+        else:
+            players = self.turnlist[:]
+            players.remove(config['nick'].lower())
+            victim = {}
+            while not victim: # !!!
+                hitting = self.players[random.choice(players).lower()]
+                if hitting['hp'] > 0:
+                    victim = hitting
+            self.message(self.channel, "!hit {0}".format(victim['nick']))
+            self.hit(config['nick'], victim['nick'])
     
     def win(self, winner, realwin=True):
         # TODO: stats and stuff
@@ -400,6 +427,7 @@ class Donger(BaseClient):
         # Check if those users are in the channel, if they're identified, etc
         accounts = []
         for player in players[:]:
+            
             if player not in self.channels[self.channel]['users']:
                 self.message(self.channel, "\002{0}\002 is not in the channel.".format(player))
                 return
@@ -426,6 +454,19 @@ class Donger(BaseClient):
                 'pendingaccept': [x.lower() for x in players[1:]],
                 'players': [players[0]]
             }
+        
+        if config['nick'] in players:
+            if deathmatch:
+                self.message(self.channel, "{0} is not available for a deathmatch".format(config['nick']))
+            self.message(self.channel, "YOU WILL SEE")
+            self.pendingFights[players[0].lower()]['pendingaccept'].remove(config['nick'].lower())
+            self.pendingFights[players[0].lower()]['players'].append(config['nick'])
+            if not self.pendingFights[players[0].lower()]['pendingaccept']:
+                # Start the game!
+                self.start(self.pendingFights[players[0].lower()])
+                return
+            players.remove(config['nick'])
+            
         
         if deathmatch:
             self.message(self.channel, "{0}: \002{1}\002 challenged you to a deathmatch. The loser will be bant for 20 minutes. To accept, use '!accept {1}'.".format(", ".join(players[1:]), players[0]))
