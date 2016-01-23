@@ -216,6 +216,10 @@ class Donger(BaseClient):
                 self.message(target, random.choice(self.excuses))
             elif command == "jaden":
                 self.message(target, random.choice(self.jaden))
+            elif command == "raise":
+                self.message(target, "ヽ༼ຈل͜ຈ༽ﾉ RAISE YOUR DONGERS ヽ༼ຈل͜ຈ༽ﾉ")
+            elif command == "lower":
+                self.message(target, "┌༼ຈل͜ຈ༽┐ ʟᴏᴡᴇʀ ʏᴏᴜʀ ᴅᴏɴɢᴇʀs ┌༼ຈل͜ຈ༽┐")
     
     def on_quit(self, user, message=None):
         if self.gameRunning:
