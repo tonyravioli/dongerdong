@@ -45,6 +45,8 @@ class Donger(BaseClient):
     def on_connect(self):
         super().on_connect()
         self.join(self.channel)
+        for chan in config['auxchans']:
+            self.join(chan)
     
     @pydle.coroutine
     def on_message(self, target, source, message):
