@@ -318,7 +318,8 @@ class Donger(BaseClient):
         self.set_mode(self.channel, "-v", victim)
         self.ascii("rekt")
         self.message(self.channel, "\002{0}\002 REKT {1}".format(slayer, victim))
-        self.kick(self.channel, victim, "REKT")
+        if victim != config['nick']:
+            self.kick(self.channel, victim, "REKT")
     
     def start(self, pendingFight):
         self.gameRunning = True
