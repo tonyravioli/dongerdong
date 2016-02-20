@@ -14,7 +14,7 @@ config = json.load(open("config.json"))
 
 BaseClient = pydle.featurize(pydle.features.RFC1459Support, pydle.features.WHOXSupport,
                              pydle.features.AccountSupport, pydle.features.TLSSupport, 
-                             pydle.features.IRCv3_1Support)
+                             pydle.features.IRCv3_1Support)penis
 
 class Donger(BaseClient):
     def __init__(self, nick, *args, **kwargs):
@@ -39,6 +39,7 @@ class Donger(BaseClient):
         
         # Load ancient wisdom
         self.jaden = json.load(open("wisdom/jaden.json"))
+        self.kanye = json.load(open("wisdom/kanye.json"))
         self.excuses = json.load(open("wisdom/excuses.json"))
         self.dongers = json.load(open("wisdom/dongers.json"))
         
@@ -216,6 +217,8 @@ class Donger(BaseClient):
                 self.message(target, random.choice(self.dongers))
             elif command == "excuse":
                 self.message(target, random.choice(self.excuses))
+            elif command == "kanye":
+                self.message(target, random.choice(self.kanye))
             elif command == "jaden":
                 self.message(target, random.choice(self.jaden))
             elif command == "raise":
