@@ -14,7 +14,7 @@ config = json.load(open("config.json"))
 
 BaseClient = pydle.featurize(pydle.features.RFC1459Support, pydle.features.WHOXSupport,
                              pydle.features.AccountSupport, pydle.features.TLSSupport, 
-                             pydle.features.IRCv3_1Support)penis
+                             pydle.features.IRCv3_1Support)
 
 class Donger(BaseClient):
     def __init__(self, nick, *args, **kwargs):
