@@ -1,947 +1,511 @@
 #!/usr/bin/env python3
 
-import irc.client as client
-from peewee import peewee
-import sys
-try:
-    from pyfiglet import Figlet
-except:
-    print("FOR FUCKS SAKE INSTALL PYFIGLET https://github.com/pwaller/pyfiglet")
-    sys.exit(1)
+import pydle
 import json
-import base64
-import time
 import logging
+import threading
 import random
-import copy
-import operator
-import _thread
+import time
+from pyfiglet import Figlet
 
-# This is for debugging. It vomits on the screen all the irc stuff
-logging.getLogger(None).setLevel(logging.DEBUG)
-logging.basicConfig(format="%(asctime)s: %(name)s: %(levelname)"
-                    "s (at %(filename)s:%(funcName)s:%(lineno)d): %(message)s")
+logging.basicConfig(level=logging.DEBUG)
 
-class Donger(object):
-    def __init__(self):
-        # For future usage
-        self.pending = {} # pending['Polsaker'] = 'ravioli'
-        self.deathmatchpending = {}
-        self.health = {} # health['ravioli'] = 69
-        self.gamerunning = False
+config = json.load(open("config.json"))
+
+BaseClient = pydle.featurize(pydle.features.RFC1459Support, pydle.features.WHOXSupport,
+                             pydle.features.AccountSupport, pydle.features.TLSSupport, 
+                             pydle.features.IRCv3_1Support)penis
+
+class Donger(BaseClient):
+    def __init__(self, nick, *args, **kwargs):
+        super().__init__(nick, *args, **kwargs)
+        
+        # This is to remember the millions of misc variable names
+        self.pendingFights = {} # Pending (not !accepted) fights. ({'player': {'ts': 123, 'deathmatch': False, 'players': [...], 'pendingaccept': [...]}, ...}
+        
+        # Game vars (Reset these in self.win)
         self.deathmatch = False
-        self.verbose = False
-        self.turn = ""
-        self.turnindex = 0
-        self.allplayers = []
-        self._turnleft = []
-        self._paccept = {}
-        self.aliveplayers = []
-        self.deadplayers = []
-        self.maxheal = {} # maxheal['Polsaker'] = -6
-        self.roundstart = 0
-        self.haspraised = []
-        self.lastheardfrom = {}
-        self.sourcehistory = []
-        self.zombies = []
-        self.lastpingreq = None
-        self.accountsseenonthisgame = [] # hi,thisisanextremellylongvariablename
+        self.gameRunning = False
+        self.turnStart = 0
+        self.players = {} # Players. {'polsaker': {'hp': 100, 'heals': 5, 'zombie': False, 'praised': False}, ...}
+        self.turnlist = [] # Same as self.players, but only the player nicks. Shuffled when the game starts (used to decide turn orders)
+        self.currentTurn = -1 # current turn = turnlist[currentTurn]
         
-        self.extracommands = {} # Commands declarated by modules
+        self.channel = config['channel'] # Main fight channel
         
-        # thread for timeouts
-        _thread.start_new_thread(self._timeouts, ())
+        timeout_checker = threading.Thread(target = self._timeout)
+        timeout_checker.daemon = True
+        timeout_checker.start()
         
-        # Load the config..
-        self.config = json.loads(open("config.json").read())
+        # Load ancient wisdom
+        self.jaden = json.load(open("wisdom/jaden.json"))
+        self.kanye = json.load(open("wisdom/kanye.json"))
+        self.excuses = json.load(open("wisdom/excuses.json"))
+        self.dongers = json.load(open("wisdom/dongers.json"))
         
-        # We will use this a lot, and I hate long variables
-        self.primarychan = self.config['channel']
-        self.auxchans = self.config['auxchans']
-        self.statsurl = self.config['stats-url']
-
-        # Create the irc object
-        self.irc = client.IRCClient("donger")
-        self.irc.configure(server = self.config['server'],
-                           nick = self.config['nick'],
-                           ident = self.config['nick'],
-                           port = 6697,
-                           gecos = "The supreme donger")
-        # Create handlers and F U N stuff
-        self.irc.addhandler("connect", self._connect) # for SASL
-        self.irc.addhandler("authenticate", self._auth) # for SASL!!!1
-        self.irc.addhandler("welcome", self._welcome) # For the autojoin
-        self.irc.addhandler("pubmsg", self._pubmsg) # For commands
-        self.irc.addhandler("privmsg", self._privmsg) # For private commands
-        self.irc.addhandler("part", self._coward) # Coward extermination
-        self.irc.addhandler("quit", self._coward) # ^
-        self.irc.addhandler("join", self._join) # For custom messages on join
-        self.irc.addhandler("account", self._account) # account-notify stuff
-        self.irc.addhandler("ctcpreply", self._ctcpreply) # ctcp shit
-
-        
-        # Connect to the IRC
-        self.irc.connect()
-
-    def verboseoutput(self, stringtoprint): #This is going to replace the if self.verbose crap.
-        if self.verbose:
-            self.irc.privmsg(self.primarychan, stringtoprint)
-
-    def _pubmsg(self, cli, ev):
-        # Processing commands here
-        
-        if ev.splitd[0].startswith("!") or ev.arguments[0].startswith(cli.nickname) or ev.arguments[0].startswith("fuck off"):
-            try:
-                if ev.target != self.primarychan and ev.source == self.sourcehistory[-2] and ev.source == self.sourcehistory[-1] and time.time() - self.lastheardfrom[ev.source] < 10:
-                    return #If the user was the last two users to speak and the last msg was within 10 seconds, don't do anything. Flood control.
-            except IndexError:
-                pass
-            finally:
-                self.lastheardfrom[ev.source] = time.time()
-                self.sourcehistory.append(ev.source)
-        else:
-            return # If this works the way I think it will, it won't need to parse anything unless it starts with a ! or the cli.nickname.
-        ev.splitd[0] = ev.splitd[0].lower() #Lower the commands.
-        if ev.splitd[0] == "!fight" or ev.splitd[0] == "!deathmatch":
-            if ev.target in self.auxchans:
-                return
- 
-            if self.gamerunning:
-                cli.privmsg(self.primarychan, "There's already a fight in progress.")
-                return
-                
-            if len(ev.splitd) == 1 or ev.splitd[1] == "": # I hate you
-                cli.privmsg(self.primarychan, "Can you read? It's {0} <nick> [othernick] ...".format(ev.splitd[0]))
-                return
-            
-            if cli.channels[ev.target.lower()].users[ev.source.lower()].account is None:
-                cli.privmsg(self.primarychan, "You must be identified with nickserv to play!")
-                return
-            
-            self.deathmatch = False
-            self.verbose = False
-            
-            if "--verbose" in ev.splitd:
-                ev.splitd.remove("--verbose")
-                self.verbose = True
-                cli.privmsg(self.primarychan, "Verbose mode activated (Will deactivate when a game ends)")
-
-            if ev.splitd[0] == "!deathmatch":
-                if cli.nickname in ev.splitd:
-                    cli.privmsg(self.primarychan, "Sorry, but {0} is unavailable for a deathmatch.".format(cli.nickname))
-                    return
-                elif len(ev.splitd) != 2:
-                    cli.privmsg(self.primarychan, "Deathmatches are 1 v 1 only.")
-                    return
-                self.deathmatch = True
-
-            players = copy.copy(ev.splitd)
-            del players[0]
-            pplayers = []
-            for i in players:
-                try: # Check if the challenged user is on the channel..
-                    cli.channels[self.primarychan].users[i.lower()]
-                except:
-                    cli.privmsg(self.primarychan, "There's no one named {0} on this channel".format(i))
-                    return
-                if cli.channels[self.primarychan].users[i.lower()].account is None:
-                    cli.privmsg(self.primarychan, "\002{0}\002 is not identified with nickserv!".format(i))
-                    return
-            
-                if cli.channels[self.primarychan].users[i.lower()].host == ev.source2.host:
-                    cli.privmsg(self.primarychan, "Stop hitting yourself.")
-                    return 
-                
-                pplayers.append(cli.channels[self.primarychan].users[i.lower()].nick)
-            pplayers.append(ev.source)
-            self.pending[ev.source.lower()] = pplayers
-            if self.deathmatch == True:
-                self.deathmatchpending[ev.source.lower()] = ev.splitd[1]
-            else:
-                try:
-                    del self.deathmatchpending[ev.source.lower()]
-                except:
-                    pass
-
-            self._paccept[ev.source2.nick.lower()] = copy.copy(pplayers)
-            self._paccept[ev.source2.nick.lower()].remove(ev.source)
-            if cli.nickname.lower() in players:
-                cli.privmsg(self.primarychan, "YOU WILL SEE")
-                self._paccept[ev.source2.nick.lower()].remove(cli.nickname)
-                if self._paccept[ev.source2.nick.lower()] == []:
-                    self.fight(cli, pplayers, ev.source2.nick.lower())
-                    return
-            if self.deathmatch == True:
-                cli.privmsg(self.primarychan, "{1}: \002{0}\002 has challenged you to a deathmatch. The loser will be bant for 20 minutes. To accept, use '!accept {0}'".format(ev.source, ", ".join(self._paccept[ev.source2.nick.lower()])))
-            else:
-                cli.privmsg(self.primarychan, "{1}: \002{0}\002 has challenged you. To accept, use '!accept {0}'".format(ev.source, ", ".join(self._paccept[ev.source2.nick.lower()])))
-        elif ev.splitd[0] == "!accept":
-            self.deathmatch = False #We'll do this and check later if it's a deathmatch.
-
-            if self.gamerunning:
-                cli.privmsg(self.primarychan, "WAIT TILL THIS FUCKING GAME ENDS")
-                return
-                
-            if len(ev.splitd) == 1 or ev.splitd[1] == "": # I hate you
-                cli.privmsg(self.primarychan, "Can you read? It's !accept <nick>")
-                return
-            ev.splitd[1] = ev.splitd[1].lower()
-            try:
-                if ev.source not in self.pending[ev.splitd[1]]:
-                    raise  # two in one
-            except:
-                cli.privmsg(self.primarychan, "Err... Maybe you meant to say \002!fight {0}\002? They never challenged you.".format(ev.splitd[1]))
-                return
-            try: # Check if the challenged user is on the channel..
-                cli.channels[self.primarychan].users[ev.splitd[1]]
-            except:
-                cli.privmsg(self.primarychan, "They're not here anymore - maybe they were intimidated by your donger.")
-                del self.pending[ev.splitd[1]]
-                return
-            
-            self._paccept[ev.splitd[1].lower()].remove(ev.source)
-            if self._paccept[ev.splitd[1].lower()] == []:
-                try:
-                    if self.deathmatchpending[ev.splitd[1].lower()] == ev.source:
-                        self.deathmatch = True
-                except KeyError:
-                    self.deathmatch = False
-                # Start the fight!!!
-                self.fight(cli, self.pending[ev.splitd[1]], ev.splitd[1], self.deathmatch)
-                del self.pending[ev.splitd[1]]
-                del self._paccept[ev.splitd[1].lower()]
-        elif ev.splitd[0] == "!hit":
-            if not self.gamerunning:
-                return
-                
-            if self.turn != ev.source.lower():
-                cli.privmsg(self.primarychan, "Wait your fucking turn or I'll kill you.")
-                return
-            
-            if ev.source.lower() not in self.aliveplayers:
-                cli.privmsg(self.primarychan, "GET OUT OR I'LL KILL YOU! INTRUDER INTRUDER INTRUDER")
-            
-            if len(ev.splitd) != 1 and ev.splitd[1] != "":
-                if ev.splitd[1].lower() not in self.aliveplayers and ev.splitd[1].lower() in list(self.health):
-                    cli.privmsg(self.primarychan, "WHAT?! Do you REALLY want to hit a corpse?!")
-                    return
-                elif ev.splitd[1].lower() not in self.aliveplayers:
-                    cli.privmsg(self.primarychan, "WHA?! \002{0}\002 is not playing!".format(ev.splitd[1]))
-                    return
-                nick = ev.splitd[1]
-            else:
-                allaliveplayers = copy.deepcopy(self.aliveplayers)
-                allaliveplayers.remove(ev.source.lower())
-                nick = random.choice(list(allaliveplayers))
-                
-            self.hit(ev.source.lower(), nick)
-        elif ev.splitd[0] == "!heal":
-            if not self.gamerunning:
-                return
-                
-            if self.turn != ev.source.lower():
-                cli.privmsg(self.primarychan, "Wait your fucking turn or I'll kill you.")
-                return
-            
-            if ev.source.lower() not in self.aliveplayers:
-                cli.privmsg(self.primarychan, "GET OUT OR I'LL KILL YOU! INTRUDER INTRUDER INTRUDER")
-                return
-            
-            if ev.source.lower() in self.zombies:
-                cli.privmsg(self.primarychan, "Zombies can't heal")
-                return
-            
-            self.heal(ev.source)
-        elif ev.splitd[0] == "!praise":
-            if not self.gamerunning:
-                return
-                
-            if self.turn != ev.source.lower():
-                cli.privmsg(self.primarychan, "Wait your fucking turn or I'll kill you.")
-                return
-            
-            if ev.source.lower() not in self.aliveplayers:
-                cli.privmsg(self.primarychan, "GET OUT OR I'LL KILL YOU! INTRUDER INTRUDER INTRUDER")
-                return
-
-            if ev.source.lower() in self.haspraised or ev.source.lower() in self.zombies:
-                cli.privmsg(self.primarychan, "Your praises bore me.")
-                return
-                
-            if self.deathmatch:
-                cli.privmsg(self.primarychan, "\"A dong's life is the most precious thing in the universe.\" You can't praise in deathmatches.")
-                return
-            
-            if len(ev.splitd) != 1 and ev.splitd[1] != "":
-                nick = ev.splitd[1]
-                if ev.splitd[1].lower() not in self.aliveplayers and ev.splitd[1].lower() in list(self.health):
-                    cli.privmsg(self.primarychan, "WHAT?! Do you REALLY want to hit a corpse?!")
-                    return
-                if ev.splitd[1].lower() not in self.aliveplayers:
-                    cli.privmsg(self.primarychan, "WHA?! \002{0}\002 is not playing!".format(ev.splitd[1]))
-                    return
-            else:
-                nick = ev.source.lower()
-
-            praiseroll=random.randint(1, 3)
-            self.countstat(ev.source.lower(), "praise")
-            self.haspraised.append(ev.source.lower())
-            if nick.lower() == cli.nickname.lower():
-                praiseroll = 2
-                cli.privmsg(self.primarychan, "You try and suckle my donger while fighting me?")
-                nick = ev.source
-            if praiseroll == 1: #Heal
-                self.heal(nick, "praise")
-            elif praiseroll == 2: #Hit
-                self.hit(cli.nickname.lower(), nick, "praise")
-            elif praiseroll == 3:
-                self.ascii("NOPE NOPE NOPE")
-                self.getturn()
-        elif ev.splitd[0] == "!cancel":
-            try:
-                self.pending[ev.source.lower()]
-            except:
-                cli.privmsg(self.primarychan, "You can only use !cancel if you started a !fight")
-                return
-            if self.gamerunning:
-                cli.privmsg(self.primarychan, "THE FIGHT WAS ALREADY STARTED, IF YOU'RE A COWARD USE !QUIT")
-                return
-            self.deathmatchpending = {}
-            self.deathmatch = False
-            del self.pending[ev.source.lower()]
-            del self._paccept[ev.source.lower()]
-            self.deathmatchpending = {}
-            self.deathmatch = False
-            cli.privmsg(self.primarychan, "{0}'s fight cancelled".format(ev.source))
-        elif ev.splitd[0] == "!reject":
-            if self.gamerunning:
-                return
-            if len(ev.splitd) == 1 or ev.splitd[1] == "": # I hate you
-                cli.privmsg(self.primarychan, "Can you read? It's !reject <nick>")
-                return
-            try:
-                if ev.source not in self.pending[ev.splitd[1].lower()]:
-                    raise  # two in one
-            except:
-                cli.privmsg(self.primarychan, "But... {0} never challenged you!".format(ev.splitd[1]))
-                return
-            
-            self.pending[ev.splitd[1].lower()].remove(ev.source)
-            if len(self.pending[ev.splitd[1].lower()]) == 2 and cli.nickname in self.pending[ev.splitd[1].lower()]:
-                self.pending[ev.splitd[1].lower()].remove(cli.nickname)
-            self._paccept[ev.splitd[1].lower()].remove(ev.source)
-            cli.privmsg(self.primarychan, "{0} fled out of the fight".format(ev.source))
-            if len(self.pending[ev.splitd[1].lower()]) == 1:
-                del self.pending[ev.splitd[1].lower()]
-                del self._paccept[ev.splitd[1].lower()]
-                cli.privmsg(self.primarychan, "Fight cancelled")
-                return
-            
-            if self._paccept[ev.splitd[1].lower()] == []:
-                # Start the fight!!!
-                self.fight(cli, self.pending[ev.splitd[1].lower()], ev.splitd[1].lower())
-                del self.pending[ev.splitd[1]]
-                del self._paccept[ev.splitd[1].lower()]
-        elif ev.arguments[0].startswith(cli.nickname):
-            if len(ev.splitd) > 1 and ev.splitd[1].lower().startswith("you"):
-                cli.privmsg(ev.target, "No, {0}".format(ev.source)+ ev.arguments[0].replace(cli.nickname, ""))
-            else:
-                cli.privmsg(ev.target, ev.arguments[0].replace(cli.nickname, ev.source))
-        elif ev.arguments[0].lower().startswith("fuck off " + cli.nickname):
-            cli.privmsg(ev.target, "\001ACTION fucks {0}\001".format(ev.source))
-        elif ev.splitd[0] == "!help":
-            self.commandHelp(cli, ev)
-        elif ev.splitd[0] == "!excuse":
-            cli.privmsg(ev.target, self.randomLine("excuse"))
-        elif ev.splitd[0] == "!jaden":
-            cli.privmsg(ev.target, self.randomLine("jaden"))
-        elif ev.splitd[0] == "!raise":
-            cli.privmsg(ev.target, "ヽ༼ຈل͜ຈ༽ﾉ RAISE YOUR DONGERS ヽ༼ຈل͜ຈ༽ﾉ")
-        elif ev.splitd[0] == "!ping":
-            current_milli_time = int(round(time.time() * 1000))
-            self.lastpingreq = ev.target
-            cli.privmsg(ev.source, "\001PING {0}\001".format(current_milli_time))
-        elif ev.splitd[0] == "!lower":
-            cli.privmsg(ev.target, "┌༼ຈل͜ຈ༽┐ ʟᴏᴡᴇʀ ʏᴏᴜʀ ᴅᴏɴɢᴇʀs ┌༼ຈل͜ຈ༽┐")
-        elif ev.splitd[0] == "!dong":
-            cli.privmsg(ev.target, self.randomLine("donger"))
-        elif ev.splitd[0] == "!ascii":
-            if ev.target in self.auxchans:
-                return
-            if self.gamerunning:
-                return
-            if len(ev.splitd) > 1 and len(' '.join(ev.splitd[1:])) < 16:
-                cli.privmsg(ev.target, Figlet("smslant").renderText(' '.join(ev.splitd[1:])))
-            elif len(ev.splitd) > 1:
-                cli.privmsg(ev.target, "Text must be 15 characters or less (that was {0} characters). Syntax: !ascii Fuck You".format(len(' '.join(ev.splitd[1:]))))
-        elif ev.splitd[0] == "!health":
-            if not self.gamerunning:
-                return
-            if len(ev.splitd[0]) > 1 or ev.splitd[1] == "":
-                ev.splitd[1] = ev.source
-            cli.privmsg(ev.target, "\002{0}\002's has \002{1}\002HP".format(ev.splitd[1], self.health[ev.splitd[1].lower()]))
-        elif ev.splitd[0] == "!quit":
-            if not self.gamerunning:
-                #cli.privmsg(ev.target, "THE FUCKING GAME IS NOT RUNNING")
-                return
-            cli.devoice(ev.target, ev.source)
-            self._coward(cli, ev)
-        elif ev.splitd[0] == "!top" and ev.target == self.primarychan:
-            players = Statsv2.select()
-            # K, now we have to make our own arranging of stuff, damnit
-            p = {}
-            for player in players:
-                if (player.fights + player.accepts) < 10:
-                    continue # not counting players with less than 10 fights
-                
-                p[player.nick] = (player.wins - player.losses)
-            
-            p = sorted(p.items(), key=operator.itemgetter(1))
-                
-            c = 1
-            for player in p[::-1]:
-                cli.privmsg(ev.target, "{0} - \002{1}\002 (+\002{2}\002)".format(c, player[0].upper(), player[1]))
-                c += 1
-                if c == 4:
-                    break
-            if self.statsurl != "":
-                cli.privmsg(ev.target, "More stats are available at {0}".format(self.statsurl))
-        elif ev.splitd[0] == "!mystats" or ev.splitd[0] == "!stats":
-            if len(ev.splitd) != 1:
-                nick = ev.splitd[1]
-            else:
-                nick = ev.source
-            try:
-                if cli.channels[ev.target.lower()].users[nick.lower()].account != None:
-                    nick = cli.channels[ev.target.lower()].users[nick.lower()].account
-            except:
-                pass  # >_>
-                
-            try:
-                player = Statsv2.get(Statsv2.nick == nick.lower())
-                totaljoins = (player.wins + player.losses + player.quits + player.easywins) - (player.fights + player.accepts)
-                cli.privmsg(ev.target, "\002{0}\002's stats: \002{1}\002 wins, \002{4}\002 easy wins, \002{2}\002 losses, \002{3}\002 coward quits, \002{5}\002 idle-outs, \002{6}\002 !praises, \002{7}\002 fights started, accepted \002{8}\002 fights, !joined \002{15}\002 fights (\002{9}\002 total fights), \002{10}\002 !hits, \002{11}\002 !heals, \002{12}\002HP of damage dealt and \002{13}\002 damage received. {14}".format(
-                                        player.realnick, player.wins, player.losses, player.quits, player.easywins, player.idleouts, player.praises, player.fights, player.accepts, (player.wins + player.losses + player.quits), player.hits, player.heals, player.dcaused, player.dreceived, self.statsurl, totaljoins))
-            except:
-                cli.privmsg(ev.target, "There are no registered stats for \002{0}\002".format(nick))
-        else:
-            try:
-                self.extracommands[ev.splitd[0]]
-            except:
-                return
-            self.extracommands[ev.splitd[0]](self, cli, ev)
+    def on_connect(self):
+        super().on_connect()
+        self.join(self.channel)
+        for chan in config['auxchans']:
+            self.join(chan)
     
-    def commandHelp(self, cli, ev):
-        cli.privmsg(ev.target, "PM'd you my commands.")
-        cli.privmsg(ev.source, "Commands available only in {0}:".format(self.primarychan))
-        cli.privmsg(ev.source, "  !fight <nickname> [othernicknames]: Challenge another player")
-        cli.privmsg(ev.source, "  !deathmatch <nickname>: Same as fight, but only 1v1, and loser is bant for 20 minutes.")
-        cli.privmsg(ev.source, "  !ascii <text>: Turns any text 13 characters or less into ascii art")
-        cli.privmsg(ev.source, "  !cancel: Cancels a !fight")
-        cli.privmsg(ev.source, "  !reject <nick>: Cowardly rejects a !fight")
-        cli.privmsg(ev.source, "Commands available everywhere:")
-        cli.privmsg(ev.source, "  !raise: Commands users to raise their dongers")
-        cli.privmsg(ev.source, "  !excuse: Outputs random BOFH excuse")
-        cli.privmsg(ev.source, "  !jaden: Outputs random Jaden Smith tweet")
-        cli.privmsg(ev.source, "  !stats [player]: Outputs player's game stats (or your own stats)")
-        cli.privmsg(ev.source, "  !top: Shows the three players with most wins")
-    
-    def _privmsg(self, cli, ev):
-        if ev.splitd[0] == "!join":
-            self.join(cli, ev.source, ev)
-
-    def join(self, cli, fighter, ev):
-        
-        if not self.gamerunning:
-            cli.privmsg(fighter, "THE FUCKING GAME IS NOT RUNNING")
-            return
+    @pydle.coroutine
+    def on_message(self, target, source, message):
+        if message.startswith("!"):
+            command = message[1:].split(" ")[0]
+            args = message.rstrip().split(" ")[1:]
             
-        try:
-            ev.splitd[1]
-        except:
-            ev.splitd.append("")
-            
-        try:
-            fighter = fighter if ev.splitd[1] != "141592" else cli.nickname
-            if fighter != cli.nickname:
-                raise
-        except:
-            if cli.channels[self.primarychan.lower()].users[fighter.lower()].account in self.accountsseenonthisgame and fighter != cli.nickname and ev.splitd[1] != "zombie":
-                cli.privmsg(fighter, "Stop trying to cheat, you dumb shit. To join as a zombie, say !join zombie")
-                return 
-        if fighter.lower() in self.aliveplayers:
-            cli.privmsg(fighter, "You're already playing, you dumb shit.")
-            return
-        if fighter.lower() in self.deadplayers and ev.splitd[1] != "zombie":
-            cli.privmsg(fighter, "You can't rejoin a game after you've been killed.")
-            return
-        if fighter.lower() in self.zombies:
-            return
-        elif ev.splitd[1] == "zombie":
-            self.zombies.append(fighter.lower())
-            if random.randint(1, 5) > 2:
-                cli.privmsg(fighter, "You have no brain and your zombie dies")
-                return
-        
-        if self.deathmatch == True:
-            cli.privmsg(fighter, "You can't join a deathmatch.")
-            return
-        self.playershealth = []
-        for p in self.aliveplayers:
-            self.playershealth.append(self.health[p])
-
-        #Set joining player's health to the average health of current players
-        self.health[fighter.lower()] = int(sum(self.playershealth, 0.0) / len(self.playershealth))
-        self.maxheal[fighter.lower()] = 44
-        if ev.splitd[1] == "zombie": # ooo zombie
-            self.health[fighter.lower()] = int(self.health[fighter.lower()] / 1.3)
-            cli.privmsg(self.primarychan, "\002{0}\002's ZOMBIE JOINS THE FIGHT (\002{1}\002HP)".format(fighter.upper(), self.health[fighter.lower()]))
-        else:
-            cli.privmsg(self.primarychan, "\002{0}\002 JOINS THE FIGHT (\002{1}\002HP)".format(fighter.upper(), self.health[fighter.lower()]))
-        
-        if fighter.lower() not in self.allplayers:
-            self.allplayers.append(fighter.lower())
-
-        self.accountsseenonthisgame.append(cli.channels[self.primarychan.lower()].users[fighter.lower()].account)
-        self.aliveplayers.append(fighter.lower())
-        cli.voice(self.primarychan, fighter)
-
-
-    def hit(self, hfrom, to, modifier=None):
-        if modifier == None and self.turn.lower() != hfrom.lower():
-            return
-        self.maxheal[hfrom.lower()] = 44
-
-        damage = random.randint(18, 35)
-        criticalroll = random.randint(1, 12) if hfrom.lower() not in self.zombies else 12
-
-        if modifier == "praise":
-            self.verboseoutput("Verbose: Praise. Forcing critical")
-            criticalroll = 1
-        else:
-            self.countstat(hfrom, "hit")
-
-        instaroll = random.randint(1, 50) if not self.deathmatch and hfrom.lower not in self.zombies else 50
-
-        self.verboseoutput("Verbose: instaroll is {0}/50 (1 for instakill)".format(instaroll))
-        self.verboseoutput("Verbose: criticalroll is {0}/12 (1 for critical)".format(criticalroll))
-        self.verboseoutput("Verbose: Regular damage is {0}/35".format(damage))
-
-        if instaroll == 1:
-            self.verboseoutput("Verbose: Instakill. Removing player.".format(instaroll))
-            self.ascii("instakill")
-
-            self.death(hfrom, to)
-            self.health[to.lower()] = -1
-
-            if to.lower() != self.irc.nickname:
-                self.irc.kick(self.primarychan, to, "REKT")
-            else:
-                self.irc.devoice(self.primarychan, self.irc.nickname)
-            self.getturn()
-            self.countstat(self.irc.channels[self.primarychan].users[to.lower()].nick, "loss")
-            return
-        elif criticalroll == 1:
-            self.verboseoutput("Verbose: Critical hit, duplicating damage: {0}/70".format(damage*2))
-            if modifier == "praise":
-                self.ascii("FUCK YOU")
-            else:
-                self.ascii("critical")
-            damage = damage * 2
-        
-        self.countstat(hfrom, "dmg", damage)
-        self.countstat(to, "gotdmg", damage)
-        self.health[to.lower()] -= damage
-        if hfrom.lower() == self.irc.nickname.lower() and hfrom.lower() not in self.health:
-            fromhp = "999999999"
-        else:
-            fromhp = self.health[hfrom.lower()]
-        self.irc.privmsg(self.primarychan, "\002{0}\002 (\002{1}\002HP) deals \002{2}\002 to \002{3}\002 (\002{4}\002HP)".format(hfrom,
-                                    str(fromhp), str(damage), self.irc.channels[self.primarychan].users[to.lower()].nick, str(self.health[to.lower()])))
-
-        if self.health[to.lower()] <= 0:
-            self.death(hfrom, to)
-            if to.lower() != self.irc.nickname.lower():
-                if self.deathmatch == True:
-                    self.verboseoutput("Verbose: Deathmatch lost. Adding akick.".format(instaroll))
-                    self.irc.privmsg("CHANSERV", "AKICK {0} ADD {1} !T 20 FUCKIN REKT - Lost deathmatch".format(self.primarychan, self.irc.channels[self.primarychan].users[to.lower()].account))
-                self.irc.kick(self.primarychan, to, "REKT")
-        self.getturn()
-    
-    def death(self, slayer, player):
-        self.verboseoutput("Verbose: Death. Slayer: {0}, player: {1}".format(slayer, player))
-        self.irc.devoice(self.primarychan, player)
-        self.ascii("rekt")
-        self.irc.privmsg(self.primarychan, "\002{0}\002 REKT {1}!".format(self.irc.channels[self.primarychan].users[slayer.lower()].nick, self.irc.channels[self.primarychan].users[player.lower()].nick))
-        self.verboseoutput("Verbose: Removing dead player.")
-        self.aliveplayers.remove(player.lower())
-        self.deadplayers.append(player.lower())
-        try:
-            self._turnleft.remove(player.lower())
-        except:
-            pass
-        self.countstat(self.irc.channels[self.primarychan].users[player.lower()].nick, "loss")
-
-    
-    def heal(self, nick, modifier=None):
-        if modifier == None and self.turn.lower() != nick.lower():
-            return
-        if self.maxheal[nick.lower()] <= 23 and modifier != "praise":
-            self.irc.privmsg(self.primarychan, "Sorry, bro. We don't have enough chopsticks to heal you.")
-            return
-        healing = random.randint(22, self.maxheal[nick.lower()] if modifier != "praise" else 40)
-        if modifier == "praise":
-            healing = healing * 2
-            self.verboseoutput("Verbose: Praise. Forcing critical heal.")
-            self.ascii("whatever")
-        else:
-            self.countstat(nick, "heal")
-        
-        self.health[nick.lower()] += healing
-        self.verboseoutput("Verbose: Regular healing is {0}/{1}(/44)".format(healing, self.maxheal[nick.lower()]))
-        self.maxheal[nick.lower()] = self.maxheal[nick.lower()] - 5
-
-        if self.health[nick.lower()] > 100:
-            self.health[nick.lower()] = 100
-            self.irc.privmsg(self.primarychan, "\002{0}\002 heals for \002{1}HP\002, bringing them to \002100HP\002".format(nick, healing))
-        else:
-            self.irc.privmsg(self.primarychan, "\002{0}\002 heals for \002{1}HP\002, bringing them to \002{2}HP\002".format(nick, healing, self.health[nick.lower()]))
-        self.getturn()
-
-    
-    # Here we handle ragequits
-    def _coward(self, cli, ev):
-        if self.gamerunning:
-            if ev.source2.nick.lower() in self.aliveplayers:
-                self.ascii("coward")
-                self.irc.privmsg(self.primarychan, "The coward is dead!")
-                self.aliveplayers.remove(ev.source2.nick.lower())
-                self.deadplayers.append(ev.source2.nick.lower())
-                self.health[ev.source2.nick.lower()] = -1
-                try:
-                    self._turnleft.remove(ev.source2.nick.lower())
-                except:
-                    pass
-                self.irc.privmsg("CHANSERV", "AKICK {0} ADD {1} !T 30 FUCKIN REKT - Coward quit, 30 minutes".format(self.primarychan, ev.source2.nick.lower()))
+            if target == self.channel: # Dongerdong command
+                if command == "fight" and not self.gameRunning:
+                    # Check for proper command usage
+                    if not args:
+                        self.message(target, "Can you read? It is !fight <nick> [othernick] ...")
+                        return
                     
-                if len(self.aliveplayers) == 1:
-                    self.win(self.aliveplayers[0], stats=False)
-                elif self.turn == ev.source2.nick.lower():
-                    self.getturn()
-                
-                self.countstat(ev.source2.nick, "quit")
-    
-    # Adds something on the stats
-    # ctype = win/loss/quit
-    def countstat(self, nick, ctype, amt=0):
-        try:
-            nick = self.irc.channels[self.primarychan.lower()].users[nick.lower()].account
-        except:
-            return
-        try:
-            stat = Statsv2.get(Statsv2.nick == nick.lower())
-        except:
-            stat = Statsv2.create(nick=nick.lower(), losses=0, quits=0, wins=0, idleouts=0, accepts=0,
-            dcaused=0, dreceived=0, easywins=0, fights=0, praises=0, realnick=nick, heals=0, hits=0)
-        if ctype == "win":
-            stat.wins += 1
-        elif ctype == "loss":
-            stat.losses += 1
-        elif ctype == "quit":
-            stat.quits += 1
-        elif ctype == "idleout":
-            stat.idleouts += 1
-        elif ctype == "fight":
-            stat.fights += 1
-        elif ctype == "gotdmg":
-            stat.dreceived += amt
-        elif ctype == "dmg":
-            stat.dcaused += amt
-        elif ctype == "easywin":
-            stat.easywins += 1
-        elif ctype == "accept":
-            stat.accepts += 1
-        elif ctype == "praise":
-            stat.praises += 1
-        elif ctype == "heal":
-            stat.heals += 1
-        elif ctype == "hit":
-            stat.hits += 1
-            
-        stat.save()
-    
-    def fight(self, cli, fighters, starter, deathmatch = False):
-        self.prerules()
-        self.countstat(starter, "fight")
-        cli.mode(self.primarychan, "+m")
-        if deathmatch == True:
-            self.ascii("DEATHMATCH")
-        if len(fighters) == 2:
-            self.ascii(" V. ".join(fighters).upper(), "straight")
-        else:
-            cli.privmsg(self.primarychan, " V. ".join(fighters).upper())
-        cli.privmsg(self.primarychan, "RULES:")
-        cli.privmsg(self.primarychan, "1. Wait your turn. One person at a time.")
-        cli.privmsg(self.primarychan, "2. Be a dick about it.")
-        cli.privmsg(self.primarychan, " ")
-        cli.privmsg(self.primarychan, "Use !hit [nick] to strike.")
-        cli.privmsg(self.primarychan, "Use !heal to heal yourself.")
-        cli.privmsg(self.primarychan, "Use !praise [nick] to praise to the donger gods (once per game).")
-        cli.privmsg(self.primarychan, "Use '/msg {0} !join' to join a game mid-fight.".format(cli.nickname))
-        cli.privmsg(self.primarychan, " ")
-        
-        for i in fighters:
-            if cli.channels[self.primarychan.lower()].users[i.lower()].account in self.accountsseenonthisgame:
-                cli.privmsg(self.primarychan, "..... WAIT, WHAT?! Looks like somebody tried to play with two clones")
-                cli.mode(self.primarychan, "-m")
-                self.allplayers = []
-                return
-            self.accountsseenonthisgame.append(cli.channels[self.primarychan.lower()].users[i.lower()].account)
-
-            self.maxheal[i.lower()] = 44
-            self.health[i.lower()] = 100
-            self.allplayers.append(i.lower())
-            self.aliveplayers.append(i.lower())
-            if i.lower() != starter.lower():
-                self.countstat(i.lower(), "accept")
-        self.prefight()
-        self.ascii("FIGHT")
-        cli.privmsg(self.primarychan, " ")
-        random.shuffle(self.allplayers) # randomize turns
-        
-        self.fightstart()
-
-        cli.voice(self.primarychan, fighters)
-        self.haspraised = []
-        self.deadplayers = []
-        self.gamerunning = True
-        self.getturn()
-        
-    def getturn(self):
-        self.verboseoutput("Verbose: Getting turns")
-        
-        if self.turnindex > (len(self.allplayers) - 1):
-            self.verboseoutput("Verbose: turnindex is greater than allplayers length minus 1 (first instance). Resetting turnindex to 0.")
-            self.turnindex = 0
-        
-        while self.allplayers[self.turnindex] not in self.aliveplayers:
-            self.verboseoutput("Verbose: Advancing turnindex by 1")
-            self.turnindex += 1
-            if self.turnindex > (len(self.allplayers) - 1):
-                self.verboseoutput("Verbose: turnindex is greater than allplayers length minus 1 (second instance). Resetting turnindex to 0.")
-                self.turnindex = 0
-        
-        if len(self.aliveplayers) == 1:
-            self.verboseoutput("Verbose: Only one player left, ending the game")
-            self.allplayers = []  # adding this twice! WOO!
-            self.win(self.aliveplayers[0])
-            return
+                    if not self.users[source]['account']:
+                        self.message(target, "You're not identified with NickServ!")
+                        return
+                    
+                    if source in args:
+                        self.message(target, "You're trying to fight yourself?")
+                        return
                         
-        self.turn = self.allplayers[self.turnindex]
-        self.turnindex += 1
-        self.roundstart = time.time()
-        self.irc.privmsg(self.primarychan, "It is \002{0}\002's turn".format(self.irc.channels[self.primarychan].users[self.turn].nick))
+                    self.fight([source] + args)
+                elif command == "accept" and not self.gameRunning:
+                    if not args:
+                        self.message(target, "Can you read? It is !accept <nick>")
+                        return
+                    
+                    if not self.users[source]['account']:
+                        self.message(target, "You're not identified with NickServ!")
+                        return
+                    
+                    challenger = args[0].lower()
+                    
+                    # Check if the user was challenged
+                    try:
+                        if source.lower() not in self.pendingFights[challenger]['pendingaccept']:
+                            self.message(target, "Err... Maybe you meant to say \002!fight {0}\002? They never challenged you.".format(args[0]))
+                            return
+                    except KeyError: # self.pendingFights[x] doesn't exist
+                        self.message(target, "Err... Maybe you meant to say \002!fight {0}\002? They never challenged you.".format(args[0]))
+                        return
+                    
+                    # Check if the challenger is here
+                    if args[0].lower() not in map(str.lower, self.channels[self.channel]['users']):
+                        self.message(target, "They're not here anymore - maybe they were intimidated by your donger.")
+                        del self.pendingFights[challenger] # remove fight.
+                        return
+                    
+                    # OK! This player accepted the fight.
+                    self.pendingFights[challenger]['players'].append(source)
+                    self.pendingFights[challenger]['pendingaccept'].remove(source.lower())
+                    
+                    # Check if everybody accepted
+                    if not self.pendingFights[challenger]['pendingaccept']:
+                        # Start the game!
+                        self.start(self.pendingFights[challenger])
+                elif command == "hit" and self.gameRunning:
+                    if source != self.turnlist[self.currentTurn]:
+                        self.message(self.channel, "It's not your fucking turn!")
+                        return
+                    
+                    if not args: # pick a random living thing
+                        livingThings = [self.players[player]['nick'] for player in self.players if self.players[player]['hp'] > 0 and player != source.lower()]
+                        self.hit(source, random.choice(livingThings))
+                    else: # The user picked a thing. Check if it is alive
+                        if args[0].lower() not in self.players:
+                            self.message(self.channel, "You should hit something that is actually playing...")
+                            return
+                        if args[0].lower() == source.lower():
+                            self.message(self.channel, "Stop hitting yourself!")
+                            return
+                        if self.players[args[0].lower()]['hp'] <= 0:
+                            self.message(self.channel, "Do you REALLY want to hit a corpse?")
+                            return
+                        
+                        self.hit(source, self.players[args[0].lower()]['nick'])
+                elif command == "heal" and self.gameRunning:
+                    if source != self.turnlist[self.currentTurn]:
+                        self.message(self.channel, "It's not your fucking turn!")
+                        return
+                    
+                    self.heal(source)
+                elif command == "ascii" and not self.gameRunning:
+                    if args and len(' '.join(args)) < 16:
+                        self.message(target, Figlet("smslant").renderText(' '.join(args)))
+                    else:
+                        self.message(target, "Text must be 15 characters or less (that was {0} characters). Syntax: !ascii Fuck You".format(len(' '.join(args))))
+                elif command == "praise" and self.gameRunning:
+                    if source != self.turnlist[self.currentTurn]:
+                        self.message(self.channel, "It's not your fucking turn!")
+                        return
+                    
+                    if self.deathmatch:
+                        self.message(target, "You can't praise during deathmatches.")
+                        return
+                    
+                    if self.players[source.lower()]['praised']:
+                        self.message(target, "You can only praise once per game.")
+                        return
+                    
+                    if not args:
+                        ptarget = source
+                    else:
+                        try:
+                            ptarget = self.players[args[0].lower()]['nick']
+                        except KeyError:
+                            self.message(target, "Player not found.")
+                            return
+                    praiseroll = random.randint(1, 3)
+                    self.players[source.lower()]['praised'] = True
+
+                    if praiseroll == 1:
+                        self.ascii("whatever")
+                        self.heal(ptarget, True) # Critical heal
+                    elif praiseroll == 2:
+                        self.ascii("fuck you")
+                        self.hit(source, ptarget, True)
+                    else:
+                        self.ascii("NOPE")
+                        self.getTurn()
+                elif command == "cancel" and not self.gameRunning:
+                    self.message(target, "Fight cancelled.")
+                    try:
+                        del self.pendingFights[args[0].lower()]
+                    except KeyError:
+                        self.message(target, "You can only !cancel if you started a fight.")
+                elif command == "reject" and not self.gameRunning:
+                    if not args:
+                        self.message(target, "Can you read? It's !reject <nick>")
+                        return
+                        
+                    try: # I could just use a try.. except in the .remove(), but I am too lazy to remove this chunk of code
+                        if source.lower() not in self.pendingFights[args[0].lower()]['pendingaccept']:
+                            self.message(target, "{0} didn't challenge you.".format(args[0]))
+                            return
+                    except KeyError: # if self.pendingFights[args[0].lower()] doesn't exist.
+                        self.message(target, "{0} didn't challenge you.".format(args[0]))
+                        return
+                    
+                    self.pendingFights[args[0].lower()]['pendingaccept'].remove(source.lower())
+                    self.message(target, "\002{0}\002 flew out of the fight".format(source))
+                    
+                    if not self.pendingFights[args[0].lower()]['pendingaccept']:
+                        if len(self.pendingFights[args[0].lower()]['players']) == 1: #only the challenger
+                            self.message(target, "Fight cancelled.")
+                            del self.pendingFights[args[0].lower()]
+                        else:
+                            self.start(self.pendingFights[args[0].lower()])
+                elif command == "quit" and self.gameRunning:
+                    self.cowardQuit(source)
+            elif target == config['nick']: # private message
+                if command == "join" and self.gameRunning and not self.deathmatch:
+                    if source in self.turnlist:
+                        self.notice(source, "You already played in this game.")
+                        return
+                    
+                    alivePlayers = [self.players[player]['hp'] for player in self.players if self.players[player]['hp'] > 0]
+                    health = sum(alivePlayers) / len(alivePlayers)
+                    
+                    self.turnlist.append(source)
+                    self.players[source.lower()] = {'hp': health, 'heals': 4, 'zombie': False, 'nick': source, 'praised': False}
+                    self.message(self.channel, "\002{0}\002 JOINS THE FIGHT (\002{1}\002HP)".format(source.upper(), health))
+                    
+            # Regular commands
+            if command == "dong":
+                self.message(target, random.choice(self.dongers))
+            elif command == "excuse":
+                self.message(target, random.choice(self.excuses))
+            elif command == "kanye":
+                self.message(target, random.choice(self.kanye))
+            elif command == "jaden":
+                self.message(target, random.choice(self.jaden))
+            elif command == "raise":
+                self.message(target, "ヽ༼ຈل͜ຈ༽ﾉ RAISE YOUR DONGERS ヽ༼ຈل͜ຈ༽ﾉ")
+            elif command == "lower":
+                self.message(target, "┌༼ຈل͜ຈ༽┐ ʟᴏᴡᴇʀ ʏᴏᴜʀ ᴅᴏɴɢᴇʀs ┌༼ຈل͜ຈ༽┐")
+    
+    def on_quit(self, user, message=None):
+        if self.gameRunning:
+            self.cowardQuit(user)
+    
+    def on_part(self, channel, user, message=None):
+        if self.gameRunning and channel == self.channel:
+            self.cowardQuit(user)
+    
+    def cowardQuit(self, coward):
+        # check if it's playing
+        if coward not in self.turnlist:
+            return
+        if self.players[coward.lower()]['hp'] <= 0: # check if it is alive
+            return
         
-        # AI
-        if self.turn.lower() == self.irc.nickname.lower():
-            time.sleep(random.randint(2, 4))
-            self.processAI()
+        self.ascii("coward")
+        self.message(self.channel, "The coward is dead!")
+        
+        self.players[coward.lower()]['hp'] = -1
+        
+        self.kick(self.channel, coward, "COWARD")
+        if self.deathmatch:
+            self.akick(coward)
+        
+        if self.turnlist[self.currentTurn].lower() == coward:
+            self.getTurn()
+        else:
+            aliveplayers = 0
+            for p in self.players:
+                if self.players[p]['hp'] > 0:
+                    aliveplayers += 1
+                    survivor = p
             
+            if aliveplayers == 1:
+                self.win(p, False)
+    
+    def akick(self, user, time=30, message="FUCKING REKT"):
+        self.message("ChanServ", "AKICK {0} ADD {1} !T {2} {3}".format(self.channel, user, time, message))
+    
+    def heal(self, target, critical=False):
+        if not self.players[target.lower()]['heals'] and not critical:
+            self.message(self.channel, "You can't heal.")
+            return
+        
+        healing = random.randint(22, 44 - (5-self.players[target.lower()]['heals'])*4)
+        
+        if critical: # If critical heal, override upper healing limit (re roll)
+            healing = random.randint(44, 88) # (regular healing*2)
+        
+        if (healing + self.players[target.lower()]['hp']) > 100:
+            self.players[target.lower()]['hp'] = 100
+        else:
+            self.players[target.lower()]['hp'] += healing
+        
+        self.players[target.lower()]['heals'] -= 1
+            
+        self.message(self.channel, "\002{0}\002 heals for \002{1}HP\002, bringing them to \002{2}HP\002".format(
+                    target, healing, self.players[target.lower()]['hp']))
+        self.getTurn()
+    
+    def hit(self, source, target, critical=False):
+        # Rolls.
+        instaroll = random.randint(1, 50) if not self.deathmatch else 666
+        critroll = random.randint(1, 12) if not critical else 1
+        
+        damage = random.randint(18, 35)
+        
+        if instaroll == 1:
+            self.ascii("instakill")
+            # remove player
+            self.death(target, source)
+            self.getTurn()
+            return
+        if critroll == 1:
+            damage *= 2 
+            if not critical: # if it isn't an artificial crit, shout
+                self.ascii("critical")
+        
+        self.players[source.lower()]['heals'] = 5
+        self.players[target.lower()]['hp'] -= damage
+        
+        self.message(self.channel, "\002{0}\002 (\002{1}\002HP) deals \002{2}\002 to \002{3}\002 (\002{4}\002HP)".format(
+                    source, self.players[source.lower()]['hp'], damage, target, self.players[target.lower()]['hp']))
+        
+        if self.players[target.lower()]['hp'] <= 0:
+            self.death(target, source)
+        
+        self.getTurn()
+        
+    def death(self, victim, slayer):
+        self.players[victim.lower()]['hp'] = -1
+        
+        self.set_mode(self.channel, "-v", victim)
+        self.ascii("rekt")
+        self.message(self.channel, "\002{0}\002 REKT {1}".format(slayer, victim))
+        if victim != config['nick']:
+            self.kick(self.channel, victim, "REKT")
+    
+    def start(self, pendingFight):
+        self.gameRunning = True
+        self.deathmatch = pendingFight['deathmatch']
+        self.set_mode(self.channel, "+m")
+        if self.deathmatch:
+            self.ascii("DEATHMATCH")
+            
+        if len(pendingFight['players']) == 2:
+            self.ascii(" V. ".join(pendingFight['players']), "straight")
+        
+        self.message(self.channel, "RULES:")
+        self.message(self.channel, "1. Wait your turn. One person at a time.")
+        self.message(self.channel, "2. Be a dick about it.")
+        self.message(self.channel, " ")
+        self.message(self.channel, "Use !hit [nick] to strike.")
+        self.message(self.channel, "Use !heal to heal yourself.")
+        if not self.deathmatch:
+            self.message(self.channel, "Use !praise [nick] to praise to the donger gods (once per game).")
+            self.message(self.channel, "Use '/msg {0} !join' to join a game mid-fight.".format(config['nick']))
+        self.message(self.channel, " ")
+        
+        # Set up the fight
+        for player in pendingFight['players']:
+            self.players[player.lower()] = {'hp': 100, 'heals': 4, 'zombie': False, 'nick': player, 'praised': False}
+            self.turnlist.append(player)
+        
+        random.shuffle(self.turnlist)
+        self.ascii("FIGHT")
+        
+        chunky = self.chunks(self.turnlist, 4)
+        for chunk in chunky:
+            self.set_mode(self.channel, "+" + "v"*len(chunk), *chunk)
+            print("+" + "v"*len(chunk), " ".join(chunk))
+        
+        # Get the first turn!
+        self.getTurn()
+    
+    def getTurn(self):
+        # Step 1: Check for alive players.
+        aliveplayers = 0
+        for p in self.players:
+            if self.players[p]['hp'] > 0:
+                aliveplayers += 1
+                survivor = p
+        
+        if aliveplayers == 1: # one survivor, end game.
+            self.win(p)
+            return
+        
+        # Step 2: next turn
+        self.currentTurn += 1
+        # Check if that player exists.
+        if len(self.turnlist) <= self.currentTurn:
+            self.currentTurn = 0
+        
+        if self.players[self.turnlist[self.currentTurn].lower()]['hp'] > 0: # it's alive!
+            self.turnStart = time.time()
+            self.message(self.channel, "It's \002{0}\002's turn.".format(self.turnlist[self.currentTurn]))
+            if self.turnlist[self.currentTurn] == config['nick']:
+                self.processAI()
+        else: # It's dead, try again.
+            self.getTurn()
+    
     def processAI(self):
-        playerstohit = copy.copy(self.aliveplayers)
-        playerstohit.remove(self.irc.nickname.lower())
-        tohit = random.choice(playerstohit)
-        requiredbothp = 44
-        requiredtohithp = 24
-        if self.health[self.irc.nickname.lower()] < requiredbothp and self.health[tohit] > requiredtohithp:
-            self.verboseoutput("Verbose: AI: Less than {0} HP, opponent more than {1}. Healing.".format(requiredbothp, requiredtohithp))
-            if self.maxheal[self.irc.nickname.lower()] <= 20:
-                self.verboseoutput("Verbose: AI: Not enough chopsticks. Hitting.")
-                self.irc.privmsg(self.primarychan, "!hit " + tohit) 
-                self.hit(self.irc.nickname.lower(), tohit)
-            else:
-                self.irc.privmsg(self.primarychan, "!heal") 
-                self.heal(self.irc.nickname.lower())
-        else:
-            self.verboseoutput("Verbose: AI: More than {0} HP or opponent less than {1}. Attacking.".format(requiredbothp, requiredtohithp))
-            self.irc.privmsg(self.primarychan, "!hit " + tohit) 
-            self.hit(self.irc.nickname.lower(), tohit)
-    
-    def win(self, winner, stats=True):
-        self.verbose = False
-        self.irc.mode(self.primarychan, "-m")
-        self.irc.devoice(self.primarychan, winner)
-        if len(list(self.health)) > 2:
-            self.irc.privmsg(self.primarychan, "{0} REKT {1}!".format(self.irc.channels[self.primarychan].users[winner.lower()].nick, self._dusers(winner)))
-        self.reset()
-        if stats is True:
-            self.countstat(self.irc.channels[self.primarychan].users[winner.lower()].nick, "win")
-        else:
-            self.countstat(self.irc.channels[self.primarychan].users[winner.lower()].nick, "easywin")
-
-    def reset(self):
-        self.aliveplayers = []
-        self.deadplayers = []
-        self.allplayers = []
-        self.zombies = []
-        self.health = {}
-        self.accountsseenonthisgame = []
-        self._turnleft = []
-        self.gamerunning = False
-        self.deathmatch = False
-        self.deathmatchpending = {}
-        self.turn = 0
-        self.turnindex = 0
-        self.roundstart = 0
-        self.verbose = False
-        self.nojoin = False
-    
-    def ascii(self, key, font="smslant"): #Only used in fights
-        if "not gay".lower() in key.lower():
-            key = key.upper()
-            key = key.replace('NOT', '')
-        self.irc.privmsg(self.primarychan, "\n".join([name for name in Figlet(font).renderText(key.upper()).split("\n")[:-1] if name.strip()]))
-
-    # god, this is so shitty
-    def randomLine(self, type):
-        if type == "excuse":
-            file = "stuff/excuse_list.txt"
-        elif type == "jaden":
-            file = "stuff/jaden_list.txt"
-        elif type == "donger":
-            file = "stuff/listofdongers.txt"
-        try:
-            return random.choice(list(open(file)))
-        except:
-            return "Error getting file {0}".format(file)
-
-    def prerules(self):
-        return #For modules which do things before the FIGHT has started, before the rules.
-    def prefight(self):
-        return #For modules which do things before the FIGHT has started, after the rules.
-    def fightstart(self):
-        return #For modules which do things after the FIGHT ascii, but before the fighting starts.
-    def postfight(self):
-        return #For modules which do things after the fight is over
-
-    # For the record: cli = client and ev = event
-    def _connect(self, cli, ev):
-        # Starting with the SASL authentication
-        # Note: If services are down, the bot won't connect
-        cli.send("CAP REQ :sasl extended-join account-notify")
-        cli.send("AUTHENTICATE PLAIN")
-
-    def _ctcpreply(self, cli, ev):
-        if ev.arguments[0] == "PING":
-            if not self.lastpingreq:
+        myself = self.players[config['nick']]
+        # 1 - We will always hit a player with LESS than 25 HP.
+        for i in self.players:
+            if i == config['nick'].lower():
+                continue
+            if self.players[i]['hp'] > 0 and self.players[i]['hp'] < 25:
+                self.message(self.channel, "!hit {0}".format(self.players[i]['nick']))
+                self.hit(config['nick'], self.players[i]['nick'])
                 return
-            
-            current_milli_time = int(round(time.time() * 1000))
-            diff = current_milli_time - int(ev.arguments[1])
-            secs = str(diff / 1000)
-            cli.privmsg(self.lastpingreq, "{0}: {1} seconds".format(ev.source, secs))
-            self.lastpingreq = None
         
-    def _join(self, cli, ev):
-        if ev.source2.nick == cli.nickname and ev.target == self.primarychan:
-            self.irc.privmsg(ev.target, "ヽ༼ຈل͜ຈ༽ﾉ RAISE YOUR DONGERS ヽ༼ຈل͜ຈ༽ﾉ")
-
-    def _dusers(self, skip):
-        players = self.health
-        del players[skip]
-        pplayers = []
-        for i in players:
-            pplayers.append(i.lower())
-        ṕplayers = list(self.health)
-        last = pplayers[-1]
-        del pplayers[-1]
-        return ", ".join(pplayers) + " and " + last
-        
-    def _auth(self, cli, ev):
-        cli.send("AUTHENTICATE {0}".format(
-        base64.b64encode("{0}\0{0}\0{1}".format(self.config['nickserv-user'],
-                                                self.config['nickserv-pass'])
-                                                .encode()).decode()))
-        cli.send("CAP END")
+        if myself['hp'] < 44 and myself['heals']:
+            self.message(self.channel, "!heal")
+            self.heal(config['nick'])
+        else:
+            players = self.turnlist[:]
+            players.remove(config['nick'].lower())
+            victim = {}
+            while not victim: # !!!
+                hitting = self.players[random.choice(players).lower()]
+                if hitting['hp'] > 0:
+                    victim = hitting
+            self.message(self.channel, "!hit {0}".format(victim['nick']))
+            self.hit(config['nick'], victim['nick'])
     
-    def _account(self, cli, ev):
-        if ev.target == "*":
-            ev.target = None
-        for i in cli.channels:
-            try:
-                cli.channels[i].users[ev.source.nick.lower()].account = ev.target
-            except:
-                pass
+    def win(self, winner, realwin=True):
+        # TODO: stats and stuff
+        
+        losers = [self.players[player]['nick'] for player in self.players if self.players[player]['hp'] <= 0]
+        
+        # Clean everything up.
+        self.set_mode(self.channel, "-mv", winner)
+        
+        if len(self.turnlist) > 2 and realwin:
+            self.message(self.channel, "{0} REKT {1}".format(self.players[winner]['nick'], ", ".join(losers)).upper())
+            
+        self.deathmatch = False
+        self.gameRunning = False
+        self.turnStart = 0
+        self.players = {}
+        self.turnlist = []
+        self.currentTurn = -1
+    
+    def ascii(self, key, font='smslant'):
+        self.message(self.channel, "\n".join([name for name in Figlet(font).renderText(key.upper()).split("\n")[:-1] if name.strip()]))
+    
+    def fight(self, players, deathmatch=False):
+        # Check if those users are in the channel, if they're identified, etc
+        accounts = []
+        for player in players[:]:
+            
+            if player not in self.channels[self.channel]['users']:
+                self.message(self.channel, "\002{0}\002 is not in the channel.".format(player))
+                return
+                
+            if not self.users[player]['account']:
+                self.message(self.channel, "\002{0}\002 is not identified with NickServ.".format(player))
+                return
+                
+            if self.users[player]['account'] in accounts:
+                players.remove(player)
+                continue
+                
+            accounts.append(self.users[player]['account']) # This is kinda to prevent clones playing
+        
+        print(players)
 
-    def _welcome(self, cli, ev):
-        cli.join(self.config['channel'])
-        for channel in self.auxchans:
-           time.sleep(2)
-           cli.join(channel)
-
-    def _timeouts(self):
+        if len(players) <= 1:
+            self.message(self.channel, "You need more than one person to fight!")
+            return
+        
+        self.pendingFights[players[0].lower()] = {
+                'ts': time.time(), # Used to calculate the expiry time for a fight
+                'deathmatch': deathmatch,
+                'pendingaccept': [x.lower() for x in players[1:]],
+                'players': [players[0]]
+            }
+        
+        if config['nick'] in players:
+            if deathmatch:
+                self.message(self.channel, "{0} is not available for a deathmatch".format(config['nick']))
+            self.message(self.channel, "YOU WILL SEE")
+            self.pendingFights[players[0].lower()]['pendingaccept'].remove(config['nick'].lower())
+            self.pendingFights[players[0].lower()]['players'].append(config['nick'])
+            if not self.pendingFights[players[0].lower()]['pendingaccept']:
+                # Start the game!
+                self.start(self.pendingFights[players[0].lower()])
+                return
+            players.remove(config['nick'])
+            
+        
+        if deathmatch:
+            self.message(self.channel, "{0}: \002{1}\002 challenged you to a deathmatch. The loser will be bant for 20 minutes. To accept, use '!accept {1}'.".format(", ".join(players[1:]), players[0]))
+        else:
+            self.message(self.channel, "{0}: \002{1}\002 challenged you. To accept, use '!accept {1}'.".format(", ".join(players[1:]), players[0]))
+        
+    def chunks(self, l, n):
+        """Yield successive n-sized chunks from l."""
+        for i in range(0, len(l), n):
+            yield l[i:i+n]
+    
+    def _timeout(self):
         while True:
             time.sleep(5)
-            if self.gamerunning and self.turn != "":
-                if time.time() - self.roundstart > 60:
-                    self.irc.privmsg(self.primarychan, "\002{0}\002 forfeits due to idle.".format(self.turn))
-                    self.irc.devoice(self.primarychan, self.turn)
-                    self.countstat(self.turn, "idleout")
-                    self.aliveplayers.remove(self.turn)
-                    self.deadplayers.append(self.turn)
-                    self.health[self.turn] = -1
-                    if len(self.aliveplayers) == 1:
-                        self.countstat(self.aliveplayers[0], "easywin")
-                    self.getturn()
+            if not self.gameRunning and not self.turnStart:
+                continue
+            
+            if time.time() - self.turnStart > 60:
+                self.message(self.channel, "\002{0}\002 forfeits due to idle.".format(self.turnlist[self.currentTurn]))
+                self.set_mode(self.channel, "-v", self.turnlist[self.currentTurn])
+                self.players[self.turnlist[self.currentTurn].lower()]['hp'] = -1
+                self.getTurn()
+
         
-
-# Database stuff
-database = peewee.SqliteDatabase('dongerdong.db')
-database.connect()
-
-class BaseModel(peewee.Model):
-    class Meta:
-        database = database
-
-# NEW Stats table
-class Statsv2(BaseModel):
-    nick = peewee.CharField()  # NickServ account of the player
-    realnick = peewee.CharField()  # Nickname of the player (not lowercased :P)
-    wins = peewee.IntegerField() # Number of REKTs
-    losses = peewee.IntegerField() # Number of loses
-    quits = peewee.IntegerField() # Number of coward quits
-    easywins = peewee.IntegerField() # Number of easy wins (player leaving, etc)
-    fights = peewee.IntegerField() # !fight usage [only counted if it started a game]
-    accepts = peewee.IntegerField() # !accept usage [only counted if the fight was started] (Total = !fight + !accept)
-    dcaused = peewee.IntegerField() # Total amount of damage caused
-    dreceived = peewee.IntegerField() # Total amount of damage received
-    praises = peewee.IntegerField() # !praise usage
-    idleouts = peewee.IntegerField() # >:(
-    heals = peewee.IntegerField() # !heal usage
-    hits = peewee.IntegerField() # !hit usage
-    
-Statsv2.create_table(True) # Here we create the table
-
-# Start donging
-dongerdong = Donger()
-
-# Load modules
-for module in dongerdong.config['modules']:
-    # get tha modulah
-    modulesb = getattr(__import__("modules.{0}".format(module)), module)
-    
-    # execute tah modulah functioh
-    modulesb.loadModule(dongerdong) # and that's all
-
-while dongerdong.irc.connected == True and dongerdong.irc.imayreconnect == True:
-    try:
-        time.sleep(1) # Infinite loop of awesomeness
-    except KeyboardInterrupt:
-        excuse=dongerdong.randomLine("excuse")
-        #excuse=random.choice(list(open("excuse_list.txt"))) #Parsing an excuse list from BOFH
-        # Sending stuff manually and assigning it the fucking top priority (no queue)
-        # dongerdong.irc.send("PRIVMSG {0} :ERROR - {1}".format(dongerdong.chan, excuse), True)
-        dongerdong.irc.send("QUIT :{0}".format(excuse.upper()), True)
-        print("exit due to keyboard interrupt")
-        break  # >:D PURE EVIL
-
+client = Donger(config['nick'], sasl_username=config['nickserv_username'],
+                sasl_password=config['nickserv_password'])
+client.connect(config['server'], config['port'], tls=config['tls'])
+try:
+    client.handle_forever()
+except KeyboardInterrupt:
+    if client.connected:
+        client.quit(random.choice(client.excuses))

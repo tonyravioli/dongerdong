@@ -2,9 +2,6 @@
     "server": "irc.freenode.net",
     "nick": "botnick",
     "channel": "#fightchannel",
-    "auxchans": ["#auxchannel1", "#auxchannel2"],
-    "stats-url": "http://example.org",
-    "nickserv-user": "botusername",
-    "nickserv-pass": "botpassword",
-    "modules": ["example"]
+    "port": 6697,
+    "tls": true
 }

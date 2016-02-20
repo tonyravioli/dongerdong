@@ -18,6 +18,7 @@ A simple IRC bot for fighting, written in Python.
 How to install
 ==============
 
+ * Install pyfiglet, peewee and pydle
  * Rename config.example to config.json and edit it
  * Run the bot (with Python 3)
  * ???
