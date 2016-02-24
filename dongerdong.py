@@ -251,13 +251,14 @@ class Donger(BaseClient):
             self.getTurn()
         else:
             aliveplayers = 0
+            # TODO: Do this in a neater way
             for p in self.players:
                 if self.players[p]['hp'] > 0:
                     aliveplayers += 1
                     survivor = p
             
             if aliveplayers == 1:
-                self.win(p, False)
+                self.win(survivor, False)
     
     def akick(self, user, time=30, message="FUCKING REKT"):
         self.message("ChanServ", "AKICK {0} ADD {1} !T {2} {3}".format(self.channel, user, time, message))
@@ -361,13 +362,14 @@ class Donger(BaseClient):
     def getTurn(self):
         # Step 1: Check for alive players.
         aliveplayers = 0
+        # TODO: Do this in a neater way
         for p in self.players:
             if self.players[p]['hp'] > 0:
                 aliveplayers += 1
                 survivor = p
         
         if aliveplayers == 1: # one survivor, end game.
-            self.win(p)
+            self.win(survivor)
             return
         
         # Step 2: next turn
