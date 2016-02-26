@@ -50,6 +50,14 @@ class Donger(BaseClient):
     
     @pydle.coroutine
     def on_message(self, target, source, message):
+        if message.startswith(config['nick']):
+            args = message.rstrip().split(" ")
+            
+            if len(args) > 1 and args[1].lower().startswith("you"):
+                self.message(target, "No, {0}{1}".format(source, message.replace(config['nick'], '')))
+            else:
+                self.message(target, message.replace(config['nick'], source))
+            
         if message.startswith("!"):
             command = message[1:].split(" ")[0].lower()
             args = message.rstrip().split(" ")[1:]
