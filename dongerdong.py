@@ -51,7 +51,7 @@ class Donger(BaseClient):
     @pydle.coroutine
     def on_message(self, target, source, message):
         if message.startswith("!"):
-            command = message[1:].split(" ")[0]
+            command = message[1:].split(" ")[0].lower()
             args = message.rstrip().split(" ")[1:]
             
             if target == self.channel: # Dongerdong command
