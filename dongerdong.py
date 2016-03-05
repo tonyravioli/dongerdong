@@ -64,7 +64,7 @@ class Donger(BaseClient):
             args = message.rstrip().split(" ")[1:]
             
             if target == self.channel: # Dongerdong command
-                if command == "fight" and not self.gameRunning:
+                if command == "fight" or command == "deathmatch" and not self.gameRunning:
                     # Check for proper command usage
                     if not args:
                         self.message(target, "Can you read? It is !fight <nick> [othernick] ...")
@@ -77,8 +77,12 @@ class Donger(BaseClient):
                     if source in args:
                         self.message(target, "You're trying to fight yourself?")
                         return
+                       
+                    if command == "deathmatch" and len(args) > 1:
+                        self.message(target, "Deathmatches are 1v1 only.")
+                        return
                         
-                    self.fight([source] + args)
+                    self.fight([source] + args, True if command == "deathmatch" else False)
                 elif command == "accept" and not self.gameRunning:
                     if not args:
                         self.message(target, "Can you read? It is !accept <nick>")
@@ -218,6 +222,10 @@ class Donger(BaseClient):
                         self.notice(source, "You already played in this game.")
                         return
                     
+                    if self.deathmatch:
+                        self.notice(source, "You can't join in deathmatches")
+                        return
+                    
                     alivePlayers = [self.players[player]['hp'] for player in self.players if self.players[player]['hp'] > 0]
                     health = sum(alivePlayers) / len(alivePlayers)
                     
@@ -277,7 +285,7 @@ class Donger(BaseClient):
             if aliveplayers == 1:
                 self.win(survivor, False)
     
-    def akick(self, user, time=30, message="FUCKING REKT"):
+    def akick(self, user, time=20, message="FUCKING REKT"):
         self.message("ChanServ", "AKICK {0} ADD {1} !T {2} {3}".format(self.channel, user, time, message))
     
     def heal(self, target, critical=False):
@@ -336,6 +344,9 @@ class Donger(BaseClient):
         self.set_mode(self.channel, "-v", victim)
         self.ascii("rekt")
         self.message(self.channel, "\002{0}\002 REKT {1}".format(slayer, victim))
+        if self.deathmatch:
+            self.akick(coward)
+
         if victim != config['nick']:
             self.kick(self.channel, victim, "REKT")
     
