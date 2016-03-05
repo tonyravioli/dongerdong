@@ -210,7 +210,7 @@ class Donger(BaseClient):
                     self.turnlist.append(source)
                     self.players[source.lower()] = {'hp': health, 'heals': 4, 'zombie': False, 'nick': source, 'praised': False}
                     self.message(self.channel, "\002{0}\002 JOINS THE FIGHT (\002{1}\002HP)".format(source.upper(), health))
-                    
+                    self.set_mode(self.channel, "+v", source)
             # Regular commands
             if command == "dong":
                 self.message(target, random.choice(self.dongers))
@@ -354,7 +354,6 @@ class Donger(BaseClient):
         chunky = self.chunks(self.turnlist, 4)
         for chunk in chunky:
             self.set_mode(self.channel, "+" + "v"*len(chunk), *chunk)
-            print("+" + "v"*len(chunk), " ".join(chunk))
         
         # Get the first turn!
         self.getTurn()
