@@ -7,6 +7,7 @@ import threading
 import random
 import time
 from pyfiglet import Figlet
+import copy
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -50,8 +51,16 @@ class Donger(BaseClient):
     
     @pydle.coroutine
     def on_message(self, target, source, message):
+        if message.startswith(config['nick']):
+            args = message.rstrip().split(" ")
+            
+            if len(args) > 1 and args[1].lower().startswith("you"):
+                self.message(target, "No, {0}{1}".format(source, message.replace(config['nick'], '')))
+            else:
+                self.message(target, message.replace(config['nick'], source))
+            
         if message.startswith("!"):
-            command = message[1:].split(" ")[0]
+            command = message[1:].split(" ")[0].lower()
             args = message.rstrip().split(" ")[1:]
             
             if target == self.channel: # Dongerdong command
@@ -158,6 +167,11 @@ class Donger(BaseClient):
                             return
                     praiseroll = random.randint(1, 3)
                     self.players[source.lower()]['praised'] = True
+                    
+                    if ptarget.lower() == config['nick'].lower():
+                        self.message(target, "You try and suckle my donger while fighting me?")
+                        praiseroll = 2
+                        ptarget = self.players[source.lower()]['nick']
 
                     if praiseroll == 1:
                         self.ascii("whatever")
@@ -230,6 +244,9 @@ class Donger(BaseClient):
     def on_part(self, channel, user, message=None):
         if self.gameRunning and channel == self.channel:
             self.cowardQuit(user)
+    
+    def on_nick(self, *args):
+        print(args)
     
     def cowardQuit(self, coward):
         # check if it's playing
@@ -430,7 +447,24 @@ class Donger(BaseClient):
     
     def ascii(self, key, font='smslant'):
         self.message(self.channel, "\n".join([name for name in Figlet(font).renderText(key.upper()).split("\n")[:-1] if name.strip()]))
-    
+
+    def _rename_user(self, user, new):
+        if user in self.users:
+            self.users[new] = copy.copy(self.users[user])
+            self.users[new]['nickname'] = new
+            del self.users[user]
+        else:
+            self._create_user(new)
+            if new not in self.users:
+                return
+
+        for ch in self.channels.values():
+            # Rename user in channel list.
+            if user in ch['users']:
+                ch['users'].discard(user)
+                ch['users'].add(new)
+
+
     def fight(self, players, deathmatch=False):
         # Check if those users are in the channel, if they're identified, etc
         accounts = []
@@ -439,7 +473,7 @@ class Donger(BaseClient):
             if player not in self.channels[self.channel]['users']:
                 self.message(self.channel, "\002{0}\002 is not in the channel.".format(player))
                 return
-                
+            print(self.users[player])
             if not self.users[player]['account']:
                 self.message(self.channel, "\002{0}\002 is not identified with NickServ.".format(player))
                 return
