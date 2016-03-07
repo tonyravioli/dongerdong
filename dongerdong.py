@@ -345,7 +345,7 @@ class Donger(BaseClient):
         self.ascii("rekt")
         self.message(self.channel, "\002{0}\002 REKT {1}".format(slayer, victim))
         if self.deathmatch:
-            self.akick(coward)
+            self.akick(victim)
 
         if victim != config['nick']:
             self.kick(self.channel, victim, "REKT")
