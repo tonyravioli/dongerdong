@@ -286,6 +286,8 @@ class Donger(BaseClient):
                 self.win(survivor, False)
     
     def akick(self, user, time=20, message="FUCKING REKT"):
+        # Resolve user account
+        user = self.users[user]['account']
         self.message("ChanServ", "AKICK {0} ADD {1} !T {2} {3}".format(self.channel, user, time, message))
     
     def heal(self, target, critical=False):
