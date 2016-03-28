@@ -64,7 +64,7 @@ class Donger(BaseClient):
             args = message.rstrip().split(" ")[1:]
             
             if target == self.channel: # Dongerdong command
-                if command == "fight" or command == "deathmatch" and not self.gameRunning:
+                if (command == "fight" or command == "deathmatch") and not self.gameRunning:
                     # Check for proper command usage
                     if not args:
                         self.message(target, "Can you read? It is !fight <nick> [othernick] ...")
