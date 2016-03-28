@@ -227,7 +227,7 @@ class Donger(BaseClient):
                         return
                     
                     alivePlayers = [self.players[player]['hp'] for player in self.players if self.players[player]['hp'] > 0]
-                    health = sum(alivePlayers) / len(alivePlayers)
+                    health = int(sum(alivePlayers) / len(alivePlayers))
                     
                     self.turnlist.append(source)
                     self.players[source.lower()] = {'hp': health, 'heals': 4, 'zombie': False, 'nick': source, 'praised': False}
