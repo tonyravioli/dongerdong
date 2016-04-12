@@ -8,6 +8,8 @@ import random
 import time
 from pyfiglet import Figlet
 import copy
+import peewee
+
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -186,6 +188,8 @@ class Donger(BaseClient):
                     else:
                         self.ascii("NOPE")
                         self.getTurn()
+                    self.countStat(source, "praises")
+
                 elif command == "cancel" and not self.gameRunning:
                     self.message(target, "Fight cancelled.")
                     try:
@@ -216,6 +220,30 @@ class Donger(BaseClient):
                             self.start(self.pendingFights[args[0].lower()])
                 elif command == "quit" and self.gameRunning:
                     self.cowardQuit(source)
+                elif command == "stats" and not self.gameRunning:
+                    if args:
+                        nick = args[0]
+                    else:
+                        nick = source
+                    print(self.users)
+                    if self.users[nick]['account']: 
+                        nick = self.users[nick]['account']
+                    
+                    stats = self.getStats(nick)
+                    
+                    if not stats:
+                        return self.message(target, "No stats for \002{0}\002.".format(nick))
+                    
+                    balance = (stats.wins - stats.losses)
+                    balance = "+" if balance > 0 else "" + str(balance)
+                    
+                    self.message(target, "\002{0}\002's stats: \002{1}\002 wins, \002{2}\002 losses (\002{3}\002), \002{11}\002 kills,"\
+                                 " \002{4}\002 coward quits, \002{5}\002 idle-outs, \002{6}\002 !praises, "\
+                                 "\002{7}\002 fights started, accepted \002{8}\002 fights, !joined \002{9}\002 fights "\
+                                 "(\002{10}\002 total fights).".format(stats.nick, stats.wins, stats.losses, balance,
+                                    stats.quits, stats.idleouts, stats.praises, stats.fights, stats.accepts, stats.joins,
+                                    (stats.fights + stats.accepts + stats.joins), stats.kills))
+                    
             elif target == config['nick']: # private message
                 if command == "join" and self.gameRunning and not self.deathmatch:
                     if source in self.turnlist:
@@ -269,6 +297,8 @@ class Donger(BaseClient):
         self.players[coward.lower()]['hp'] = -1
         
         self.kick(self.channel, coward, "COWARD")
+        self.countStat(coward, "quits")
+
         if self.deathmatch:
             self.akick(coward)
         
@@ -346,9 +376,13 @@ class Donger(BaseClient):
         self.set_mode(self.channel, "-v", victim)
         self.ascii("rekt")
         self.message(self.channel, "\002{0}\002 REKT {1}".format(slayer, victim))
+        
+        self.countStat(victim, "losses")
+        self.countStat(slayer, "kills")
+        
         if self.deathmatch:
             self.akick(victim)
-
+        
         if victim != config['nick']:
             self.kick(self.channel, victim, "REKT")
     
@@ -372,6 +406,9 @@ class Donger(BaseClient):
             self.message(self.channel, "Use !praise [nick] to praise to the donger gods (once per game).")
             self.message(self.channel, "Use '/msg {0} !join' to join a game mid-fight.".format(config['nick']))
         self.message(self.channel, " ")
+        
+        self.countStat(pendingFight['players'][0], "fights")
+        [self.countStat(pl, "accepts") for pl in pendingFight['players'][1:]]
         
         # Set up the fight
         for player in pendingFight['players']:
@@ -441,8 +478,6 @@ class Donger(BaseClient):
             self.hit(config['nick'], victim['nick'])
     
     def win(self, winner, realwin=True):
-        # TODO: stats and stuff
-        
         losers = [self.players[player]['nick'] for player in self.players if self.players[player]['hp'] <= 0]
         
         # Clean everything up.
@@ -450,7 +485,8 @@ class Donger(BaseClient):
         
         if len(self.turnlist) > 2 and realwin:
             self.message(self.channel, "{0} REKT {1}".format(self.players[winner]['nick'], ", ".join(losers)).upper())
-            
+            self.countStat(winner, "wins")
+
         self.deathmatch = False
         self.gameRunning = False
         self.turnStart = 0
@@ -486,7 +522,7 @@ class Donger(BaseClient):
             if player not in self.channels[self.channel]['users']:
                 self.message(self.channel, "\002{0}\002 is not in the channel.".format(player))
                 return
-            print(self.users[player])
+
             if not self.users[player]['account']:
                 self.message(self.channel, "\002{0}\002 is not identified with NickServ.".format(player))
                 return
@@ -536,14 +572,75 @@ class Donger(BaseClient):
     def _timeout(self):
         while True:
             time.sleep(5)
-            if not self.gameRunning and not self.turnStart:
+            if not self.gameRunning or (self.turnStart == 0):
                 continue
             
-            if time.time() - self.turnStart > 60:
+            if (time.time() - self.turnStart > 60) and len(self.turnlist) >= (self.currentTurn + 1):
                 self.message(self.channel, "\002{0}\002 forfeits due to idle.".format(self.turnlist[self.currentTurn]))
                 self.set_mode(self.channel, "-v", self.turnlist[self.currentTurn])
                 self.players[self.turnlist[self.currentTurn].lower()]['hp'] = -1
+                self.countStat(self.turnlist[self.currentTurn], "idleouts")
+
                 self.getTurn()
+
+    
+    # Saves information in the stats database.
+    # nick = case-sensitive nick.
+    # stype = wins/losses/quits/idleouts/kills
+    #         fights/accepts/joins
+    #         praises
+    def countStat(self, nick, stype):
+        nick = self.users[nick]['account']
+        try:
+            stat = Stats.get(Stats.nick == nick)
+        except:
+            stat = Stats.create(nick=nick, losses=0, quits=0, wins=0, idleouts=0,
+                                           accepts=0, fights=0, joins=0,
+                                           praises=0, kills=0)
+        
+        Stats.update(**{stype: getattr(stat, stype) + 1}).where(Stats.nick == nick).execute()
+    
+    def getStats(self, nick):
+        try:
+            return Stats.get(Stats.nick == nick)
+        except:
+            return False
+        
+
+# Database stuff
+database = peewee.SqliteDatabase('dongerdong.db')
+database.connect()
+
+class BaseModel(peewee.Model):
+    class Meta:
+        database = database
+
+class Stats(BaseModel):
+    nick = peewee.CharField()
+    
+    wins = peewee.IntegerField()
+    losses = peewee.IntegerField()
+    kills = peewee.IntegerField()
+    quits = peewee.IntegerField()
+    idleouts = peewee.IntegerField()
+
+    
+    fights = peewee.IntegerField() # Games started
+    accepts = peewee.IntegerField() # Games accepted
+    joins = peewee.IntegerField() # Games joined
+        
+    praises = peewee.IntegerField()
+    
+    @classmethod
+    def custom_init(cls):
+        database.execute_sql('create unique index if not exists stats_unique '
+                       'on stats(nick collate nocase)', {})
+
+Stats.create_table(True)
+try:
+    Stats.custom_init()
+except:
+    pass
 
         
 client = Donger(config['nick'], sasl_username=config['nickserv_username'],
