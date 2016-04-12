@@ -8,6 +8,7 @@ import random
 import time
 from pyfiglet import Figlet
 import copy
+import operator
 import peewee
 
 
@@ -225,7 +226,6 @@ class Donger(BaseClient):
                         nick = args[0]
                     else:
                         nick = source
-                    print(self.users)
                     if self.users[nick]['account']: 
                         nick = self.users[nick]['account']
                     
@@ -243,7 +243,26 @@ class Donger(BaseClient):
                                  "(\002{10}\002 total fights).".format(stats.nick, stats.wins, stats.losses, balance,
                                     stats.quits, stats.idleouts, stats.praises, stats.fights, stats.accepts, stats.joins,
                                     (stats.fights + stats.accepts + stats.joins), stats.kills))
+                elif command == "top" and not self.gameRunning:
+                    players = Stats.select()
+                    p = {}
+                    for player in players:
+                        if (player.fights + player.accepts + player.joins) < 5:
+                            continue
+                            
+                        p[player.nick] = (player.wins - player.losses)
                     
+                    if not p:
+                        return self.message(target, "No top dongers.")
+                    p = sorted(p.items(), key=operator.itemgetter(1))
+                    self.message(target, "Top dongers:")
+                    c = 1
+                    for player in p[::-1]:
+                        balance = "+" if player[1] > 0 else "" + str(player[1])
+                        self.message(target, "{0} - \002{1}\002 (\002{2}\002)".format(c, player[0].upper(), balance))
+                        c += 1
+                        if c == 4:
+                            break
             elif target == config['nick']: # private message
                 if command == "join" and self.gameRunning and not self.deathmatch:
                     if source in self.turnlist:
@@ -281,8 +300,8 @@ class Donger(BaseClient):
         if self.gameRunning and channel == self.channel:
             self.cowardQuit(user)
     
-    def on_nick(self, *args):
-        print(args)
+    #def on_nick(self, *args):
+    #    print(args)
     
     def cowardQuit(self, coward):
         # check if it's playing
@@ -533,8 +552,6 @@ class Donger(BaseClient):
                 
             accounts.append(self.users[player]['account']) # This is kinda to prevent clones playing
         
-        print(players)
-
         if len(players) <= 1:
             self.message(self.channel, "You need more than one person to fight!")
             return
