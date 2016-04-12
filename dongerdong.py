@@ -291,6 +291,21 @@ class Donger(BaseClient):
                 self.message(target, "ヽ༼ຈل͜ຈ༽ﾉ RAISE YOUR DONGERS ヽ༼ຈل͜ຈ༽ﾉ")
             elif command == "lower":
                 self.message(target, "┌༼ຈل͜ຈ༽┐ ʟᴏᴡᴇʀ ʏᴏᴜʀ ᴅᴏɴɢᴇʀs ┌༼ຈل͜ຈ༽┐")
+            elif command == "help":
+                self.message(target, "PM'd you my commands.")
+                self.message(source, "Commands available only in {0}:".format(self.channel))
+                self.message(source, "  !fight <nickname> [othernicknames]: Challenge another player")
+                self.message(source, "  !deathmatch <nickname>: Same as fight, but only 1v1, and loser is bant for 20 minutes.")
+                self.message(source, "  !ascii <text>: Turns any text 13 characters or less into ascii art")
+                self.message(source, "  !cancel: Cancels a !fight")
+                self.message(source, "  !reject <nick>: Cowardly rejects a !fight")
+                self.message(source, "  !stats [player]: Outputs player's game stats (or your own stats)")
+                self.message(source, "  !top: Shows the three players with most wins")
+                self.message(source, "Commands available everywhere:")
+                self.message(source, "  !raise: Commands users to raise their dongers")
+                self.message(source, "  !excuse: Outputs random BOFH excuse")
+                self.message(source, "  !jaden: Outputs random Jaden Smith tweet")
+
     
     def on_quit(self, user, message=None):
         if self.gameRunning:
