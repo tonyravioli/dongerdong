@@ -3,5 +3,8 @@
     "nick": "botnick",
     "channel": "#fightchannel",
     "port": 6697,
-    "tls": true
+    "tls": true,
+    "nickserv_username": "dong",
+    "nickserv_password": "yourpasswd",
+    "auxchans": []
 }
