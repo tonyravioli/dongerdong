@@ -275,7 +275,7 @@ class Donger(BaseClient):
                     
                     alivePlayers = [self.players[player]['hp'] for player in self.players if self.players[player]['hp'] > 0]
                     health = int(sum(alivePlayers) / len(alivePlayers))
-                    
+                    self.countStat(source, "joins")
                     self.turnlist.append(source)
                     self.players[source.lower()] = {'hp': health, 'heals': 4, 'zombie': False, 'nick': source, 'praised': False}
                     self.message(self.channel, "\002{0}\002 JOINS THE FIGHT (\002{1}\002HP)".format(source.upper(), health))
