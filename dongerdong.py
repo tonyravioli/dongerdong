@@ -226,8 +226,10 @@ class Donger(BaseClient):
                         nick = args[0]
                     else:
                         nick = source
-                    if self.users[nick]['account']: 
+                    try:
                         nick = self.users[nick]['account']
+                    except KeyError:
+                        pass
                     
                     stats = self.getStats(nick)
                     
