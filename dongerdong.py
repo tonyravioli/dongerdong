@@ -521,6 +521,8 @@ class Donger(BaseClient):
         
         if len(self.turnlist) > 2 and realwin:
             self.message(self.channel, "{0} REKT {1}".format(self.players[winner]['nick'], ", ".join(losers)).upper())
+        
+        if realwin:
             self.countStat(winner, "wins")
 
         self.deathmatch = False
