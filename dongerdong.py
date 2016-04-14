@@ -10,7 +10,7 @@ from pyfiglet import Figlet
 import copy
 import operator
 import peewee
-
+import importlib
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -46,6 +46,18 @@ class Donger(BaseClient):
         self.excuses = json.load(open("wisdom/excuses.json"))
         self.dongers = json.load(open("wisdom/dongers.json"))
         
+        #Load extended commands. This will probably break everything.
+        self.extcmds = config['extendedcommands'] #Short variables are /awesome/
+        for command in config['extendedcommands']:
+            try:
+                print('Testing extended command {}:'.format(command))
+                print(importlib.import_module('extcmd.{}'.format(command)).doit())
+            except ImportError:
+                print("Failed to import specified extended command: {}".format(command))
+                self.extcmds.remove(command)
+                print("Removed command {} from list of available commands. You should fix config.json to remove it from there, too.".format(command))
+                continue
+
     def on_connect(self):
         super().on_connect()
         self.join(self.channel)
@@ -265,6 +277,7 @@ class Donger(BaseClient):
                         c += 1
                         if c == 4:
                             break
+
             elif target == config['nick']: # private message
                 if command == "join" and self.gameRunning and not self.deathmatch:
                     if source in self.turnlist:
@@ -307,6 +320,11 @@ class Donger(BaseClient):
                 self.message(source, "  !raise: Commands users to raise their dongers")
                 self.message(source, "  !excuse: Outputs random BOFH excuse")
                 self.message(source, "  !jaden: Outputs random Jaden Smith tweet")
+            elif command in self.extcmds:
+                try:
+                    self.message(target,importlib.import_module('extcmd.{}'.format(command)).doit())
+                except:
+                    raise
 
     
     def on_quit(self, user, message=None):
