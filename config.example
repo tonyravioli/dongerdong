@@ -6,5 +6,6 @@
     "tls": true,
     "nickserv_username": "dong",
     "nickserv_password": "yourpasswd",
-    "auxchans": []
+    "auxchans": [],
+    "extendedcommands": ["jaden","excuse","dong"]
 }
