@@ -3,7 +3,6 @@ import markovify.text
 
 
 def doit(sentences=2):
-  import markovify.text
 
   logfile = "../../conspiradump.txt"
 
@@ -25,3 +24,6 @@ def doit(sentences=2):
       continue
 
   return longstring
+
+def helptext():
+  return "Outputs a markov chain from /r/conspiracy comments"

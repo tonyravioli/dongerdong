@@ -45,18 +45,33 @@ class Donger(BaseClient):
         self.jaden = json.load(open("wisdom/jaden.json"))
         self.excuses = json.load(open("wisdom/excuses.json"))
         self.dongers = json.load(open("wisdom/dongers.json"))
+
+        #Help text for default commands. Extended commands add to this dict:
+        self.cmdhelp = {
+            'raise': 'Commands all users raise their dongers',
+            'excuse': 'Ouputs random BOFH excuse',
+            'jaden': 'Outputs random Jaden Smith tweet'
+        }
         
-        #Load extended commands. This will probably break everything.
+        #Load extended commands.
         self.extcmds = config['extendedcommands'] #Short variables are /awesome/
         for command in config['extendedcommands']:
-            try:
-                print('Testing extended command {}:'.format(command))
+            print('BEGINNING EXTENDED COMMAND TESTS')
+            try: #Let's test these on start...
+                print('BEGIN COMMAND TEST: {}'.format(command))
                 print(importlib.import_module('extcmd.{}'.format(command)).doit())
+                try: # Handling non-existent helptext
+                    self.cmdhelp[command] = importlib.import_module('extcmd.{}'.format(command)).helptext()
+                except AttributeError:
+                    print('WARNING: No helptext provided for command')
+                    self.cmdhelp[command] = 'A mystery'
+                print('END COMMAND TEST: {}'.format(command))
             except ImportError:
                 print("Failed to import specified extended command: {}".format(command))
                 self.extcmds.remove(command)
-                print("Removed command {} from list of available commands. You should fix config.json to remove it from there, too.".format(command))
+                print("Removed command {} from list of available commands. You should fix config.json to remove it from there, too (or just fix the module).".format(command))
                 continue
+            print('FINISHED ALL EXTENDED COMMAND TESTS')
 
     def on_connect(self):
         super().on_connect()
@@ -317,9 +332,8 @@ class Donger(BaseClient):
                 self.message(source, "  !stats [player]: Outputs player's game stats (or your own stats)")
                 self.message(source, "  !top: Shows the three players with most wins")
                 self.message(source, "Commands available everywhere:")
-                self.message(source, "  !raise: Commands users to raise their dongers")
-                self.message(source, "  !excuse: Outputs random BOFH excuse")
-                self.message(source, "  !jaden: Outputs random Jaden Smith tweet")
+                for ch in self.cmdhelp.keys(): #Extended commands help
+                    self.message(source, "  !{}: {}".format(ch, self.cmdhelp[ch]))
             elif command in self.extcmds:
                 try:
                     self.message(target,importlib.import_module('extcmd.{}'.format(command)).doit())
