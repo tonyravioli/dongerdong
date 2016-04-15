@@ -260,7 +260,7 @@ class Donger(BaseClient):
                     self.message(target, "Top dongers:")
                     c = 1
                     for player in p[::-1]:
-                        balance = "+" if player[1] > 0 else "" + str(player[1])
+                        balance = ("+" if player[1] > 0 else "") + str(player[1])
                         self.message(target, "{0} - \002{1}\002 (\002{2}\002)".format(c, player[0].upper(), balance))
                         c += 1
                         if c == 4:
