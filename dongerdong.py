@@ -61,7 +61,7 @@ class Donger(BaseClient):
                 print('BEGIN COMMAND TEST: {}'.format(command))
                 print(importlib.import_module('extcmd.{}'.format(command)).doit())
                 try: # Handling non-existent helptext
-                    self.cmdhelp[command] = importlib.import_module('extcmd.{}'.format(command)).helptext()
+                    self.cmdhelp[command] = importlib.import_module('extcmd.{}'.format(command)).helptext
                 except AttributeError:
                     print('WARNING: No helptext provided for command')
                     self.cmdhelp[command] = 'A mystery'

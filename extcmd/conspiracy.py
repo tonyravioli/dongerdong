@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import markovify.text
+helptext = "Outputs a markov chain from /r/conspiracy comments"
 
 def doit(sentences=3):
   logfile = "../../conspiradump.txt" #This is only here for testing and debugging.
@@ -24,5 +25,3 @@ def doit(sentences=3):
 
   return longstring
 
-def helptext():
-  return "Outputs a markov chain from /r/conspiracy comments"
