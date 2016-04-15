@@ -40,11 +40,6 @@ class Donger(BaseClient):
         timeout_checker = threading.Thread(target = self._timeout)
         timeout_checker.daemon = True
         timeout_checker.start()
-        
-        # Load ancient wisdom
-        self.jaden = json.load(open("wisdom/jaden.json"))
-        self.excuses = json.load(open("wisdom/excuses.json"))
-        self.dongers = json.load(open("wisdom/dongers.json"))
 
         #Help text for default commands. Extended commands add to this dict:
         self.cmdhelp = {
@@ -311,13 +306,7 @@ class Donger(BaseClient):
                     self.message(self.channel, "\002{0}\002 JOINS THE FIGHT (\002{1}\002HP)".format(source.upper(), health))
                     self.set_mode(self.channel, "+v", source)
             # Regular commands
-            if command == "dong":
-                self.message(target, random.choice(self.dongers))
-            elif command == "excuse":
-                self.message(target, random.choice(self.excuses))
-            elif command == "jaden":
-                self.message(target, random.choice(self.jaden))
-            elif command == "raise":
+            if command == "raise":
                 self.message(target, "ヽ༼ຈل͜ຈ༽ﾉ RAISE YOUR DONGERS ヽ༼ຈل͜ຈ༽ﾉ")
             elif command == "lower":
                 self.message(target, "┌༼ຈل͜ຈ༽┐ ʟᴏᴡᴇʀ ʏᴏᴜʀ ᴅᴏɴɢᴇʀs ┌༼ຈل͜ຈ༽┐")
