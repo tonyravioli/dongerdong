@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
 import markovify.text
 
-
-def doit(sentences=2):
-
+def doit(sentences=3):
   logfile = "../../conspiradump.txt" #This is only here for testing and debugging.
-
   #Maybe we'll replace this with a server-side thing on donger.org that provides a response in the form of something like "donger.org/conspiracy.php?sentences=2". That would make it so we don't have to put a 1MB text file in a repo.
 
   with open(logfile) as f:
@@ -15,7 +12,7 @@ def doit(sentences=2):
   longstring = ''
 
   for i in range(sentences):
-    sent = model.make_sentence(tries=50)
+    sent = model.make_sentence(tries=20)
     try:
       if sent.endswith("." or "?"):
         sent = "{} ".format(sent)
