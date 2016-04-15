@@ -334,7 +334,7 @@ class Donger(BaseClient):
                 self.message(source, "Commands available everywhere:")
                 for ch in self.cmdhelp.keys(): #Extended commands help
                     self.message(source, "  !{}: {}".format(ch, self.cmdhelp[ch]))
-            elif command in self.extcmds:
+            elif command in self.extcmds: #Extended commands support
                 try:
                     self.message(target,importlib.import_module('extcmd.{}'.format(command)).doit())
                 except:
