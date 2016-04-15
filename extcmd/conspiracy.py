@@ -4,7 +4,9 @@ import markovify.text
 
 def doit(sentences=2):
 
-  logfile = "../../conspiradump.txt"
+  logfile = "../../conspiradump.txt" #This is only here for testing and debugging.
+
+  #Maybe we'll replace this with a server-side thing on donger.org that provides a response in the form of something like "donger.org/conspiracy.php?sentences=2". That would make it so we don't have to put a 1MB text file in a repo.
 
   with open(logfile) as f:
     text = f.read()
