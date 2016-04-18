@@ -24,6 +24,9 @@ class Donger(BaseClient):
     def __init__(self, nick, *args, **kwargs):
         super().__init__(nick, *args, **kwargs)
         
+        self.cmdhelp = {}
+        self.extcmds = config['extendedcommands']
+        
         # This is to remember the millions of misc variable names
         self.pendingFights = {} # Pending (not !accepted) fights. ({'player': {'ts': 123, 'deathmatch': False, 'players': [...], 'pendingaccept': [...]}, ...}
         
@@ -639,25 +642,22 @@ class Donger(BaseClient):
             return False
 
     def import_extcmds(self):
-        self.cmdhelp = {}
-        self.extcmds = config['extendedcommands'] #Short variables are /awesome/
-        print('BEGINNING EXTENDED COMMAND TESTS')
+        logger = logging.Logger("extcmds")
+        logger.info("Beginning extended command tests")
         for command in config['extendedcommands']:
             try: #Let's test these on start...
-                print('BEGIN COMMAND TEST: {}'.format(command))
-                print(importlib.import_module('extcmd.{}'.format(command)).doit())
+                logger.info('Begin command test: {}'.format(command))
                 try: # Handling non-existent helptext
                     self.cmdhelp[command] = importlib.import_module('extcmd.{}'.format(command)).helptext
                 except AttributeError:
-                    print('WARNING: No helptext provided for command')
+                    logger.warning('No helptext provided for command {}'.format(command))
                     self.cmdhelp[command] = 'A mystery'
-                print('END COMMAND TEST: {}'.format(command))
+                logger.debug('End command test: {}'.format(command))
             except ImportError:
-                print("Failed to import specified extended command: {}".format(command))
+                logger.warning("Failed to import specified extended command: {}".format(command))
                 self.extcmds.remove(command)
-                print("Removed command {} from list of available commands. You should fix config.json to remove it from there, too (or just fix the module).".format(command))
-                continue
-        print('FINISHED ALL EXTENDED COMMAND TESTS')
+                logger.warning("Removed command {} from list of available commands. You should fix config.json to remove it from there, too (or just fix the module).".format(command))
+        logger.info('Finished all the extended command tests')
 
 # Database stuff
 database = peewee.SqliteDatabase('dongerdong.db')
