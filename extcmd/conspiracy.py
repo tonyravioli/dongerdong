@@ -13,13 +13,13 @@ def doit(sentences=3):
   longstring = ''
 
   for i in range(sentences):
-    sent = model.make_sentence(tries=20)
+    sentence = model.make_sentence(tries=20).strip()
     try:
-      if sent.endswith("." or "?"):
-        sent = "{} ".format(sent)
+      if sentence.endswith("." or "?"):
+        sentence = "{} ".format(sentence)
       else:
-        sent = "{}. ".format(sent)
-      longstring = "{}{}".format(longstring,sent)
+        sentence = "{}. ".format(sentence)
+      longstring = "{}{}".format(longstring,sentence)
     except AttributeError:
       continue
 
