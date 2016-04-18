@@ -641,8 +641,8 @@ class Donger(BaseClient):
     def import_extcmds(self):
         self.cmdhelp = {}
         self.extcmds = config['extendedcommands'] #Short variables are /awesome/
+        print('BEGINNING EXTENDED COMMAND TESTS')
         for command in config['extendedcommands']:
-            print('BEGINNING EXTENDED COMMAND TESTS')
             try: #Let's test these on start...
                 print('BEGIN COMMAND TEST: {}'.format(command))
                 print(importlib.import_module('extcmd.{}'.format(command)).doit())
@@ -657,7 +657,7 @@ class Donger(BaseClient):
                 self.extcmds.remove(command)
                 print("Removed command {} from list of available commands. You should fix config.json to remove it from there, too (or just fix the module).".format(command))
                 continue
-            print('FINISHED ALL EXTENDED COMMAND TESTS')
+        print('FINISHED ALL EXTENDED COMMAND TESTS')
 
 # Database stuff
 database = peewee.SqliteDatabase('dongerdong.db')
@@ -702,4 +702,7 @@ try:
     client.handle_forever()
 except KeyboardInterrupt:
     if client.connected:
-        client.quit(random.choice(client.excuses))
+        try:
+            client.quit(importlib.import_module('extcmd.excuse').doit())
+        else:
+            client.quit('BRB NAPPING')
