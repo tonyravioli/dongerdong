@@ -49,29 +49,6 @@ class Donger(BaseClient):
         for chan in config['auxchans']:
             self.join(chan)
 
-    def import_extcmds(self):
-        self.cmdhelp = {}
-        
-        #Load extended commands.
-        self.extcmds = config['extendedcommands'] #Short variables are /awesome/
-        for command in config['extendedcommands']:
-            print('BEGINNING EXTENDED COMMAND TESTS')
-            try: #Let's test these on start...
-                print('BEGIN COMMAND TEST: {}'.format(command))
-                print(importlib.import_module('extcmd.{}'.format(command)).doit())
-                try: # Handling non-existent helptext
-                    self.cmdhelp[command] = importlib.import_module('extcmd.{}'.format(command)).helptext
-                except AttributeError:
-                    print('WARNING: No helptext provided for command')
-                    self.cmdhelp[command] = 'A mystery'
-                print('END COMMAND TEST: {}'.format(command))
-            except ImportError:
-                print("Failed to import specified extended command: {}".format(command))
-                self.extcmds.remove(command)
-                print("Removed command {} from list of available commands. You should fix config.json to remove it from there, too (or just fix the module).".format(command))
-                continue
-            print('FINISHED ALL EXTENDED COMMAND TESTS')
-
     @pydle.coroutine
     def on_message(self, target, source, message):
         if message.startswith(config['nick']):
@@ -660,7 +637,27 @@ class Donger(BaseClient):
             return Stats.get(Stats.nick == nick)
         except:
             return False
-        
+
+    def import_extcmds(self):
+        self.cmdhelp = {}
+        self.extcmds = config['extendedcommands'] #Short variables are /awesome/
+        for command in config['extendedcommands']:
+            print('BEGINNING EXTENDED COMMAND TESTS')
+            try: #Let's test these on start...
+                print('BEGIN COMMAND TEST: {}'.format(command))
+                print(importlib.import_module('extcmd.{}'.format(command)).doit())
+                try: # Handling non-existent helptext
+                    self.cmdhelp[command] = importlib.import_module('extcmd.{}'.format(command)).helptext
+                except AttributeError:
+                    print('WARNING: No helptext provided for command')
+                    self.cmdhelp[command] = 'A mystery'
+                print('END COMMAND TEST: {}'.format(command))
+            except ImportError:
+                print("Failed to import specified extended command: {}".format(command))
+                self.extcmds.remove(command)
+                print("Removed command {} from list of available commands. You should fix config.json to remove it from there, too (or just fix the module).".format(command))
+                continue
+            print('FINISHED ALL EXTENDED COMMAND TESTS')
 
 # Database stuff
 database = peewee.SqliteDatabase('dongerdong.db')
