@@ -704,5 +704,5 @@ except KeyboardInterrupt:
     if client.connected:
         try:
             client.quit(importlib.import_module('extcmd.excuse').doit())
-        else:
+        except:
             client.quit('BRB NAPPING')
