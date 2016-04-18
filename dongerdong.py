@@ -41,12 +41,16 @@ class Donger(BaseClient):
         timeout_checker.daemon = True
         timeout_checker.start()
 
-        #Help text for default commands. Extended commands add to this dict:
-        self.cmdhelp = {
-            'raise': 'Commands all users raise their dongers',
-            'excuse': 'Ouputs random BOFH excuse',
-            'jaden': 'Outputs random Jaden Smith tweet'
-        }
+        self.import_extcmds()
+
+    def on_connect(self):
+        super().on_connect()
+        self.join(self.channel)
+        for chan in config['auxchans']:
+            self.join(chan)
+
+    def import_extcmds(self):
+        self.cmdhelp = {}
         
         #Load extended commands.
         self.extcmds = config['extendedcommands'] #Short variables are /awesome/
@@ -68,12 +72,6 @@ class Donger(BaseClient):
                 continue
             print('FINISHED ALL EXTENDED COMMAND TESTS')
 
-    def on_connect(self):
-        super().on_connect()
-        self.join(self.channel)
-        for chan in config['auxchans']:
-            self.join(chan)
-    
     @pydle.coroutine
     def on_message(self, target, source, message):
         if message.startswith(config['nick']):
