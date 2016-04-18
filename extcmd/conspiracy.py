@@ -16,12 +16,11 @@ def doit(sentences=3):
     sentence = model.make_sentence(tries=20).strip()
     try:
       if sentence.endswith("." or "?"):
-        sentence = "{} ".format(sentence)
+        longstring += "{} ".format(sentence)
       else:
-        sentence = "{}. ".format(sentence)
-      longstring = "{}{}".format(longstring,sentence)
+        longstring += "{}. ".format(sentence)
     except AttributeError:
       continue
 
-  return longstring
+  return longstring.strip()
 
