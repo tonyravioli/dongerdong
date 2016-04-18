@@ -647,6 +647,7 @@ class Donger(BaseClient):
         for command in config['extendedcommands']:
             try: #Let's test these on start...
                 logger.info('Begin command test: {}'.format(command))
+                logger.info(importlib.import_module('extcmd.{}'.format(command)).doit())
                 try: # Handling non-existent helptext
                     self.cmdhelp[command] = importlib.import_module('extcmd.{}'.format(command)).helptext
                 except AttributeError:
