@@ -36,6 +36,8 @@ class Donger(BaseClient):
         self.currentTurn = -1 # current turn = turnlist[currentTurn]
         
         self.channel = config['channel'] # Main fight channel
+
+        self.lastheardfrom = {} #lastheardfrom['Polsaker'] = time.time()
         
         timeout_checker = threading.Thread(target = self._timeout)
         timeout_checker.daemon = True
@@ -282,6 +284,16 @@ class Donger(BaseClient):
                     self.players[source.lower()] = {'hp': health, 'heals': 4, 'zombie': False, 'nick': source, 'praised': False}
                     self.message(self.channel, "\002{0}\002 JOINS THE FIGHT (\002{1}\002HP)".format(source.upper(), health))
                     self.set_mode(self.channel, "+v", source)
+
+            #Rate limiting
+            try:
+                if target != self.channel and time.time() - self.lastheardfrom[source] < 7:
+                    return
+            except IndexError:
+                pass
+            finally:
+                self.lastheardfrom[source] = time.time()
+
             # Regular commands
             if command == "dong":
                 self.message(target, random.choice(self.dongers))
