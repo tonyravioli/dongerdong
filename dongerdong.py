@@ -72,7 +72,7 @@ class Donger(BaseClient):
                 if (command == "fight" or command == "deathmatch" or command == "duel") and not self.gameRunning:
                     # Check for proper command usage
                     if not args:
-                        self.message(target, "Can you read? It is !fight <nick> [othernick] ...")
+                        self.message(target, "Can you read? It is !{0} <nick> [othernick] ...".format(command))
                         return
                     
                     if not self.users[source]['account']:
