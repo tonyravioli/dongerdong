@@ -650,7 +650,7 @@ class Donger(BaseClient):
                                            accepts=0, fights=0, joins=0,
                                            praises=0, kills=0)
         
-        Stats.update(**{stype: getattr(stat, stype) + 1, 'lastedit': int(time.time())}).where(Stats.nick == nick).execute()
+        #Stats.update(**{stype: getattr(stat, stype) + 1, 'lastedit': int(time.time())}).where(Stats.nick == nick).execute()
     
     def getStats(self, nick):
         try:
@@ -707,7 +707,7 @@ class Stats(BaseModel):
         
     praises = peewee.IntegerField()
     
-    lastedit = peewee.IntegerField()
+    #lastedit = peewee.IntegerField()
     
     @classmethod
     def custom_init(cls):
