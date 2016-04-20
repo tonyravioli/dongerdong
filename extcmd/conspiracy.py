@@ -4,7 +4,11 @@ helptext = "Outputs a markov chain from /r/conspiracy comments"
 
 def doit(sentences=3):
   logfile = "../../conspiradump.txt" #This is only here for testing and debugging.
-  #Maybe we'll replace this with a server-side thing on donger.org that provides a response in the form of something like "donger.org/conspiracy.php?sentences=2". That would make it so we don't have to put a 1MB text file in a repo.
+  #Maybe we'll replace this with a server-side thing on donger.org that provides a
+  #response in the form of something like "donger.org/conspiracy.php?sentences=2".
+  #That would make it so we don't have to put a 1MB text file in a repo.
+  #
+  #We could call it "Conspiracies As A Service"
 
   with open(logfile) as f:
     text = f.read()
