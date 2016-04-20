@@ -456,7 +456,6 @@ class Donger(BaseClient):
         self.message(self.channel, "Use !heal to heal yourself.")
         if not self.deathmatch:
             self.message(self.channel, "Use '/msg {0} !join' to join a game mid-fight.".format(config['nick']))
-        if not self.versusone:
             self.message(self.channel, "Use !praise [nick] to praise to the donger gods (once per game).")
 
         self.message(self.channel, " ")
