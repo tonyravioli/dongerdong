@@ -28,7 +28,7 @@ class Donger(BaseClient):
         self.extcmds = config['extendedcommands']
         
         # This is to remember the millions of misc variable names
-        self.pendingFights = {} # Pending (not !accepted) fights. ({'player': {'ts': 123, 'deathmatch': False, '1v1': False, 'players': [...], 'pendingaccept': [...]}, ...}
+        self.pendingFights = {} # Pending (not !accepted) fights. ({'player': {'ts': 123, 'deathmatch': False, 'versusone': False, 'players': [...], 'pendingaccept': [...]}, ...}
         
         # Game vars (Reset these in self.win)
         self.deathmatch = False
@@ -69,7 +69,7 @@ class Donger(BaseClient):
             args = message.rstrip().split(" ")[1:]
             
             if target == self.channel: # Dongerdong command
-                if (command == "fight" or command == "deathmatch" or command == "challenge") and not self.gameRunning:
+                if (command == "fight" or command == "deathmatch" or command == "duel") and not self.gameRunning:
                     # Check for proper command usage
                     if not args:
                         self.message(target, "Can you read? It is !fight <nick> [othernick] ...")
@@ -87,11 +87,11 @@ class Donger(BaseClient):
                         self.message(target, "Deathmatches are 1v1 only.")
                         return
                     
-                    if command == "challenge" and len(args) > 1:
+                    if command == "duel" and len(args) > 1:
                         self.message(target, "Challenges are 1v1 only.")
                         return
                         
-                    self.fight([source] + args, True if command == "deathmatch" else False, True if (command == "deathmatch" or command == "challenge") else False)
+                    self.fight([source] + args, True if command == "deathmatch" else False, True if (command == "deathmatch" or command == "duel") else False)
                 elif command == "accept" and not self.gameRunning:
                     if not args:
                         self.message(target, "Can you read? It is !accept <nick>")
@@ -440,7 +440,7 @@ class Donger(BaseClient):
     def start(self, pendingFight):
         self.gameRunning = True
         self.deathmatch = pendingFight['deathmatch']
-        self.versusone = pendingFight['1v1']
+        self.versusone = pendingFight['versusone']
         self.set_mode(self.channel, "+m")
         if self.deathmatch:
             self.ascii("DEATHMATCH")
@@ -597,7 +597,7 @@ class Donger(BaseClient):
         self.pendingFights[players[0].lower()] = {
                 'ts': time.time(), # Used to calculate the expiry time for a fight
                 'deathmatch': deathmatch,
-                '1v1': versusone,
+                'versusone': versusone,
                 'pendingaccept': [x.lower() for x in players[1:]],
                 'players': [players[0]]
             }
