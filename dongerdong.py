@@ -24,9 +24,6 @@ class Donger(BaseClient):
     def __init__(self, nick, *args, **kwargs):
         super().__init__(nick, *args, **kwargs)
         
-        self.cmdhelp = {}
-        self.extcmds = config['extendedcommands']
-        
         # This is to remember the millions of misc variable names
         self.pendingFights = {} # Pending (not !accepted) fights. ({'player': {'ts': 123, 'deathmatch': False, 'versusone': False, 'players': [...], 'pendingaccept': [...]}, ...}
         
@@ -663,8 +660,14 @@ class Donger(BaseClient):
 
     def import_extcmds(self):
         logger = logging.Logger("extcmds")
+        self.cmdhelp = {}
+        try:
+            self.extcmds = config['extendedcommands']
+        except KeyError:
+            self.extcmds = []
+            logger.warning("No extended commands found in config.json")
         logger.info("Beginning extended command tests")
-        for command in config['extendedcommands']:
+        for command in self.extcmds:
             try: #Let's test these on start...
                 logger.info('Begin command test: {}'.format(command))
                 logger.info(importlib.import_module('extcmd.{}'.format(command)).doit())
