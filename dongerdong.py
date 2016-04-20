@@ -28,7 +28,7 @@ class Donger(BaseClient):
         self.extcmds = config['extendedcommands']
         
         # This is to remember the millions of misc variable names
-        self.pendingFights = {} # Pending (not !accepted) fights. ({'player': {'ts': 123, 'deathmatch': False, 'players': [...], 'pendingaccept': [...]}, ...}
+        self.pendingFights = {} # Pending (not !accepted) fights. ({'player': {'ts': 123, 'deathmatch': False, '1v1': False, 'players': [...], 'pendingaccept': [...]}, ...}
         
         # Game vars (Reset these in self.win)
         self.deathmatch = False
@@ -69,7 +69,7 @@ class Donger(BaseClient):
             args = message.rstrip().split(" ")[1:]
             
             if target == self.channel: # Dongerdong command
-                if (command == "fight" or command == "deathmatch") and not self.gameRunning:
+                if (command == "fight" or command == "deathmatch" or command == "challenge") and not self.gameRunning:
                     # Check for proper command usage
                     if not args:
                         self.message(target, "Can you read? It is !fight <nick> [othernick] ...")
@@ -86,8 +86,12 @@ class Donger(BaseClient):
                     if command == "deathmatch" and len(args) > 1:
                         self.message(target, "Deathmatches are 1v1 only.")
                         return
+                    
+                    if command == "challenge" and len(args) > 1:
+                        self.message(target, "Challenges are 1v1 only.")
+                        return
                         
-                    self.fight([source] + args, True if command == "deathmatch" else False)
+                    self.fight([source] + args, True if command == "deathmatch" else False, True if (command == "deathmatch" or command == "challenge") else False)
                 elif command == "accept" and not self.gameRunning:
                     if not args:
                         self.message(target, "Can you read? It is !accept <nick>")
@@ -274,8 +278,8 @@ class Donger(BaseClient):
                         self.notice(source, "You already played in this game.")
                         return
                     
-                    if self.deathmatch:
-                        self.notice(source, "You can't join in deathmatches")
+                    if self.versusone:
+                        self.notice(source, "You can't join this fight")
                         return
                     
                     alivePlayers = [self.players[player]['hp'] for player in self.players if self.players[player]['hp'] > 0]
@@ -390,7 +394,7 @@ class Donger(BaseClient):
     
     def hit(self, source, target, critical=False):
         # Rolls.
-        instaroll = random.randint(1, 50) if not self.deathmatch else 666
+        instaroll = random.randint(1, 50) if not self.versusone else 666
         critroll = random.randint(1, 12) if not critical else 1
         
         damage = random.randint(18, 35)
@@ -436,6 +440,7 @@ class Donger(BaseClient):
     def start(self, pendingFight):
         self.gameRunning = True
         self.deathmatch = pendingFight['deathmatch']
+        self.versusone = pendingFight['1v1']
         self.set_mode(self.channel, "+m")
         if self.deathmatch:
             self.ascii("DEATHMATCH")
@@ -450,8 +455,10 @@ class Donger(BaseClient):
         self.message(self.channel, "Use !hit [nick] to strike.")
         self.message(self.channel, "Use !heal to heal yourself.")
         if not self.deathmatch:
-            self.message(self.channel, "Use !praise [nick] to praise to the donger gods (once per game).")
             self.message(self.channel, "Use '/msg {0} !join' to join a game mid-fight.".format(config['nick']))
+        if not self.versusone:
+            self.message(self.channel, "Use !praise [nick] to praise to the donger gods (once per game).")
+
         self.message(self.channel, " ")
         
         self.countStat(pendingFight['players'][0], "fights")
@@ -537,6 +544,7 @@ class Donger(BaseClient):
             self.countStat(winner, "wins")
 
         self.deathmatch = False
+        self.versusone = False
         self.gameRunning = False
         self.turnStart = 0
         self.players = {}
@@ -563,7 +571,7 @@ class Donger(BaseClient):
                 ch['users'].add(new)
 
 
-    def fight(self, players, deathmatch=False):
+    def fight(self, players, deathmatch=False, versusone=False):
         # Check if those users are in the channel, if they're identified, etc
         accounts = []
         for player in players[:]:
@@ -589,6 +597,7 @@ class Donger(BaseClient):
         self.pendingFights[players[0].lower()] = {
                 'ts': time.time(), # Used to calculate the expiry time for a fight
                 'deathmatch': deathmatch,
+                '1v1': versusone,
                 'pendingaccept': [x.lower() for x in players[1:]],
                 'players': [players[0]]
             }
