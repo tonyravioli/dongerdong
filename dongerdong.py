@@ -649,7 +649,8 @@ class Donger(BaseClient):
             stat = Stats.create(nick=nick, losses=0, quits=0, wins=0, idleouts=0,
                                            accepts=0, fights=0, joins=0,
                                            praises=0, kills=0)
-        
+
+        Stats.update(**{stype: getattr(stat, stype) + 1}).where(Stats.nick == nick).execute()
         #Stats.update(**{stype: getattr(stat, stype) + 1, 'lastedit': int(time.time())}).where(Stats.nick == nick).execute()
     
     def getStats(self, nick):
