@@ -661,29 +661,28 @@ class Donger(BaseClient):
             return False
 
     def import_extcmds(self):
-        logger = logging.Logger("extcmds")
         self.cmdhelp = {}
         try:
             self.extcmds = config['extendedcommands']
         except KeyError:
             self.extcmds = []
-            logger.warning("No extended commands found in config.json")
-        logger.info("Beginning extended command tests")
+            logging.warning("No extended commands found in config.json")
+        logging.info("Beginning extended command tests")
         for command in self.extcmds:
             try: #Let's test these on start...
-                logger.info('Begin command test: {}'.format(command))
-                logger.info(importlib.import_module('extcmd.{}'.format(command)).doit())
+                logging.info('Begin command test: {}'.format(command))
+                logging.info(importlib.import_module('extcmd.{}'.format(command)).doit())
                 try: # Handling non-existent helptext
                     self.cmdhelp[command] = importlib.import_module('extcmd.{}'.format(command)).helptext
                 except AttributeError:
-                    logger.warning('No helptext provided for command {}'.format(command))
+                    logging.warning('No helptext provided for command {}'.format(command))
                     self.cmdhelp[command] = 'A mystery'
-                logger.debug('End command test: {}'.format(command))
+                logging.debug('End command test: {}'.format(command))
             except ImportError:
-                logger.warning("Failed to import specified extended command: {}".format(command))
+                logging.warning("Failed to import specified extended command: {}".format(command))
                 self.extcmds.remove(command)
-                logger.warning("Removed command {} from list of available commands. You should fix config.json to remove it from there, too (or just fix the module).".format(command))
-        logger.info('Finished all the extended command tests')
+                logging.warning("Removed command {} from list of available commands. You should fix config.json to remove it from there, too (or just fix the module).".format(command))
+        logging.info('Finished all the extended command tests')
 
 # Database stuff
 database = peewee.SqliteDatabase('dongerdong.db')
