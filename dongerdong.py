@@ -291,7 +291,7 @@ class Donger(BaseClient):
             try:
                 if target != self.channel and time.time() - self.lastheardfrom[source] < 7:
                     return
-            except IndexError:
+            except KeyError:
                 pass
             finally:
                 self.lastheardfrom[source] = time.time()
