@@ -151,7 +151,7 @@ class Donger(BaseClient):
                     self.heal(source)
                 elif command == "ascii" and not self.gameRunning:
                     if args and len(' '.join(args)) < 16:
-                        self.message(target, Figlet("smslant").renderText(' '.join(args)))
+                        self.message(target, self.ascii(' '.join(args)))
                     else:
                         self.message(target, "Text must be 15 characters or less (that was {0} characters). Syntax: !ascii Fuck You".format(len(' '.join(args))))
                 elif command == "praise" and self.gameRunning:
@@ -184,10 +184,10 @@ class Donger(BaseClient):
                         ptarget = self.players[source.lower()]['nick']
 
                     if praiseroll == 1:
-                        self.ascii("whatever")
+                        self.ascii("WHATEVER")
                         self.heal(ptarget, True) # Critical heal
                     elif praiseroll == 2:
-                        self.ascii("fuck you")
+                        self.ascii("FUCK YOU")
                         self.hit(source, ptarget, True)
                     else:
                         self.ascii("NOPE")
@@ -339,7 +339,7 @@ class Donger(BaseClient):
         if self.players[coward.lower()]['hp'] <= 0: # check if it is alive
             return
         
-        self.ascii("coward")
+        self.ascii("COWARD")
         self.message(self.channel, "The coward is dead!")
         
         self.players[coward.lower()]['hp'] = -1
@@ -397,7 +397,7 @@ class Donger(BaseClient):
         damage = random.randint(18, 35)
         
         if instaroll == 1:
-            self.ascii("instakill")
+            self.ascii("INSTAKILL")
             # remove player
             self.death(target, source)
             self.getTurn()
@@ -405,7 +405,7 @@ class Donger(BaseClient):
         if critroll == 1:
             damage *= 2 
             if not critical: # if it isn't an artificial crit, shout
-                self.ascii("critical")
+                self.ascii("CRITICAL")
         
         self.players[source.lower()]['heals'] = 5
         self.players[target.lower()]['hp'] -= damage
@@ -422,7 +422,7 @@ class Donger(BaseClient):
         self.players[victim.lower()]['hp'] = -1
         
         self.set_mode(self.channel, "-v", victim)
-        self.ascii("rekt")
+        self.ascii("REKT")
         self.message(self.channel, "\002{0}\002 REKT {1}".format(slayer, victim))
         
         self.countStat(victim, "losses")
@@ -443,7 +443,7 @@ class Donger(BaseClient):
             self.ascii("DEATHMATCH")
             
         if len(pendingFight['players']) == 2:
-            self.ascii(" V. ".join(pendingFight['players']), "straight")
+            self.ascii(" V. ".join(pendingFight['players']).upper(), "straight")
         
         self.message(self.channel, "RULES:")
         self.message(self.channel, "1. Wait your turn. One person at a time.")
@@ -548,7 +548,7 @@ class Donger(BaseClient):
         self.currentTurn = -1
     
     def ascii(self, key, font='smslant'):
-        lines = list(filter(None, [name.strip() for name in Figlet(font).renderText(key.upper()).split("\n")[:-1] if name.strip()]))
+        lines = list(filter(None, [name.strip() for name in Figlet(font).renderText(key).split("\n")[:-1] if name.strip()]))
         self.message(self.channel, "\n".join(lines))
 
     def _rename_user(self, user, new):
