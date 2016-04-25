@@ -548,7 +548,7 @@ class Donger(BaseClient):
         self.currentTurn = -1
     
     def ascii(self, key, font='smslant'):
-        lines = list(filter(None, [name.strip() for name in Figlet(font).renderText(key).split("\n")[:-1] if name.strip()]))
+        lines = [name for name in Figlet(font).renderText(key).split("\n")[:-1] if name.strip()]
         self.message(self.channel, "\n".join(lines))
 
     def _rename_user(self, user, new):
