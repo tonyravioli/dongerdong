@@ -10,7 +10,7 @@ from pyfiglet import Figlet
 import copy
 import operator
 import peewee
-
+import importlib
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -25,7 +25,7 @@ class Donger(BaseClient):
         super().__init__(nick, *args, **kwargs)
         
         # This is to remember the millions of misc variable names
-        self.pendingFights = {} # Pending (not !accepted) fights. ({'player': {'ts': 123, 'deathmatch': False, 'players': [...], 'pendingaccept': [...]}, ...}
+        self.pendingFights = {} # Pending (not !accepted) fights. ({'player': {'ts': 123, 'deathmatch': False, 'versusone': False, 'players': [...], 'pendingaccept': [...]}, ...}
         
         # Game vars (Reset these in self.win)
         self.deathmatch = False
@@ -36,22 +36,21 @@ class Donger(BaseClient):
         self.currentTurn = -1 # current turn = turnlist[currentTurn]
         
         self.channel = config['channel'] # Main fight channel
+
+        self.lastheardfrom = {} #lastheardfrom['Polsaker'] = time.time()
         
         timeout_checker = threading.Thread(target = self._timeout)
         timeout_checker.daemon = True
         timeout_checker.start()
-        
-        # Load ancient wisdom
-        self.jaden = json.load(open("wisdom/jaden.json"))
-        self.excuses = json.load(open("wisdom/excuses.json"))
-        self.dongers = json.load(open("wisdom/dongers.json"))
-        
+
+        self.import_extcmds()
+
     def on_connect(self):
         super().on_connect()
         self.join(self.channel)
         for chan in config['auxchans']:
             self.join(chan)
-    
+
     @pydle.coroutine
     def on_message(self, target, source, message):
         if message.startswith(config['nick']):
@@ -67,10 +66,10 @@ class Donger(BaseClient):
             args = message.rstrip().split(" ")[1:]
             
             if target == self.channel: # Dongerdong command
-                if (command == "fight" or command == "deathmatch") and not self.gameRunning:
+                if (command == "fight" or command == "deathmatch" or command == "duel") and not self.gameRunning:
                     # Check for proper command usage
                     if not args:
-                        self.message(target, "Can you read? It is !fight <nick> [othernick] ...")
+                        self.message(target, "Can you read? It is !{0} <nick> [othernick] ...".format(command))
                         return
                     
                     if not self.users[source]['account']:
@@ -84,8 +83,12 @@ class Donger(BaseClient):
                     if command == "deathmatch" and len(args) > 1:
                         self.message(target, "Deathmatches are 1v1 only.")
                         return
+                    
+                    if command == "duel" and len(args) > 1:
+                        self.message(target, "Challenges are 1v1 only.")
+                        return
                         
-                    self.fight([source] + args, True if command == "deathmatch" else False)
+                    self.fight([source] + args, True if command == "deathmatch" else False, True if (command == "deathmatch" or command == "duel") else False)
                 elif command == "accept" and not self.gameRunning:
                     if not args:
                         self.message(target, "Can you read? It is !accept <nick>")
@@ -148,7 +151,7 @@ class Donger(BaseClient):
                     self.heal(source)
                 elif command == "ascii" and not self.gameRunning:
                     if args and len(' '.join(args)) < 16:
-                        self.message(target, Figlet("smslant").renderText(' '.join(args)))
+                        self.message(target, self.ascii(' '.join(args)))
                     else:
                         self.message(target, "Text must be 15 characters or less (that was {0} characters). Syntax: !ascii Fuck You".format(len(' '.join(args))))
                 elif command == "praise" and self.gameRunning:
@@ -181,10 +184,10 @@ class Donger(BaseClient):
                         ptarget = self.players[source.lower()]['nick']
 
                     if praiseroll == 1:
-                        self.ascii("whatever")
+                        self.ascii("WHATEVER")
                         self.heal(ptarget, True) # Critical heal
                     elif praiseroll == 2:
-                        self.ascii("fuck you")
+                        self.ascii("FUCK YOU")
                         self.hit(source, ptarget, True)
                     else:
                         self.ascii("NOPE")
@@ -211,7 +214,7 @@ class Donger(BaseClient):
                         return
                     
                     self.pendingFights[args[0].lower()]['pendingaccept'].remove(source.lower())
-                    self.message(target, "\002{0}\002 flew out of the fight".format(source))
+                    self.message(target, "\002{0}\002 fled the fight".format(source))
                     
                     if not self.pendingFights[args[0].lower()]['pendingaccept']:
                         if len(self.pendingFights[args[0].lower()]['players']) == 1: #only the challenger
@@ -265,14 +268,15 @@ class Donger(BaseClient):
                         c += 1
                         if c == 4:
                             break
+
             elif target == config['nick']: # private message
                 if command == "join" and self.gameRunning and not self.deathmatch:
                     if source in self.turnlist:
                         self.notice(source, "You already played in this game.")
                         return
                     
-                    if self.deathmatch:
-                        self.notice(source, "You can't join in deathmatches")
+                    if self.versusone:
+                        self.notice(source, "You can't join this fight")
                         return
                     
                     alivePlayers = [self.players[player]['hp'] for player in self.players if self.players[player]['hp'] > 0]
@@ -282,14 +286,18 @@ class Donger(BaseClient):
                     self.players[source.lower()] = {'hp': health, 'heals': 4, 'zombie': False, 'nick': source, 'praised': False}
                     self.message(self.channel, "\002{0}\002 JOINS THE FIGHT (\002{1}\002HP)".format(source.upper(), health))
                     self.set_mode(self.channel, "+v", source)
+
+            #Rate limiting
+            try:
+                if target != self.channel and time.time() - self.lastheardfrom[source] < 7:
+                    return
+            except KeyError:
+                pass
+            finally:
+                self.lastheardfrom[source] = time.time()
+
             # Regular commands
-            if command == "dong":
-                self.message(target, random.choice(self.dongers))
-            elif command == "excuse":
-                self.message(target, random.choice(self.excuses))
-            elif command == "jaden":
-                self.message(target, random.choice(self.jaden))
-            elif command == "raise":
+            if command == "raise":
                 self.message(target, "ヽ༼ຈل͜ຈ༽ﾉ RAISE YOUR DONGERS ヽ༼ຈل͜ຈ༽ﾉ")
             elif command == "lower":
                 self.message(target, "┌༼ຈل͜ຈ༽┐ ʟᴏᴡᴇʀ ʏᴏᴜʀ ᴅᴏɴɢᴇʀs ┌༼ຈل͜ຈ༽┐")
@@ -304,9 +312,13 @@ class Donger(BaseClient):
                 self.message(source, "  !stats [player]: Outputs player's game stats (or your own stats)")
                 self.message(source, "  !top: Shows the three players with most wins")
                 self.message(source, "Commands available everywhere:")
-                self.message(source, "  !raise: Commands users to raise their dongers")
-                self.message(source, "  !excuse: Outputs random BOFH excuse")
-                self.message(source, "  !jaden: Outputs random Jaden Smith tweet")
+                for ch in self.cmdhelp.keys(): #Extended commands help
+                    self.message(source, "  !{}: {}".format(ch, self.cmdhelp[ch]))
+            elif command in self.extcmds: #Extended commands support
+                try:
+                    self.message(target,importlib.import_module('extcmd.{}'.format(command)).doit())
+                except:
+                    raise
 
     
     def on_quit(self, user, message=None):
@@ -327,7 +339,7 @@ class Donger(BaseClient):
         if self.players[coward.lower()]['hp'] <= 0: # check if it is alive
             return
         
-        self.ascii("coward")
+        self.ascii("COWARD")
         self.message(self.channel, "The coward is dead!")
         
         self.players[coward.lower()]['hp'] = -1
@@ -379,13 +391,13 @@ class Donger(BaseClient):
     
     def hit(self, source, target, critical=False):
         # Rolls.
-        instaroll = random.randint(1, 50) if not self.deathmatch else 666
+        instaroll = random.randint(1, 50) if not self.versusone else 666
         critroll = random.randint(1, 12) if not critical else 1
         
         damage = random.randint(18, 35)
         
         if instaroll == 1:
-            self.ascii("instakill")
+            self.ascii("INSTAKILL")
             # remove player
             self.death(target, source)
             self.getTurn()
@@ -393,12 +405,12 @@ class Donger(BaseClient):
         if critroll == 1:
             damage *= 2 
             if not critical: # if it isn't an artificial crit, shout
-                self.ascii("critical")
+                self.ascii("CRITICAL")
         
         self.players[source.lower()]['heals'] = 5
         self.players[target.lower()]['hp'] -= damage
-        
-        self.message(self.channel, "\002{0}\002 (\002{1}\002HP) deals \002{2}\002 to \002{3}\002 (\002{4}\002HP)".format(
+
+        self.message(self.channel, "\002{0}\002 (\002{1}\002HP) deals \002{2}\002 damage to \002{3}\002 (\002{4}\002HP)".format(
                     source, self.players[source.lower()]['hp'], damage, target, self.players[target.lower()]['hp']))
         
         if self.players[target.lower()]['hp'] <= 0:
@@ -410,7 +422,7 @@ class Donger(BaseClient):
         self.players[victim.lower()]['hp'] = -1
         
         self.set_mode(self.channel, "-v", victim)
-        self.ascii("rekt")
+        self.ascii("REKT")
         self.message(self.channel, "\002{0}\002 REKT {1}".format(slayer, victim))
         
         self.countStat(victim, "losses")
@@ -425,12 +437,13 @@ class Donger(BaseClient):
     def start(self, pendingFight):
         self.gameRunning = True
         self.deathmatch = pendingFight['deathmatch']
+        self.versusone = pendingFight['versusone']
         self.set_mode(self.channel, "+m")
         if self.deathmatch:
             self.ascii("DEATHMATCH")
             
         if len(pendingFight['players']) == 2:
-            self.ascii(" V. ".join(pendingFight['players']), "straight")
+            self.ascii(" V. ".join(pendingFight['players']).upper(), "straight")
         
         self.message(self.channel, "RULES:")
         self.message(self.channel, "1. Wait your turn. One person at a time.")
@@ -439,8 +452,9 @@ class Donger(BaseClient):
         self.message(self.channel, "Use !hit [nick] to strike.")
         self.message(self.channel, "Use !heal to heal yourself.")
         if not self.deathmatch:
-            self.message(self.channel, "Use !praise [nick] to praise to the donger gods (once per game).")
             self.message(self.channel, "Use '/msg {0} !join' to join a game mid-fight.".format(config['nick']))
+            self.message(self.channel, "Use !praise [nick] to praise to the donger gods (once per game).")
+
         self.message(self.channel, " ")
         
         self.countStat(pendingFight['players'][0], "fights")
@@ -526,6 +540,7 @@ class Donger(BaseClient):
             self.countStat(winner, "wins")
 
         self.deathmatch = False
+        self.versusone = False
         self.gameRunning = False
         self.turnStart = 0
         self.players = {}
@@ -533,7 +548,8 @@ class Donger(BaseClient):
         self.currentTurn = -1
     
     def ascii(self, key, font='smslant'):
-        self.message(self.channel, "\n".join([name for name in Figlet(font).renderText(key.upper()).split("\n")[:-1] if name.strip()]))
+        lines = [name for name in Figlet(font).renderText(key).split("\n")[:-1] if name.strip()]
+        self.message(self.channel, "\n".join(lines))
 
     def _rename_user(self, user, new):
         if user in self.users:
@@ -552,7 +568,7 @@ class Donger(BaseClient):
                 ch['users'].add(new)
 
 
-    def fight(self, players, deathmatch=False):
+    def fight(self, players, deathmatch=False, versusone=False):
         # Check if those users are in the channel, if they're identified, etc
         accounts = []
         for player in players[:]:
@@ -578,12 +594,13 @@ class Donger(BaseClient):
         self.pendingFights[players[0].lower()] = {
                 'ts': time.time(), # Used to calculate the expiry time for a fight
                 'deathmatch': deathmatch,
+                'versusone': versusone,
                 'pendingaccept': [x.lower() for x in players[1:]],
                 'players': [players[0]]
             }
         
         if config['nick'] in players:
-            if deathmatch:
+            if versusone:
                 return self.message(self.channel, "{0} is not available for a deathmatch".format(config['nick']))
             self.message(self.channel, "YOU WILL SEE")
             self.pendingFights[players[0].lower()]['pendingaccept'].remove(config['nick'].lower())
@@ -633,15 +650,39 @@ class Donger(BaseClient):
             stat = Stats.create(nick=nick, losses=0, quits=0, wins=0, idleouts=0,
                                            accepts=0, fights=0, joins=0,
                                            praises=0, kills=0)
-        
+
         Stats.update(**{stype: getattr(stat, stype) + 1}).where(Stats.nick == nick).execute()
+        #Stats.update(**{stype: getattr(stat, stype) + 1, 'lastedit': int(time.time())}).where(Stats.nick == nick).execute()
     
     def getStats(self, nick):
         try:
             return Stats.get(Stats.nick == nick)
         except:
             return False
-        
+
+    def import_extcmds(self):
+        self.cmdhelp = {}
+        try:
+            self.extcmds = config['extendedcommands']
+        except KeyError:
+            self.extcmds = []
+            logging.warning("No extended commands found in config.json")
+        logging.info("Beginning extended command tests")
+        for command in self.extcmds:
+            try: #Let's test these on start...
+                logging.info('Begin command test: {}'.format(command))
+                logging.info(importlib.import_module('extcmd.{}'.format(command)).doit())
+                try: # Handling non-existent helptext
+                    self.cmdhelp[command] = importlib.import_module('extcmd.{}'.format(command)).helptext
+                except AttributeError:
+                    logging.warning('No helptext provided for command {}'.format(command))
+                    self.cmdhelp[command] = 'A mystery'
+                logging.debug('End command test: {}'.format(command))
+            except ImportError:
+                logging.warning("Failed to import specified extended command: {}".format(command))
+                self.extcmds.remove(command)
+                logging.warning("Removed command {} from list of available commands. You should fix config.json to remove it from there, too (or just fix the module).".format(command))
+        logging.info('Finished all the extended command tests')
 
 # Database stuff
 database = peewee.SqliteDatabase('dongerdong.db')
@@ -667,6 +708,8 @@ class Stats(BaseModel):
         
     praises = peewee.IntegerField()
     
+    #lastedit = peewee.IntegerField()
+    
     @classmethod
     def custom_init(cls):
         database.execute_sql('create unique index if not exists stats_unique '
@@ -686,4 +729,7 @@ try:
     client.handle_forever()
 except KeyboardInterrupt:
     if client.connected:
-        client.quit(random.choice(client.excuses))
+        try:
+            client.quit(importlib.import_module('extcmd.excuse').doit())
+        except:
+            client.quit('BRB NAPPING')
