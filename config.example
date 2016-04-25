@@ -6,5 +6,6 @@
     "tls": true,
     "nickserv_username": "dong",
     "nickserv_password": "yourpasswd",
-    "auxchans": []
+    "auxchans": [],
+    "top_modifier_num_fights": 0.05
 }
