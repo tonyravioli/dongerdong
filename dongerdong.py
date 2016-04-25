@@ -214,7 +214,7 @@ class Donger(BaseClient):
                         return
                     
                     self.pendingFights[args[0].lower()]['pendingaccept'].remove(source.lower())
-                    self.message(target, "\002{0}\002 flew out of the fight".format(source))
+                    self.message(target, "\002{0}\002 fled the fight".format(source))
                     
                     if not self.pendingFights[args[0].lower()]['pendingaccept']:
                         if len(self.pendingFights[args[0].lower()]['players']) == 1: #only the challenger
