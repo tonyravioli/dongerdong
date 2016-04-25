@@ -254,9 +254,9 @@ class Donger(BaseClient):
                     for player in players:
                         if (player.fights + player.accepts + player.joins) < 5:
                             continue
-                            
-                        p[player.nick] = (player.wins - player.losses)
-                    
+
+                        p[player.nick] = round( (player.wins - player.losses) + (player.fights * config['top_modifier_num_fights']) )
+
                     if not p:
                         return self.message(target, "No top dongers.")
                     p = sorted(p.items(), key=operator.itemgetter(1))
