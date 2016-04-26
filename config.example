@@ -7,5 +7,6 @@
     "nickserv_username": "dong",
     "nickserv_password": "yourpasswd",
     "auxchans": [],
-    "extendedcommands": ["jaden","excuse","dong"]
+    "extendedcommands": ["jaden","excuse","dong"],
+    "top_modifier_num_fights": 0.05
 }
