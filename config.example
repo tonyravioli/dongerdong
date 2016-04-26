@@ -8,5 +8,5 @@
     "nickserv_password": "yourpasswd",
     "auxchans": [],
     "extendedcommands": ["jaden","excuse","dong"],
-    "top_modifier_num_fights": 0.05
+    "topmodifier": 0.05
 }
