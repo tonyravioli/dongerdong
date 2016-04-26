@@ -17,8 +17,8 @@ def doit(sentences=2):
   longstring = ''
 
   for i in range(sentences):
-    sentence = model.make_sentence(tries=20).strip()
     try:
+      sentence = model.make_sentence(tries=20).strip()
       if sentence.endswith("." or "?"):
         longstring += "{} ".format(sentence)
       else:
