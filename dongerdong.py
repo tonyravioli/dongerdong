@@ -251,11 +251,14 @@ class Donger(BaseClient):
                 elif command == "top" and not self.gameRunning:
                     players = Stats.select()
                     p = {}
+
                     for player in players:
                         if (player.fights + player.accepts + player.joins) < 5:
                             continue
-
-                        p[player.nick] = round((player.wins - player.losses) + (player.fights * config['top_modifier_num_fights']))
+                        try:
+                            p[player.nick] = round((player.wins - player.losses) + (player.fights * config['topmodifier']))
+                        except KeyError:
+                            p[player.nick] = (player.wins - player.losses)
 
                     if not p:
                         return self.message(target, "No top dongers.")
