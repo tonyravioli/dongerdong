@@ -611,7 +611,7 @@ class Donger(BaseClient):
             }
         
         if config['nick'] in players:
-            if deathmatch:
+            if versusone:
                 return self.message(self.channel, "{0} is not available for a deathmatch".format(config['nick']))
             self.message(self.channel, "YOU WILL SEE")
             self.pendingFights[players[0].lower()]['pendingaccept'].remove(config['nick'].lower())
