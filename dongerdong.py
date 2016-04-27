@@ -271,6 +271,14 @@ class Donger(BaseClient):
                         c += 1
                         if c == 4:
                             break
+                elif command == "version" and not self.gameRunning:
+                    try:
+                        ver = subprocess.check_output(["git", "describe"]).strip()
+                        self.message(target, "I am running {0}".format(ver))
+                    except:
+                        self.message(target, "I have no idea.")
+                elif command == "repo" and not self.gameRunning:
+                    self.message(target, "Check out my nudes at {0}".format(config['repolink']))
 
             elif target == config['nick']: # private message
                 if command == "join" and self.gameRunning and not self.deathmatch:
