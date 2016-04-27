@@ -279,7 +279,7 @@ class Donger(BaseClient):
                     except:
                         self.message(target, "I have no idea.")
                 elif command == "repo" and not self.gameRunning:
-                    self.message(target, "Check out my nudes at {0}".format(config['repolink']))
+                    self.message(target, "Check out my nudes at https://github.com/tonyravioli/dongerdong")
 
             elif target == config['nick']: # private message
                 if command == "join" and self.gameRunning and not self.deathmatch:

@@ -8,6 +8,5 @@
     "nickserv_password": "yourpasswd",
     "auxchans": [],
     "extendedcommands": ["jaden","excuse","dong"],
-    "topmodifier": 0.05,
-    "repolink": "https://github.com/tonyravioli/dongerdong"
+    "topmodifier": 0.05
 }
