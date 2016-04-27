@@ -540,7 +540,8 @@ class Donger(BaseClient):
             self.message(self.channel, "{0} REKT {1}".format(self.players[winner]['nick'], ", ".join(losers)).upper())
         #Realwin is only ever false if there's a coward quit.
         if realwin:
-            self.countStat(winner, "wins")
+            if losers != [config['nick']]:
+                self.countStat(winner, "wins")
 
         self.deathmatch = False
         self.versusone = False
