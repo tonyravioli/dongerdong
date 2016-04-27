@@ -274,7 +274,7 @@ class Donger(BaseClient):
                             break
                 elif command == "version" and not self.gameRunning:
                     try:
-                        ver = subprocess.check_output(["git", "describe"]).strip()
+                        ver = subprocess.check_output(["git", "describe"]).decode().strip()
                         self.message(target, "I am running {0}".format(ver))
                     except:
                         self.message(target, "I have no idea.")
