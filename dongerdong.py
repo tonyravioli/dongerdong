@@ -256,6 +256,8 @@ class Donger(BaseClient):
                     for player in players:
                         if (player.fights + player.accepts + player.joins) < 5:
                             continue
+                        if (player.nick == config['nick']):
+                            continue
                         try:
                             p[player.nick] = round((player.wins - player.losses) + (player.fights * config['topmodifier']))
                         except KeyError:
