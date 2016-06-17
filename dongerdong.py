@@ -276,7 +276,7 @@ class Donger(BaseClient):
                     try:
                         self.message(target, "Full stats at {}".format(config['stats-url']))
                     except:
-                        self.message(target, "No stats URL")
+                        pass
 
                 elif command == "version" and not self.gameRunning:
                     try:
