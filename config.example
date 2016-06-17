@@ -8,5 +8,6 @@
     "nickserv_password": "yourpasswd",
     "auxchans": [],
     "extendedcommands": ["jaden","excuse","dong"],
-    "topmodifier": 0.05
+    "topmodifier": 0.05,
+    "stats-url": "http://www.donger.org/stats/"
 }
