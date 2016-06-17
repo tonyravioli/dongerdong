@@ -266,7 +266,6 @@ class Donger(BaseClient):
                     if not p:
                         return self.message(target, "No top dongers.")
                     p = sorted(p.items(), key=operator.itemgetter(1))
-                    self.message(target, "Top dongers:")
                     c = 1
                     for player in p[::-1]:
                         balance = ("+" if player[1] > 0 else "") + str(player[1])
@@ -274,6 +273,11 @@ class Donger(BaseClient):
                         c += 1
                         if c == 4:
                             break
+                    try:
+                        self.message(target, "Full stats at {}".format(config['stats-url']))
+                    except:
+                        self.message(target, "No stats URL")
+
                 elif command == "version" and not self.gameRunning:
                     try:
                         ver = subprocess.check_output(["git", "describe"]).decode().strip()
