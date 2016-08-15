@@ -655,7 +655,18 @@ class Donger(BaseClient):
                 self.players[self.turnlist[self.currentTurn].lower()]['hp'] = -1
                 self.countStat(self.turnlist[self.currentTurn], "idleouts")
                 self.kick(self.channel, self.turnlist[self.currentTurn], "WAKE UP SHEEPLE")
-                self.getTurn()
+                
+                aliveplayers = 0
+                # TODO: Do this in a neater way
+                for p in self.players:
+                    if self.players[p]['hp'] > 0:
+                        aliveplayers += 1
+                        survivor = p
+                
+                if aliveplayers == 1:
+                    self.win(survivor, False)
+                else:
+                    self.getTurn()
 
     
     # Saves information in the stats database.
