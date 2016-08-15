@@ -261,9 +261,9 @@ class Donger(BaseClient):
                         if (player.nick == config['nick']):
                             continue
                         try:
-                            p[player.nick] = round((player.wins - player.losses) + (player.fights * config['topmodifier']))
+                            p[player.nick] = round((player.wins - (player.losses + player.idleouts)) + (player.fights * config['topmodifier']))
                         except KeyError:
-                            p[player.nick] = (player.wins - player.losses)
+                            p[player.nick] = (player.wins - (player.losses + player.idleouts))
 
                     if not p:
                         return self.message(target, "No top dongers.")
