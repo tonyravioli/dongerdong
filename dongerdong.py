@@ -261,7 +261,7 @@ class Donger(BaseClient):
                         if (player.nick == config['nick']):
                             continue
                         
-                        p[player.nick] = [player.wins - (player.losses + player.idleouts + (stats.quits*2)), 0]
+                        p[player.nick] = [player.wins - (player.losses + player.idleouts + (player.quits*2)), 0]
                         
                         if 'topmodifier' in config:
                             p[player.nick][1] = (player.fights * config['topmodifier'])
