@@ -245,11 +245,11 @@ class Donger(BaseClient):
                     balance = stats.wins - (stats.losses + stats.idleouts)
                     balance = ("+" if balance > 0 else "") + str(balance)
                     
-                    self.message(target, "\002{0}\002's stats: \002{1}\002 wins, \002{2}\002 losses (\002{3}\002), \002{11}\002 kills,"\
-                                 " \002{4}\002 coward quits, \002{5}\002 idle-outs, \002{6}\002 !praises, "\
-                                 "\002{7}\002 fights started, accepted \002{8}\002 fights, !joined \002{9}\002 fights "\
-                                 "(\002{10}\002 total fights).".format(stats.nick, stats.wins, stats.losses, balance,
-                                    stats.quits, stats.idleouts, stats.praises, stats.fights, stats.accepts, stats.joins,
+                    self.message(target, "\002{0}\002's stats: \002{1}\002 wins, \002{2}\002 losses, \002{4}\002 coward quits, \002{5}\002 idle-outs (\002{3}\002), \002{11}\002 kills,"\
+                                 " \002{6}\002 !praises, \002{7}\002 fights started, accepted \002{8}\002 fights,"\
+                                 " !joined \002{9}\002 fights (\002{10}\002 total fights).".format(stats.nick, stats.wins, 
+                                    stats.losses, balance, stats.quits, stats.idleouts, stats.praises, 
+                                    stats.fights, stats.accepts, stats.joins, 
                                     (stats.fights + stats.accepts + stats.joins), stats.kills))
                 elif command == "top" and not self.gameRunning:
                     players = Stats.select()
