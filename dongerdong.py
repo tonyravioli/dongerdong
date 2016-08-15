@@ -260,17 +260,18 @@ class Donger(BaseClient):
                             continue
                         if (player.nick == config['nick']):
                             continue
-                        try:
-                            p[player.nick] = round((player.wins - (player.losses + player.idleouts)) + (player.fights * config['topmodifier']))
-                        except KeyError:
-                            p[player.nick] = (player.wins - (player.losses + player.idleouts))
-
+                        
+                        p[player.nick] = [player.wins - (player.losses + player.idleouts), 0]
+                        
+                        if 'topmodifier' in config:
+                            p[player.nick][1] = (player.fights * config['topmodifier'])
+                            
                     if not p:
                         return self.message(target, "No top dongers.")
-                    p = sorted(p.items(), key=operator.itemgetter(1))
+                    p = sorted(p.items(), key=lambda x: x[1][0] + x[1][1])
                     c = 1
                     for player in p[::-1]:
-                        balance = ("+" if player[1] > 0 else "") + str(player[1])
+                        balance = ("+" if player[1][0] > 0 else "") + str(player[1][0])
                         self.message(target, "{0} - \002{1}\002 (\002{2}\002)".format(c, player[0].upper(), balance))
                         c += 1
                         if c == 4:
