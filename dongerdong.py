@@ -242,7 +242,7 @@ class Donger(BaseClient):
                     if not stats:
                         return self.message(target, "No stats for \002{0}\002.".format(nick))
                     
-                    balance = stats.wins - (stats.losses + stats.idleouts)
+                    balance = stats.wins - (stats.losses + stats.idleouts + (stats.quits*2))
                     balance = ("+" if balance > 0 else "") + str(balance)
                     
                     self.message(target, "\002{0}\002's stats: \002{1}\002 wins, \002{2}\002 losses, \002{4}\002 coward quits, \002{5}\002 idle-outs (\002{3}\002), \002{11}\002 kills,"\
@@ -261,7 +261,7 @@ class Donger(BaseClient):
                         if (player.nick == config['nick']):
                             continue
                         
-                        p[player.nick] = [player.wins - (player.losses + player.idleouts), 0]
+                        p[player.nick] = [player.wins - (player.losses + player.idleouts + (stats.quits*2)), 0]
                         
                         if 'topmodifier' in config:
                             p[player.nick][1] = (player.fights * config['topmodifier'])
