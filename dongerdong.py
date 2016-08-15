@@ -242,7 +242,7 @@ class Donger(BaseClient):
                     if not stats:
                         return self.message(target, "No stats for \002{0}\002.".format(nick))
                     
-                    balance = (stats.wins - stats.losses)
+                    balance = stats.wins - (stats.losses + stats.idleouts)
                     balance = ("+" if balance > 0 else "") + str(balance)
                     
                     self.message(target, "\002{0}\002's stats: \002{1}\002 wins, \002{2}\002 losses (\002{3}\002), \002{11}\002 kills,"\
