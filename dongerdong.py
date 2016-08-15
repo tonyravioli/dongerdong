@@ -653,7 +653,7 @@ class Donger(BaseClient):
                 self.set_mode(self.channel, "-v", self.turnlist[self.currentTurn])
                 self.players[self.turnlist[self.currentTurn].lower()]['hp'] = -1
                 self.countStat(self.turnlist[self.currentTurn], "idleouts")
-
+                self.kick(self.channel, self.turnlist[self.currentTurn], "WAKE UP SHEEPLE")
                 self.getTurn()
 
     
