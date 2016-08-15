@@ -388,7 +388,7 @@ class Donger(BaseClient):
     
     def heal(self, target, critical=False):
         if not self.players[target.lower()]['heals'] and not critical:
-            self.message(self.channel, "You can't heal.")
+            self.message(self.channel, "You can't heal this turn (but it's still your turn)")
             return
         
         healing = random.randint(22, 44 - (5-self.players[target.lower()]['heals'])*4)
