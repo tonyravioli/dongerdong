@@ -655,7 +655,6 @@ class Donger(BaseClient):
             
             if (time.time() - self.turnStart > 60) and len(self.turnlist) >= (self.currentTurn + 1):
                 self.message(self.channel, "\002{0}\002 forfeits due to idle.".format(self.turnlist[self.currentTurn]))
-                self.set_mode(self.channel, "-v", self.turnlist[self.currentTurn])
                 self.players[self.turnlist[self.currentTurn].lower()]['hp'] = -1
                 self.countStat(self.turnlist[self.currentTurn], "idleouts")
                 self.kick(self.channel, self.turnlist[self.currentTurn], "WAKE UP SHEEPLE")
