@@ -258,7 +258,7 @@ class Donger(BaseClient):
                     for player in players:
                         if (player.fights + player.accepts + player.joins) < 5:
                             continue
-                        if (player.nick == config['nick']):
+                        if (player.nick == config['nickserv_username']):
                             continue
                         
                         p[player.nick] = [player.wins - (player.losses + player.idleouts + (player.quits*2)), 0]
