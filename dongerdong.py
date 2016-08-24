@@ -253,9 +253,9 @@ class Donger(BaseClient):
                     if ranking == 1:
                         ranking = "\003071st\003"
                     elif ranking == 2:
-                        ranking = "\003142nd\002"
+                        ranking = "\003142nd\003"
                     elif ranking == 3:
-                        ranking = "\003063rd\002"
+                        ranking = "\003063rd\003"
                     else:
                         ranking = "{}th".format(ranking)
                     
@@ -271,7 +271,7 @@ class Donger(BaseClient):
                     if not p:
                         return self.message(target, "No top dongers.")
                     c = 1
-                    for player in p[::-1]:
+                    for player in p:
                         balance = ("+" if player[1][0] > 0 else "") + str(player[1][0])
                         self.message(target, "{0} - \002{1}\002 (\002{2}\002)".format(c, player[0].upper(), balance))
                         c += 1
@@ -365,7 +365,7 @@ class Donger(BaseClient):
                 p[player.nick][1] = (player.fights + player.accepts + player.joins) * config['topmodifier']
         
         p = sorted(p.items(), key=lambda x: x[1][0] + x[1][1])
-        print(p)
+        p.reverse()
         return p
 
     
