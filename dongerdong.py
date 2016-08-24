@@ -243,32 +243,33 @@ class Donger(BaseClient):
                         return self.message(target, "No stats for \002{0}\002.".format(nick))
                     
                     balance = stats.wins - (stats.losses + stats.idleouts + (stats.quits*2))
+                    score = balance + (stats.fights + stats.accepts + stats.joins) * config['topmodifier']
+
                     balance = ("+" if balance > 0 else "") + str(balance)
+                    
+                    
+                    top = self.top_dongers()
+                    ranking = [i for i,x in enumerate(top) if x[0] == stats.nick][0] + 1
+                    if ranking == 1:
+                        ranking = "\003071st\003"
+                    elif ranking == 2:
+                        ranking = "\003142nd\002"
+                    elif ranking == 3:
+                        ranking = "\003063rd\002"
+                    else:
+                        ranking = "{}th".format(ranking)
                     
                     self.message(target, "\002{0}\002's stats: \002{1}\002 wins, \002{2}\002 losses, \002{4}\002 coward quits, \002{5}\002 idle-outs (\002{3}\002), \002{11}\002 kills,"\
                                  " \002{6}\002 !praises, \002{7}\002 fights started, accepted \002{8}\002 fights,"\
-                                 " !joined \002{9}\002 fights (\002{10}\002 total fights).".format(stats.nick, stats.wins, 
+                                 " !joined \002{9}\002 fights (\002{10}\002 total fights). Ranked \002{13}\002 (\002{12}\002 points)".format(stats.nick, stats.wins, 
                                     stats.losses, balance, stats.quits, stats.idleouts, stats.praises, 
                                     stats.fights, stats.accepts, stats.joins, 
-                                    (stats.fights + stats.accepts + stats.joins), stats.kills))
+                                    (stats.fights + stats.accepts + stats.joins), stats.kills, score, ranking))
                 elif command == "top" and not self.gameRunning:
-                    players = Stats.select()
-                    p = {}
-
-                    for player in players:
-                        if (player.fights + player.accepts + player.joins) < 5:
-                            continue
-                        if (player.nick == config['nickserv_username']):
-                            continue
-                        
-                        p[player.nick] = [player.wins - (player.losses + player.idleouts + (player.quits*2)), 0]
-                        
-                        if 'topmodifier' in config:
-                            p[player.nick][1] = (player.fights * config['topmodifier'])
-                            
+                    p = self.top_dongers()
+                    
                     if not p:
                         return self.message(target, "No top dongers.")
-                    p = sorted(p.items(), key=lambda x: x[1][0] + x[1][1])
                     c = 1
                     for player in p[::-1]:
                         balance = ("+" if player[1][0] > 0 else "") + str(player[1][0])
@@ -347,6 +348,26 @@ class Donger(BaseClient):
     def on_part(self, channel, user, message=None):
         if self.gameRunning and channel == self.channel:
             self.cowardQuit(user)
+    
+    def top_dongers(self):
+        players = Stats.select()
+        p = {}
+
+        for player in players:
+            if (player.fights + player.accepts + player.joins) < 5:
+                continue
+            if (player.nick == config['nickserv_username']):
+                continue
+            
+            p[player.nick] = [player.wins - (player.losses + player.idleouts + (player.quits*2)), 0]
+            
+            if 'topmodifier' in config:
+                p[player.nick][1] = (player.fights + player.accepts + player.joins) * config['topmodifier']
+        
+        p = sorted(p.items(), key=lambda x: x[1][0] + x[1][1])
+        print(p)
+        return p
+
     
     #def on_nick(self, *args):
     #    print(args)
