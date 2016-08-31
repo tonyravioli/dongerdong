@@ -275,7 +275,7 @@ class Donger(BaseClient):
                         balance = ("+" if player[1][0] > 0 else "") + str(player[1][0])
                         self.message(target, "{0} - \002{1}\002 (\002{2}\002)".format(c, player[0].upper(), balance))
                         c += 1
-                        if c == 4:
+                        if c == 6:
                             break
                     try:
                         self.message(target, "Full stats at {}".format(config['stats-url']))
