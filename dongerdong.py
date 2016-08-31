@@ -244,7 +244,6 @@ class Donger(BaseClient):
                     
                     balance = stats.wins - (stats.losses + stats.idleouts + (stats.quits*2))
                     score = balance + (stats.fights + stats.accepts + stats.joins) * config['topmodifier']
-                    score = round(score, 2)
 
                     balance = ("+" if balance > 0 else "") + str(balance)
                     
@@ -273,7 +272,7 @@ class Donger(BaseClient):
                         return self.message(target, "No top dongers.")
                     c = 1
                     for player in p:
-                        balance = ("+" if player[1][0] > 0 else "") + str(player[1][0])
+                        balance = ("+" if player[1][1] > 0 else "") + str(player[1][1])
                         self.message(target, "{0} - \002{1}\002 (\002{2}\002)".format(c, player[0].upper(), balance))
                         c += 1
                         if c == 6:
@@ -364,6 +363,7 @@ class Donger(BaseClient):
             
             if 'topmodifier' in config:
                 p[player.nick][1] = (player.fights + player.accepts + player.joins) * config['topmodifier']
+                p[player.nick][1] = round(p[player.nick][1], 2)
         
         p = sorted(p.items(), key=lambda x: x[1][0] + x[1][1])
         p.reverse()
