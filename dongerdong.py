@@ -693,6 +693,14 @@ class Donger(BaseClient):
                 else:
                     self.getTurn()
 
+
+    def _create_user(self, nickname):
+        super()._create_user(nickname)
+        
+        if not self.is_same_nick(self.nickname, nickname):
+            if not 'WHOX' in self._isupport:
+                self.whois(nickname)                
+
     
     # Saves information in the stats database.
     # nick = case-sensitive nick.
