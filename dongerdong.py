@@ -249,8 +249,14 @@ class Donger(BaseClient):
                     
                     
                     top = self.top_dongers()
-                    ranking = [i for i,x in enumerate(top) if x[0] == stats.nick][0] + 1
-                    if ranking == 1:
+                    try:
+                        ranking = [i for i,x in enumerate(top) if x[0] == stats.nick][0] + 1
+                    except IndexError:
+                        ranking = 0
+                    
+                    if ranking == 0:
+                        ranking = "Not ranked."
+                    elif ranking == 1:
                         ranking = "\003071st\003"
                     elif ranking == 2:
                         ranking = "\003142nd\003"
@@ -699,8 +705,7 @@ class Donger(BaseClient):
         
         if not self.is_same_nick(self.nickname, nickname):
             if not 'WHOX' in self._isupport:
-                self.whois(nickname)                
-
+                self.whois(nickname)
     
     # Saves information in the stats database.
     # nick = case-sensitive nick.
