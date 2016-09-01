@@ -278,7 +278,8 @@ class Donger(BaseClient):
                         return self.message(target, "No top dongers.")
                     c = 1
                     for player in p:
-                        balance = ("+" if player[1][1] > 0 else "") + str(player[1][1])
+                        score = player[1][1] + player[1][0]
+                        balance = ("+" if score > 0 else "") + str(score)
                         self.message(target, "{0} - \002{1}\002 (\002{2}\002)".format(c, player[0].upper(), balance))
                         c += 1
                         if c == 6:
