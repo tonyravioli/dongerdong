@@ -9,5 +9,6 @@
     "auxchans": [],
     "extendedcommands": ["jaden","excuse","dong"],
     "topmodifier": 0.05,
+    "admins": ["Polsaker", "ravioli"],
     "stats-url": "http://www.donger.org/stats/"
 }
