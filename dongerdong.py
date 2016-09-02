@@ -161,11 +161,11 @@ class Donger(BaseClient):
                         return
                     
                     if self.deathmatch:
-                        self.message(target, "You can't praise during deathmatches.")
+                        self.message(target, "You can't praise during deathmatches. It's still your turn.")
                         return
                     
                     if self.players[source.lower()]['praised']:
-                        self.message(target, "You can only praise once per game.")
+                        self.message(target, "You can only praise once per game. It's still your turn.")
                         return
                     
                     if not args:
