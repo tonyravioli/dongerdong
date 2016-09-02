@@ -4,5 +4,5 @@ import random
 helptext = "Produces a genuine, authentic donger"
 
 dongerlist = json.load(open("wisdom/dongers.json"))
-def doit():
-  return random.choice(dongerlist)
+def doit(irc, target, source):
+  irc.message(target, random.choice(dongerlist))

@@ -4,5 +4,5 @@ import random
 helptext = "Outputs a random tweet from Jaden Smith."
 
 jadenlist = json.load(open("wisdom/jaden.json"))
-def doit():
-  return random.choice(jadenlist)
+def doit(irc, target, source):
+  irc.message(target, random.choice(jadenlist))

@@ -351,9 +351,11 @@ class Donger(BaseClient):
                     self.message(source, "  !{}: {}".format(ch, self.cmdhelp[ch]))
             elif command in self.extcmds: #Extended commands support
                 try:
-                    self.message(target,importlib.import_module('extcmd.{}'.format(command)).doit())
-                except:
-                    raise
+                    if self.cmds[command].adminonly and self.users[source]['account'] not in config['admins']:
+                        return
+                except AttributeError:
+                    pass
+                self.cmds[command].doit(self, target, source)
 
     
     def on_quit(self, user, message=None):
@@ -763,21 +765,23 @@ class Donger(BaseClient):
             self.extcmds = []
             logging.warning("No extended commands found in config.json")
         logging.info("Beginning extended command tests")
+        self.cmds = {}
         for command in self.extcmds:
             try: #Let's test these on start...
-                logging.info('Begin command test: {}'.format(command))
-                logging.info(importlib.import_module('extcmd.{}'.format(command)).doit())
+                cmd = importlib.import_module('extcmd.{}'.format(command))
+                logging.info('Loading extended command: {}'.format(command))
+                    
                 try: # Handling non-existent helptext
-                    self.cmdhelp[command] = importlib.import_module('extcmd.{}'.format(command)).helptext
+                    self.cmdhelp[command] = cmd.helptext
                 except AttributeError:
                     logging.warning('No helptext provided for command {}'.format(command))
                     self.cmdhelp[command] = 'A mystery'
-                logging.debug('End command test: {}'.format(command))
+                self.cmds[command] = cmd
             except ImportError:
                 logging.warning("Failed to import specified extended command: {}".format(command))
                 self.extcmds.remove(command)
                 logging.warning("Removed command {} from list of available commands. You should fix config.json to remove it from there, too (or just fix the module).".format(command))
-        logging.info('Finished all the extended command tests')
+        logging.info('Finished loading all the extended commands')
 
 # Database stuff
 database = peewee.SqliteDatabase('dongerdong.db')

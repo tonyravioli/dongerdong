@@ -4,5 +4,5 @@ import random
 helptext = "Outputs a random BOFH excuse."
 
 excuselist = json.load(open("wisdom/excuses.json"))
-def doit():
-  return random.choice(excuselist)
+def doit(irc, target, source):
+  irc.message(target, random.choice(excuselist))
