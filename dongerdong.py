@@ -100,12 +100,16 @@ class Donger(BaseClient):
                         return
                     
                     challenger = args[0].lower()
+                    opportunist = False
                     
                     # Check if the user was challenged
                     try:
                         if source.lower() not in self.pendingFights[challenger]['pendingaccept']:
-                            self.message(target, "Err... Maybe you meant to say \002!fight {0}\002? They never challenged you.".format(args[0]))
-                            return
+                            if "*" in self.pendingFights[challenger]['pendingaccept']:
+                                opportunist = True
+                            else:
+                                self.message(target, "Err... Maybe you meant to say \002!fight {0}\002? They never challenged you.".format(args[0]))
+                                return
                     except KeyError: # self.pendingFights[x] doesn't exist
                         self.message(target, "Err... Maybe you meant to say \002!fight {0}\002? They never challenged you.".format(args[0]))
                         return
@@ -118,7 +122,10 @@ class Donger(BaseClient):
                     
                     # OK! This player accepted the fight.
                     self.pendingFights[challenger]['players'].append(source)
-                    self.pendingFights[challenger]['pendingaccept'].remove(source.lower())
+                    if not opportunist:
+                        self.pendingFights[challenger]['pendingaccept'].remove(source.lower())
+                    else:
+                        self.pendingFights[challenger]['pendingaccept'].remove('*')
                     
                     # Check if everybody accepted
                     if not self.pendingFights[challenger]['pendingaccept']:
@@ -626,7 +633,11 @@ class Donger(BaseClient):
     def fight(self, players, deathmatch=False, versusone=False):
         # Check if those users are in the channel, if they're identified, etc
         accounts = []
+        openSpots = 0
         for player in players[:]:
+            if player == "*":
+                openSpots += 1
+                continue
             
             if player not in self.channels[self.channel]['users']:
                 self.message(self.channel, "\002{0}\002 is not in the channel.".format(player))
@@ -666,11 +677,23 @@ class Donger(BaseClient):
                 return
             players.remove(config['nick'])
             
-        
-        if deathmatch:
-            self.message(self.channel, "{0}: \002{1}\002 challenged you to a deathmatch. The loser will be bant for 20 minutes. To accept, use '!accept {1}'.".format(", ".join(players[1:]), players[0]))
+        players[:] = [x for x in players if x != '*']
+        if len(players) > 1:
+            if deathmatch:
+                self.message(self.channel, "{0}: \002{1}\002 challenged you to a deathmatch. The loser will be bant for 20 minutes. To accept, use '!accept {1}'.".format(", ".join(players[1:]), players[0]))
+            else:
+                self.message(self.channel, "{0}: \002{1}\002 challenged you. To accept, use '!accept {1}'.".format(", ".join(players[1:]), players[0]))
         else:
-            self.message(self.channel, "{0}: \002{1}\002 challenged you. To accept, use '!accept {1}'.".format(", ".join(players[1:]), players[0]))
+            if deathmatch:
+                self.message(self.channel, "\002{0}\002 has challenged anybody willing to a deathmatch. The loser will be bant for 20 minutes. To accept, use '!accept {0}'.".format(players[0]))
+            else:
+                self.message(self.channel, "\002{0}\002 has challenged anybody willing to fight. To accept, use '!accept {0}'.".format(players[0]))
+
+
+        if openSpots == 1 and len(players) > 1:
+            self.message(self.channel, "This fight has an open spot for anybody to join.")
+        elif openSpots > 1:
+            self.message(self.channel, "This fight has open spots for {0} players to join.".format(openSpots))
         
     def chunks(self, l, n):
         """Yield successive n-sized chunks from l."""
