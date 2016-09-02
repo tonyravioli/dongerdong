@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 import markovify.text
 helptext = "Outputs a markov chain from /r/conspiracy comments"
+
+logfile = "../conspiradump.txt" #This is only here for testing and debugging.
 with open(logfile) as f:
     text = f.read()
 model = markovify.text.NewlineText(text, state_size=3)
-logfile = "../conspiradump.txt" #This is only here for testing and debugging.
 
 def doit(irc, target, source, sentences=2):
     #Maybe we'll replace this with a server-side thing on donger.org that provides a
