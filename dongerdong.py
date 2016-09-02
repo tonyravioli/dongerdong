@@ -441,7 +441,8 @@ class Donger(BaseClient):
         else:
             self.players[target.lower()]['hp'] += healing
         
-        self.players[target.lower()]['heals'] -= 1
+        if not critical:
+            self.players[target.lower()]['heals'] -= 1
             
         self.message(self.channel, "\002{0}\002 heals for \002{1}HP\002, bringing them to \002{2}HP\002".format(
                     target, healing, self.players[target.lower()]['hp']))
