@@ -479,10 +479,12 @@ class Donger(BaseClient):
     def death(self, victim, slayer):
         self.set_mode(self.channel, "-v", victim)
 
+        if self.players[victim.lower()]['hp'] <= -50:
+            self.ascii("BRUTAL")
         if self.players[victim.lower()]['hp'] <= -40:
-            self.ascii("SAVAGE REKT")
-        else:
-            self.ascii("REKT")
+            self.ascii("SAVAGE")
+
+        self.ascii("REKT")
         
         self.players[victim.lower()]['hp'] = -1
         self.message(self.channel, "\002{0}\002 REKT {1}".format(slayer, victim))
