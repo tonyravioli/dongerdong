@@ -506,6 +506,7 @@ class Donger(BaseClient):
     
     def start(self, pendingFight):
         self.gameRunning = True
+        self.pendingFights = {}
         self.deathmatch = pendingFight['deathmatch']
         self.versusone = pendingFight['versusone']
         
