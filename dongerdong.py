@@ -457,7 +457,7 @@ class Donger(BaseClient):
         damage = random.randint(18, 35)
         
         if instaroll == 1:
-            self.ascii("INSTAKILL")
+            self.ascii("INSTAKILL", lineformat="\00304")
             # remove player
             self.death(target, source)
             self.getTurn()
@@ -465,7 +465,7 @@ class Donger(BaseClient):
         if critroll == 1:
             damage *= 2 
             if not critical: # if it isn't an artificial crit, shout
-                self.ascii("CRITICAL")
+                self.ascii("CRITICAL", lineformat="\00304")
         
         # In case player is hitting themselves
         sourcehealth = self.players[source.lower()]['hp']
@@ -485,9 +485,9 @@ class Donger(BaseClient):
         self.set_mode(self.channel, "-v", victim)
 
         if self.players[victim.lower()]['hp'] <= -50:
-            self.ascii("BRUTAL")
+            self.ascii("BRUTAL", lineformat="\00304")
         if self.players[victim.lower()]['hp'] <= -40:
-            self.ascii("SAVAGE")
+            self.ascii("SAVAGE", lineformat="\00304")
 
         self.ascii("REKT")
         
@@ -513,7 +513,7 @@ class Donger(BaseClient):
         
         self.set_mode(self.channel, "+m")
         if self.deathmatch:
-            self.ascii("DEATHMATCH")
+            self.ascii("DEATHMATCH", lineformat="\00304")
             
         if len(pendingFight['players']) == 2:
             self.ascii(" V. ".join(pendingFight['players']).upper(), "straight")
@@ -622,8 +622,8 @@ class Donger(BaseClient):
         self.turnlist = []
         self.currentTurn = -1
     
-    def ascii(self, key, font='smslant'):
-        lines = [name for name in Figlet(font).renderText(key).split("\n")[:-1] if name.strip()]
+    def ascii(self, key, font='smslant', lineformat=""):
+        lines = [lineformat + name for name in Figlet(font).renderText(key).split("\n")[:-1] if name.strip()]
         self.message(self.channel, "\n".join(lines))
 
     def _rename_user(self, user, new):
