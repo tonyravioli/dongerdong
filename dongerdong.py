@@ -574,7 +574,7 @@ class Donger(BaseClient):
             self.getTurn()
     
     def processAI(self):
-        myself = self.players[config['nick']]
+        myself = self.players[config['nick'].lower()]
         # 1 - We will always hit a player with LESS than 25 HP.
         for i in self.players:
             if i == config['nick'].lower():
