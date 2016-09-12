@@ -465,7 +465,7 @@ class Donger(BaseClient):
         if critroll == 1:
             damage *= 2 
             if not critical: # if it isn't an artificial crit, shout
-                self.ascii("CRITICAL", lineformat="\00304")
+                self.ascii("CRITICAL")
         
         # In case player is hitting themselves
         sourcehealth = self.players[source.lower()]['hp']
