@@ -40,6 +40,8 @@ class Donger(BaseClient):
 
         self.lastheardfrom = {} #lastheardfrom['Polsaker'] = time.time()
         
+        self.poke = False  # True if we poked somebody
+        
         timeout_checker = threading.Thread(target = self._timeout)
         timeout_checker.daemon = True
         timeout_checker.start()
@@ -561,6 +563,7 @@ class Donger(BaseClient):
         
         if self.players[self.turnlist[self.currentTurn].lower()]['hp'] > 0: # it's alive!
             self.turnStart = time.time()
+            self.poke = False
             self.message(self.channel, "It's \002{0}\002's turn.".format(self.turnlist[self.currentTurn]))
             if self.turnlist[self.currentTurn] == config['nick']:
                 self.processAI()
@@ -727,6 +730,9 @@ class Donger(BaseClient):
                     self.win(survivor, False)
                 else:
                     self.getTurn()
+            elif (time.time() - self.turnStart > 40) and len(self.turnlist) >= (self.currentTurn + 1) and not self.poke:
+                self.poke = True
+                self.message(self.channel, "Wake up, \002{0}\002!".format(self.turnlist[self.currentTurn]))
 
 
     def _create_user(self, nickname):
