@@ -764,7 +764,7 @@ class Donger(BaseClient):
     
     def getStats(self, nick):
         try:
-            return Stats.get(Stats.nick == nick)
+            return Stats.get(Stats.nick ** nick)
         except:
             return False
 
