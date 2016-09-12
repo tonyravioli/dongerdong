@@ -467,11 +467,14 @@ class Donger(BaseClient):
             if not critical: # if it isn't an artificial crit, shout
                 self.ascii("CRITICAL")
         
+        # In case player is hitting themselves
+        sourcehealth = self.players[source.lower()]['hp']
+        
         self.players[source.lower()]['heals'] = 5
         self.players[target.lower()]['hp'] -= damage
 
         self.message(self.channel, "\002{0}\002 (\002{1}\002HP) deals \002{2}\002 damage to \002{3}\002 (\002{4}\002HP)".format(
-                    source, self.players[source.lower()]['hp'], damage, target, self.players[target.lower()]['hp']))
+                    source, sourcehealth, damage, target, self.players[target.lower()]['hp']))
         
         if self.players[target.lower()]['hp'] <= 0:
             self.death(target, source)
