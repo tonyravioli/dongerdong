@@ -508,6 +508,9 @@ class Donger(BaseClient):
         self.gameRunning = True
         self.deathmatch = pendingFight['deathmatch']
         self.versusone = pendingFight['versusone']
+        
+        del self.pendingFights[pendingFight['players'][0].lower()]
+        
         self.set_mode(self.channel, "+m")
         if self.deathmatch:
             self.ascii("DEATHMATCH")
@@ -713,7 +716,12 @@ class Donger(BaseClient):
     def _timeout(self):
         while True:
             time.sleep(5)
+            
             if not self.gameRunning or (self.turnStart == 0):
+                for i in copy.copy(self.pendingFights):
+                    if (time.time() - self.pendingFights[i]['ts'] > 240):
+                        self.message(self.channel, "\002{0}\002's fight took too long to start and was cancelled".format(self.pendingFights[i]['players'][0]))
+                        del self.pendingFights[i]
                 continue
             
             if (time.time() - self.turnStart > 60) and len(self.turnlist) >= (self.currentTurn + 1):
