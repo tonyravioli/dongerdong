@@ -589,7 +589,7 @@ class Donger(BaseClient):
             self.heal(config['nick'])
         else:
             players = self.turnlist[:]
-            players.remove(config['nick'].lower())
+            players.remove(config['nick'])
             victim = {}
             while not victim: # !!!
                 hitting = self.players[random.choice(players).lower()]
