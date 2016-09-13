@@ -11,5 +11,5 @@
     "topmodifier": 0.05,
     "admins": ["Polsaker", "ravioli"],
     "stats-url": "http://www.donger.org/stats/",
-    "show_ascii_art_text": false
+    "show-ascii-art-text": true
 }
