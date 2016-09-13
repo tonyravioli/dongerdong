@@ -297,14 +297,6 @@ class Donger(BaseClient):
                         self.message(target, "Full stats at {}".format(config['stats-url']))
                     except:
                         pass
-
-                elif command == "version" and not self.gameRunning:
-                    try:
-                        ver = subprocess.check_output(["git", "describe"]).decode().strip()
-                        self.message(target, "I am running {} ({})".format(ver,'http://bit.ly/1pG2Hay'))
-                    except:
-                        self.message(target, "I have no idea.")
-
             elif target == config['nick']: # private message
                 if command == "join" and self.gameRunning and not self.deathmatch:
                     if source in self.turnlist:
@@ -350,6 +342,12 @@ class Donger(BaseClient):
                 self.message(source, "Commands available everywhere:")
                 for ch in self.cmdhelp.keys(): #Extended commands help
                     self.message(source, "  !{}: {}".format(ch, self.cmdhelp[ch]))
+            elif command == "version":
+                try:
+                    ver = subprocess.check_output(["git", "describe", "--tags"]).decode().strip()
+                    self.message(target, "I am running {} ({})".format(ver,'http://bit.ly/1pG2Hay'))
+                except:
+                    self.message(target, "I have no idea.")
             elif command in self.extcmds: #Extended commands support
                 try:
                     if self.cmds[command].adminonly and self.users[source]['account'] not in config['admins']:
