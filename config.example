@@ -4,11 +4,12 @@
     "channel": "#fightchannel",
     "port": 6697,
     "tls": true,
-    "nickserv_username": "dong",
+    "nickserv_username": "dongeruser",
     "nickserv_password": "yourpasswd",
     "auxchans": [],
     "extendedcommands": ["jaden","excuse","dong"],
     "topmodifier": 0.05,
     "admins": ["Polsaker", "ravioli"],
-    "stats-url": "http://www.donger.org/stats/"
+    "stats-url": "http://www.donger.org/stats/",
+    "show_ascii_art_text": false
 }

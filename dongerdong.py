@@ -620,6 +620,9 @@ class Donger(BaseClient):
         self.currentTurn = -1
     
     def ascii(self, key, font='smslant', lineformat=""):
+        if not config['show_ascii_art_text']:
+            self.message(self.channel, key)
+            return
         lines = [lineformat + name for name in Figlet(font).renderText(key).split("\n")[:-1] if name.strip()]
         self.message(self.channel, "\n".join(lines))
 
