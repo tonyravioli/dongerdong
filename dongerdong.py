@@ -719,8 +719,8 @@ class Donger(BaseClient):
             
             if not self.gameRunning or (self.turnStart == 0):
                 for i in copy.copy(self.pendingFights):
-                    if (time.time() - self.pendingFights[i]['ts'] > 240):
-                        self.message(self.channel, "\002{0}\002's fight took too long to start and was cancelled".format(self.pendingFights[i]['players'][0]))
+                    if (time.time() - self.pendingFights[i]['ts'] > 300):
+                        self.message(self.channel, "\002{0}\002's challenge has expired".format(self.pendingFights[i]['players'][0]))
                         del self.pendingFights[i]
                 continue
             
