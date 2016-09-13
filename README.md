@@ -1,7 +1,8 @@
 DongerDong
 =================
+What started as *"A simple IRC bot for fighting, written in Python"*, has grown to become the most comprehensive and flexible collection of code ever written.
 
-A simple IRC bot for fighting, written in Python.
+If you use this bot, pop into **#donger-dev** on Freenode (irc.freenode.net) and say hello!
 
 >All that is gold does not glitter,
 >Not all those who donger are lost;
@@ -23,3 +24,11 @@ How to install
  * Run the bot (with Python 3)
  * ???
  * Profit!
+
+Configuration Notes
+=============
+ * `auxchans` are channels the bot joins on connect, with fewer usable commands and with a (basic) flood control system. Enter channels in the format `["#channel1","#channel2"]`, etc.
+ * `extendedcommands` references files of the same name in the "extcmd" folder
+ * `topmodifier` changes the way players are ranked depending on how many fights they've participated in
+ * `admins` specifies people with additional permissions - to be used in future extended commands and in the `!update` extended command (disabled by default - enable by adding it to `extendedcommands`)
+ * `stats-url` is optional and can be removed entirely if you don't have a URL where statistics are displayed (the Supreme Dongerdong's statistics page is set as default, but will *not* display statistics from your instance).
