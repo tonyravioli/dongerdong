@@ -2,19 +2,8 @@ DongerDong
 =================
 What started as *"A simple IRC bot for fighting, written in Python"*, has grown to become the most comprehensive and flexible collection of code ever written.
 
-If you use this bot, pop into **#donger-dev** on Freenode (irc.freenode.net) and say hello!
-
->All that is gold does not glitter,
->Not all those who donger are lost;
->The old that do dong do not wither,
->Deep dongs are not reached by the frost.
->From the ashes the donger shall be woken,
->A light from the shadows shall spring;
->Renewed shall be blade that was broken,
->The donger again shall be king
--J.R.R. Tolkien
-
-"He who learns but does not think, is lost! He who dongs dongs, dongs dongs!" - Confucius
+Official IRC Channel: **#donger** on Freenode  
+Development Channel: **#donger-dev** on Freenode
 
 How to install
 ==============
@@ -32,3 +21,18 @@ Configuration Notes
  * `topmodifier` changes the way players are ranked depending on how many fights they've participated in
  * `admins` specifies people with additional permissions - to be used in future extended commands and in the `!update` extended command (disabled by default - enable by adding it to `extendedcommands`)
  * `stats-url` is optional and can be removed entirely if you don't have a URL where statistics are displayed (the Supreme Dongerdong's statistics page is set as default, but will *not* display statistics from your instance).
+
+Wisdom
+======
+
+>All that is gold does not glitter,  
+>Not all those who donger are lost;  
+>The old that do dong do not wither,  
+>Deep dongs are not reached by the frost.  
+>From the ashes the donger shall be woken,  
+>A light from the shadows shall spring;  
+>Renewed shall be blade that was broken,  
+>The donger again shall be king  
+-J.R.R. Tolkien
+
+"He who learns but does not think, is lost! He who dongs dongs, dongs dongs!" - Confucius
