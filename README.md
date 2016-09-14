@@ -10,6 +10,9 @@ How to install
 
  * Install pyfiglet, peewee, pydle and pure-sasl (via `pip install -r requirements.txt` if you want, you're an adult it's your call)
  * Rename config.example to config.json and edit it
+ * Configure the IRC user and channel:
+   * Register the username and nickname the bot will be using with NickServ (the ones you set in config.json)
+   * Register the primary channel the bot will be using, and ensure the bot has flags of at least +Oefr in that channel's access list. It needs to receive channel op when joining the channel, and must be able to set AKICKs with ChanServ (for deathmatches)
  * Run the bot (with Python 3)
  * ???
  * Profit!
