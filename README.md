@@ -19,7 +19,7 @@ If you use this bot, pop into **#donger-dev** on Freenode (irc.freenode.net) and
 How to install
 ==============
 
- * Install pyfiglet, peewee, pydle and pure-sasl (via pip if you want, you're an adult it's your call)
+ * Install pyfiglet, peewee, pydle and pure-sasl (via `pip install -r requirements.txt` if you want, you're an adult it's your call)
  * Rename config.example to config.json and edit it
  * Run the bot (with Python 3)
  * ???
