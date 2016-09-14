@@ -12,6 +12,7 @@ import operator
 import peewee
 import importlib
 import subprocess
+import datetime
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -229,6 +230,7 @@ class Donger(BaseClient):
                         return
                     
                     self.pendingFights[args[0].lower()]['pendingaccept'].remove(source.lower())
+                    self.countStat(source, "reject")
                     self.message(target, "\002{0}\002 fled the fight".format(source))
                     
                     if not self.pendingFights[args[0].lower()]['pendingaccept']:
@@ -370,7 +372,7 @@ class Donger(BaseClient):
             self.cowardQuit(user)
     
     def top_dongers(self):
-        players = Stats.select()
+        players = Statsv2.select()
         p = {}
 
         for player in players:
@@ -488,8 +490,10 @@ class Donger(BaseClient):
 
         if self.players[victim.lower()]['hp'] <= -50:
             self.ascii("BRUTAL", lineformat="\00304")
+            self.countStat(slayer, "brutal")
         if self.players[victim.lower()]['hp'] <= -40:
             self.ascii("SAVAGE", lineformat="\00304")
+            self.countStat(slayer, "savage")
 
         self.ascii("REKT")
         
@@ -536,6 +540,8 @@ class Donger(BaseClient):
         
         # Set up the fight
         for player in pendingFight['players']:
+            if self.deathmatch:
+                self.countStat(player, "deathmatches")
             self.players[player.lower()] = {'hp': 100, 'heals': 4, 'zombie': False, 'nick': player, 'praised': False}
             self.turnlist.append(player)
         
@@ -765,18 +771,18 @@ class Donger(BaseClient):
     def countStat(self, nick, stype):
         nick = self.users[nick]['account']
         try:
-            stat = Stats.get(Stats.nick == nick)
+            stat = Statsv2.get(Statsv2.nick == nick)
         except:
-            stat = Stats.create(nick=nick, losses=0, quits=0, wins=0, idleouts=0,
+            stat = Statsv2.create(nick=nick, losses=0, quits=0, wins=0, idleouts=0,
                                            accepts=0, fights=0, joins=0,
-                                           praises=0, kills=0)
+                                           praises=0, kills=0, savage=0, brutal=0,
+                                           deathmatches=0, rejects=0)
 
-        Stats.update(**{stype: getattr(stat, stype) + 1}).where(Stats.nick == nick).execute()
-        #Stats.update(**{stype: getattr(stat, stype) + 1, 'lastedit': int(time.time())}).where(Stats.nick == nick).execute()
+        Statsv2.update(**{stype: getattr(stat, stype) + 1}).where(Statsv2.nick == nick).execute()
     
     def getStats(self, nick):
         try:
-            return Stats.get(Stats.nick ** nick)
+            return Statsv2.get(Statsv2.nick ** nick)
         except:
             return False
 
@@ -814,7 +820,7 @@ class BaseModel(peewee.Model):
     class Meta:
         database = database
 
-class Stats(BaseModel):
+class Statsv2(BaseModel):
     nick = peewee.CharField()
     
     wins = peewee.IntegerField()
@@ -824,22 +830,34 @@ class Stats(BaseModel):
     idleouts = peewee.IntegerField()
 
     
+    deathmatches = peewee.IntegerField() # Deathmatches played (still counted in fights)
+    
+    rejects = peewee.IntegerField() # fights rejected
+    
     fights = peewee.IntegerField() # Games started
     accepts = peewee.IntegerField() # Games accepted
     joins = peewee.IntegerField() # Games joined
         
     praises = peewee.IntegerField()
     
-    #lastedit = peewee.IntegerField()
+    savage = peewee.IntegerField()  # savage rekts
+    brutal = peewee.IntegerField()  # brutal savage rekts
     
+    firstplayed = peewee.DateTimeField(default=datetime.datetime.now)
+    lastplayed = peewee.DateTimeField()
+    
+    def save(self, *args, **kwargs):
+        self.lastplayed = datetime.datetime.now()
+        return super(Statsv2, self).save(*args, **kwargs)
+
     @classmethod
     def custom_init(cls):
         database.execute_sql('create unique index if not exists stats_unique '
                        'on stats(nick collate nocase)', {})
 
-Stats.create_table(True)
+Statsv2.create_table(True)
 try:
-    Stats.custom_init()
+    Statsv2.custom_init()
 except:
     pass
 
