@@ -108,6 +108,10 @@ class Donger(BaseClient):
                     try:
                         if source.lower() not in self.pendingFights[challenger]['pendingaccept']:
                             if "*" in self.pendingFights[challenger]['pendingaccept']:
+                                if source.lower() == challenger:
+                                    self.message(target, "You're trying to fight yourself?")
+                                    return
+
                                 opportunist = True
                             else:
                                 self.message(target, "Err... Maybe you meant to say \002!fight {0}\002? They never challenged you.".format(args[0]))
