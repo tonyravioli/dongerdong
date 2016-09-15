@@ -22,7 +22,7 @@ Configuration Notes
  * `auxchans` are channels the bot joins on connect, with fewer usable commands and with a (basic) flood control system. Enter channels in the format `["#channel1","#channel2"]`, etc.
  * `extendedcommands` references files of the same name in the "extcmd" folder
  * `topmodifier` changes the way players are ranked depending on how many fights they've participated in
- * `admins` specifies people with additional permissions - to be used in future extended commands and in the `!update` extended command (disabled by default - enable by adding it to `extendedcommands`)
+ * `admins` specifies people with additional permissions. Currently only used in the `!update` extended command (which is disabled by default, and can be enabled by adding `"update"` to `extendedcommands`).
  * `stats-url` is optional and can be removed entirely if you don't have a URL where statistics are displayed (the Supreme Dongerdong's statistics page is set as default, but will *not* display statistics from your instance).
 
 Wisdom
