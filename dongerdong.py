@@ -701,7 +701,7 @@ class Donger(BaseClient):
             if versusone:
                 return self.message(self.channel, "{0} is not available for duels or deathmatches".format(config['nick']))
             if (time.time() - self.lastbotfight < 30):
-                return self.message(self.channel, "{0} needs a 30 second break.".format(config['nick']))
+                return self.message(self.channel, "{0} needs a 30 second break before participating in a fight.".format(config['nick']))
             self.message(self.channel, "YOU WILL SEE")
             self.pendingFights[players[0].lower()]['pendingaccept'].remove(config['nick'].lower())
             self.pendingFights[players[0].lower()]['players'].append(config['nick'])
