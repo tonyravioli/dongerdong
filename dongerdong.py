@@ -40,6 +40,7 @@ class Donger(BaseClient):
         self.channel = config['channel'] # Main fight channel
 
         self.lastheardfrom = {} #lastheardfrom['Polsaker'] = time.time()
+        self.lastbotfight = time.time()-15 # Last time the bot was in a fight.
         
         self.poke = False  # True if we poked somebody
         
@@ -616,11 +617,19 @@ class Donger(BaseClient):
         
         if len(self.turnlist) > 2 and realwin:
             self.message(self.channel, "{0} REKT {1}".format(self.players[winner]['nick'], ", ".join(losers)).upper())
-        #Realwin is only ever false if there's a coward quit.
+        # Realwin is only ever false if there's a coward quit.
         if realwin:
             if losers != [config['nick']]:
                 self.countStat(winner, "wins")
 
+        if (config['nick'] in losers and len(losers) == 1) or config['nick'] == self.players[winner]['nick']:
+            # Set a time so you have to wait a number of seconds
+            # before the bot is available to fight again (to prevent
+            # people not being able to play due to someone spamming a
+            # fight against the bot).
+            self.lastbotfight = time.time()
+
+        # Reset fight-related variables
         self.deathmatch = False
         self.versusone = False
         self.gameRunning = False
@@ -691,6 +700,8 @@ class Donger(BaseClient):
         if config['nick'] in players:
             if versusone:
                 return self.message(self.channel, "{0} is not available for duels or deathmatches".format(config['nick']))
+            if (time.time() - self.lastbotfight < 30):
+                return self.message(self.channel, "{0} needs a 30 second break.".format(config['nick']))
             self.message(self.channel, "YOU WILL SEE")
             self.pendingFights[players[0].lower()]['pendingaccept'].remove(config['nick'].lower())
             self.pendingFights[players[0].lower()]['players'].append(config['nick'])
