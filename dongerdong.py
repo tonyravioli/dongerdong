@@ -230,7 +230,7 @@ class Donger(BaseClient):
                         return
                     
                     self.pendingFights[args[0].lower()]['pendingaccept'].remove(source.lower())
-                    self.countStat(source, "reject")
+                    self.countStat(source, "rejects")
                     self.message(target, "\002{0}\002 fled the fight".format(source))
                     
                     if not self.pendingFights[args[0].lower()]['pendingaccept']:
