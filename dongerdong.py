@@ -373,6 +373,8 @@ class Donger(BaseClient):
                     return self.message(target, "You need to list the channel you want me to leave.")
                 if args[0] not in self.currentchannels:
                     return self.message(target, "I'm pretty sure I'm not currently in {0}.".format(args[0]))
+                if args[0] == self.channel:
+                    return self.message(target, "I can't part my primary channel.")
                 self.message(target, "Attempting to part {}...".format(args[0]))
                 try:
                     self.part(args[0],"NOT ALL THOSE WHO DONGER ARE LOST")
