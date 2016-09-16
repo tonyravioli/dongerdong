@@ -327,7 +327,7 @@ class Donger(BaseClient):
 
             #Rate limiting
             try:
-                if target != self.channel and time.time() - self.lastheardfrom[source] < 7:
+                if target != self.channel and (time.time() - self.lastheardfrom[source] < 7) and source not in config['admins']:
                     return
             except KeyError:
                 pass
