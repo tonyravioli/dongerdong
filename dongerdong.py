@@ -38,7 +38,7 @@ class Donger(BaseClient):
         self.currentTurn = -1 # current turn = turnlist[currentTurn]
         
         self.channel = config['channel'] # Main fight channel
-
+        self.currentchannels = [] # List of current channels the bot is in
         self.lastheardfrom = {} #lastheardfrom['Polsaker'] = time.time()
         self.lastbotfight = time.time()-15 # Last time the bot was in a fight.
         
@@ -53,8 +53,10 @@ class Donger(BaseClient):
     def on_connect(self):
         super().on_connect()
         self.join(self.channel)
+        self.currentchannels.append(self.channel)
         for chan in config['auxchans']:
             self.join(chan)
+            self.currentchannels.append(chan)
 
     @pydle.coroutine
     def on_message(self, target, source, message):
@@ -304,6 +306,30 @@ class Donger(BaseClient):
                         self.message(target, "Full stats at {}".format(config['stats-url']))
                     except:
                         pass
+                elif command == "part" and self.users[source]['account'] in config['admins']:
+                    if not args:
+                        return self.message(target, "You need to list the channel you want me to leave.")
+                    if args[0] not in self.currentchannels:
+                        return self.message(target, "I'm pretty sure I'm not currently in {0}.".format(args[0]))
+                    self.message(target, "Attempting to part {}...".format(args[0]))
+                    try:
+                        self.part(args[0],"NOT ALL THOSE WHO DONGER ARE LOST")
+                        self.currentchannels.remove(args[0])
+                    except:
+                        pass
+
+                elif command == "join" and self.users[source]['account'] in config['admins']:
+                    if not args:
+                        return self.message(target, "You need to list the channel you want me to join.")
+                    if args[0] in self.currentchannels:
+                        return self.message(target, "I'm pretty sure I'm already in {0}.".format(args[0]))
+                    self.message(target, "Attempting to join {}...".format(args[0]))
+                    try:
+                        self.join(args[0])
+                        self.currentchannels.append(args[0])
+                    except:
+                        pass
+
             elif target == config['nick']: # private message
                 if command == "join" and self.gameRunning and not self.deathmatch:
                     if source in self.turnlist:
