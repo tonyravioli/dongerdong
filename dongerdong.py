@@ -39,7 +39,8 @@ class Donger(BaseClient):
         
         self.channel = config['channel'] # Main fight channel
         self.currentchannels = [] # List of current channels the bot is in
-        self.lastheardfrom = {} #lastheardfrom['Polsaker'] = time.time()
+        self.lastheardfrom = {} # lastheardfrom['Polsaker'] = time.time()
+        self.lastmessageto = {} # lastmessageto[channel] = time.time()
         self.lastbotfight = time.time()-15 # Last time the bot was in a fight.
         
         self.poke = False  # True if we poked somebody
@@ -62,12 +63,13 @@ class Donger(BaseClient):
     def on_message(self, target, source, message):
         if message.startswith(config['nick']):
             try:
-                if target != self.channel and (time.time() - self.lastheardfrom[source] < 7) and source not in config['admins']:
+                if target != self.channel and (time.time() - self.lastheardfrom[source] < 7) and (time.time() - self.lastmessageto[target] < 3) and source not in config['admins']: # this is getting ridiculous. and it's in the code twice now.
                     return
             except KeyError:
                 pass
             finally:
                 self.lastheardfrom[source] = time.time()
+                self.lastmessageto[target] = time.time()
 
             args = message.rstrip().split(" ")
             if len(args) > 1 and args[1].lower().startswith("you"):
@@ -334,12 +336,13 @@ class Donger(BaseClient):
 
             #Rate limiting
             try:
-                if target != self.channel and (time.time() - self.lastheardfrom[source] < 7) and source not in config['admins']:
+                if target != self.channel and (time.time() - self.lastheardfrom[source] < 7) and (time.time() - self.lastmessageto[target] < 3) and source not in config['admins']: # this is getting ridiculous. and it's in the code twice now.
                     return
             except KeyError:
                 pass
             finally:
                 self.lastheardfrom[source] = time.time()
+                self.lastmessageto[target] = time.time()
 
             # Regular commands
             if command == "raise":
