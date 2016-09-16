@@ -306,29 +306,6 @@ class Donger(BaseClient):
                         self.message(target, "Full stats at {}".format(config['stats-url']))
                     except:
                         pass
-                elif command == "part" and self.users[source]['account'] in config['admins']:
-                    if not args:
-                        return self.message(target, "You need to list the channel you want me to leave.")
-                    if args[0] not in self.currentchannels:
-                        return self.message(target, "I'm pretty sure I'm not currently in {0}.".format(args[0]))
-                    self.message(target, "Attempting to part {}...".format(args[0]))
-                    try:
-                        self.part(args[0],"NOT ALL THOSE WHO DONGER ARE LOST")
-                        self.currentchannels.remove(args[0])
-                    except:
-                        pass
-
-                elif command == "join" and self.users[source]['account'] in config['admins']:
-                    if not args:
-                        return self.message(target, "You need to list the channel you want me to join.")
-                    if args[0] in self.currentchannels:
-                        return self.message(target, "I'm pretty sure I'm already in {0}.".format(args[0]))
-                    self.message(target, "Attempting to join {}...".format(args[0]))
-                    try:
-                        self.join(args[0])
-                        self.currentchannels.append(args[0])
-                    except:
-                        pass
 
             elif target == config['nick']: # private message
                 if command == "join" and self.gameRunning and not self.deathmatch:
@@ -381,6 +358,28 @@ class Donger(BaseClient):
                     self.message(target, "I am running {} ({})".format(ver,'http://bit.ly/1pG2Hay'))
                 except:
                     self.message(target, "I have no idea.")
+            elif command == "part" and self.users[source]['account'] in config['admins']:
+                if not args:
+                    return self.message(target, "You need to list the channel you want me to leave.")
+                if args[0] not in self.currentchannels:
+                    return self.message(target, "I'm pretty sure I'm not currently in {0}.".format(args[0]))
+                self.message(target, "Attempting to part {}...".format(args[0]))
+                try:
+                    self.part(args[0],"NOT ALL THOSE WHO DONGER ARE LOST")
+                    self.currentchannels.remove(args[0])
+                except:
+                    pass
+            elif command == "join" and self.users[source]['account'] in config['admins']:
+                if not args:
+                    return self.message(target, "You need to list the channel you want me to join.")
+                if args[0] in self.currentchannels:
+                    return self.message(target, "I'm pretty sure I'm already in {0}.".format(args[0]))
+                self.message(target, "Attempting to join {}...".format(args[0]))
+                try:
+                    self.join(args[0])
+                    self.currentchannels.append(args[0])
+                except:
+                    pass
             elif command in self.extcmds: #Extended commands support
                 try:
                     if self.cmds[command].adminonly and self.users[source]['account'] not in config['admins']:
