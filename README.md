@@ -19,11 +19,18 @@ How to install
 
 Configuration Notes
 =============
- * `auxchans` are channels the bot joins on connect, with fewer usable commands and with a (basic) flood control system. Enter channels in the format `["#channel1","#channel2"]`, etc.
- * `extendedcommands` references files of the same name in the "extcmd" folder
- * `topmodifier` changes the way players are ranked depending on how many fights they've participated in
- * `admins` specifies people with additional permissions. Currently only used in the `!update` extended command (which is disabled by default, and can be enabled by adding `"update"` to `extendedcommands`).
+ * `server` is the server you're connecting to
+ * `nick` is the nickname the bot will request when connecting to the server
+ * `channel` is the bot's "primary channel" - the one where all the fighting happens
+ * `port` is the port to connect over, default is `6697`
+ * `tls` defines whether we're doing the connection securely (default is `true`)
+ * `nickserv_username` and `nickserv_password` specify the credentials the bot will send to nickserv to identify
+ * `auxchans` are additional, non-fighting channels the bot joins on connect. These channels have access to fewer commands, and messages to them are limited by a (basic) flood control system. Enter channels in the format `["#channel1","#channel2"]`, etc.
+ * `extendedcommands` references files of the same name in the "extcmd" folder. Try adding `"update"` to enable the update.py extended command.
+ * `topmodifier` changes the way players are ranked depending on how many fights they've participated in. Defaults to 0.05.
+ * `admins` specifies the usernames of people with additional permissions - like !join, !part, and (if enabled through extcmds) !update.
  * `stats-url` is optional and can be removed entirely if you don't have a URL where statistics are displayed (the Supreme Dongerdong's statistics page is set as default, but will *not* display statistics from your instance).
+ * `show-ascii-art-text` is an accessibility feature. When set to false, it does not send ASCII text art to channels, instead printing the text normally.
 
 Wisdom
 ======
