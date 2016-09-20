@@ -533,10 +533,7 @@ class Donger(BaseClient):
             self.ascii("SAVAGE", lineformat="\00304")
             self.countStat(slayer, "savage")
 
-        if random.randint(1, 40) == 1:
-            self.ascii("RELT")
-        else:
-            self.ascii("REKT")
+        self.ascii("RELT" if random.randint(1, 40) == 1 else "REKT")
 
         self.players[victim.lower()]['hp'] = -1
         self.message(self.channel, "\002{0}\002 REKT {1}".format(slayer, victim))
