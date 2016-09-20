@@ -533,7 +533,7 @@ class Donger(BaseClient):
             self.ascii("SAVAGE", lineformat="\00304")
             self.countStat(slayer, "savage")
 
-        if random.randint(1,100) == 1:
+        if random.randint(1, 40) == 1:
             self.ascii("RELT")
         else:
             self.ascii("REKT")
