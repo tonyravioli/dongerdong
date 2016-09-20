@@ -527,10 +527,10 @@ class Donger(BaseClient):
         self.set_mode(self.channel, "-v", victim)
 
         if self.players[victim.lower()]['hp'] <= -50:
-            self.ascii("BRUTAL", lineformat="\00304")
+            self.ascii("BRUTAL")
             self.countStat(slayer, "brutal")
         if self.players[victim.lower()]['hp'] <= -40:
-            self.ascii("SAVAGE", lineformat="\00304")
+            self.ascii("SAVAGE")
             self.countStat(slayer, "savage")
         self.ascii("REKT" if random.randint(0, 39) else "RELT") # Because 0 is false. The most beautiful line ever written.
 
