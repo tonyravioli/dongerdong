@@ -40,7 +40,7 @@ class Donger(BaseClient):
         self.channel = config['channel'] # Main fight channel
         self.currentchannels = [] # List of current channels the bot is in
         self.lastheardfrom = {} # lastheardfrom['Polsaker'] = time.time()
-        self.lastmessageto = {} # lastmessageto[channel] = time.time()
+        self.sourcehistory = [] # sourcehistory.append(source)
         self.lastbotfight = time.time()-15 # Last time the bot was in a fight.
         
         self.poke = False  # True if we poked somebody
@@ -61,22 +61,6 @@ class Donger(BaseClient):
 
     @pydle.coroutine
     def on_message(self, target, source, message):
-        if message.startswith(config['nick']):
-            try:
-                if target != self.channel and (time.time() - self.lastheardfrom[source] < 7) and (time.time() - self.lastmessageto[target] < 3) and source not in config['admins']: # this is getting ridiculous. and it's in the code twice now.
-                    return
-            except KeyError:
-                pass
-            finally:
-                self.lastheardfrom[source] = time.time()
-                self.lastmessageto[target] = time.time()
-
-            args = message.rstrip().split(" ")
-            if len(args) > 1 and args[1].lower().startswith("you"):
-                self.message(target, "No, {0}{1}".format(source, message.replace(config['nick'], '')))
-            else:
-                self.message(target, message.replace(config['nick'], source))
-            
         if message.startswith("!"):
             command = message[1:].split(" ")[0].lower()
             args = message.rstrip().split(" ")[1:]
@@ -336,13 +320,16 @@ class Donger(BaseClient):
 
             #Rate limiting
             try:
-                if target != self.channel and (time.time() - self.lastheardfrom[source] < 7) and (time.time() - self.lastmessageto[target] < 3) and source not in config['admins']: # this is getting ridiculous. and it's in the code twice now.
+                if (target != self.channel and
+                    (time.time() - self.lastheardfrom[source] < 7) and
+                    (source == self.sourcehistory[-2] and source == self.sourcehistory[-1]) and
+                    source not in config['admins']): # this is getting ridiculous. and it's in the code twice now.
                     return
             except KeyError:
                 pass
             finally:
                 self.lastheardfrom[source] = time.time()
-                self.lastmessageto[target] = time.time()
+                self.sourcehistory.append(source)
 
             # Regular commands
             if command == "raise":
