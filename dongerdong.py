@@ -320,11 +320,11 @@ class Donger(BaseClient):
 
             #Rate limiting
             try:
-                if (target != self.channel and
-                    (time.time() - self.lastheardfrom[source] < 7) and
-                    (source == self.sourcehistory[-2] and source == self.sourcehistory[-1]) and
-                    source not in config['admins']): # this is getting ridiculous. and it's in the code twice now.
-                    return
+                if (target != self.channel and # If the command is happening in a place besides the primary channel...
+                    (time.time() - self.lastheardfrom[source] < 7) and # And it's been seven seconds since this person has made a command...
+                    (source == self.sourcehistory[-2] and source == self.sourcehistory[-1]) and # And they made the last two commands...
+                    source not in config['admins']): # And the person is not an administrator...
+                    return # Ignore it
             except KeyError:
                 pass
             finally:
