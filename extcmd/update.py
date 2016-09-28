@@ -5,6 +5,7 @@ import time
 
 helptext = "Updates and restarts the bot"
 adminonly = True
+
 def doit(irc, target, source):
     commands = ["git fetch",
                 "git rebase --stat --preserve-merges"]
@@ -20,6 +21,5 @@ def doit(irc, target, source):
         for line in (out + err).splitlines():
             irc.message(source, line.decode("utf-8"))
     
-
     irc.eventloop.schedule(irc.quit, "Updating...")
     irc.eventloop.schedule(os.execl, sys.executable, sys.executable, *sys.argv)
