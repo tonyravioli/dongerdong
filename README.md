@@ -8,7 +8,8 @@ Development Channel: **#donger-dev** on Freenode
 How to install
 ==============
 
- * Install pyfiglet, peewee, pydle and pure-sasl (via `pip install -r requirements.txt` if you want, you're an adult it's your call)
+ * Install Python 3
+ * Install requirements pyfiglet, peewee, pydle and pure-sasl (via `pip install -r requirements.txt` if you want, you're an adult it's your call)
  * Rename config.example to config.json and edit it
  * Configure the IRC user and channel:
    * Register the username and nickname the bot will be using with NickServ (the ones you set in config.json)
