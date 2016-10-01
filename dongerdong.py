@@ -291,7 +291,8 @@ class Donger(BaseClient):
                     for player in p:
                         score = round(player[1][1] + player[1][0], 2)
                         balance = ("+" if score > 0 else "") + str(score)
-                        playernick = player[0][0] + '\u200b' + player[1:]
+                        playernick = "{0}\u200b{1}".format(player[0][0], player[0][1:])
+
                         self.message(target, "{0} - \002{1}\002 (\002{2}\002)".format(c, playernick.upper(), balance))
                         c += 1
                         if c == 6:
