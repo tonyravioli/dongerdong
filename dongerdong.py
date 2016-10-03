@@ -744,11 +744,7 @@ class Donger(BaseClient):
             else:
                 self.message(self.channel, "{0}: \002{1}\002 challenged you. To accept, use '!accept {1}'.".format(", ".join(players[1:]), players[0]))
         else:
-            if deathmatch:
-                self.message(self.channel, "\002{0}\002 has challenged anybody willing to fight to the death. The loser will be bant for 20 minutes. To accept, use '!accept {0}'.".format(players[0]))
-            else:
-                self.message(self.channel, "\002{0}\002 has challenged anybody willing to fight. To accept, use '!accept {0}'.".format(players[0]))
-
+            self.message(self.channel, "\002{0}\002 has challenged anybody willing to fight{1}. To accept, use '!accept {0}'.".format(players[0]," to the death. The loser will be bant for 20 minutes" if deathmatch else ""))
 
         if openSpots == 1 and len(players) > 1:
             self.message(self.channel, "This fight has an open spot for anybody to join.")
