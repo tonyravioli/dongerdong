@@ -254,6 +254,7 @@ class Donger(BaseClient):
                     
                     balance = stats.wins - (stats.losses + stats.idleouts + (stats.quits*2))
                     score = balance + (stats.fights + stats.accepts + stats.joins) * config['topmodifier']
+                    score +=  (player.savage + player.brutal) * 0.15
                     score = round(score, 2)
 
                     balance = ("+" if balance > 0 else "") + str(balance)
@@ -412,6 +413,7 @@ class Donger(BaseClient):
             
             if 'topmodifier' in config:
                 p[player.nick][1] = (player.fights + player.accepts + player.joins) * config['topmodifier']
+                p[player.nick][1] += (player.brutal + player.savage) * 0.15
                 p[player.nick][1] = round(p[player.nick][1], 2)
         
         p = sorted(p.items(), key=lambda x: x[1][0] + x[1][1])
