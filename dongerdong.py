@@ -254,7 +254,7 @@ class Donger(BaseClient):
                     
                     balance = stats.wins - (stats.losses + stats.idleouts + (stats.quits*2))
                     score = balance + (stats.fights + stats.accepts + stats.joins) * config['topmodifier']
-                    score +=  (player.savage + player.brutal) * 0.15
+                    score +=  (stats.savage + stats.brutal) * 0.15
                     score = round(score, 2)
 
                     balance = ("+" if balance > 0 else "") + str(balance)
