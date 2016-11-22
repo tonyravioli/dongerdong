@@ -790,7 +790,12 @@ class Donger(BaseClient):
             elif (time.time() - self.turnStart > 40) and len(self.turnlist) >= (self.currentTurn + 1) and not self.poke:
                 self.poke = True
                 self.message(self.channel, "Wake up, \002{0}\002!".format(self.turnlist[self.currentTurn]))
-
+    
+    def _send(self, input):
+        super()._send(input)
+        if isinstance(input, str):
+            input = input.encode(self.encoding)
+        self.logger.debug('>> %s', input.decode(self.encoding))
 
     def _create_user(self, nickname):
         super()._create_user(nickname)
