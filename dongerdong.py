@@ -793,16 +793,17 @@ class Donger(BaseClient):
     
     def _send(self, input):
         super()._send(input)
-        if isinstance(input, str):
-            input = input.encode(self.encoding)
-        self.logger.debug('>> %s', input.decode(self.encoding))
+        if not isinstance(input, str):
+            input = input.decode(self.encoding)
+        self.logger.debug('>> %s', input.replace('\r\n', ''))
 
     def _create_user(self, nickname):
         super()._create_user(nickname)
         
         if not self.is_same_nick(self.nickname, nickname):
             if not 'WHOX' in self._isupport:
-                self.whois(nickname)
+                if not '.' in nickname:
+                    self.whois(nickname)
     
     # Saves information in the stats database.
     # nick = case-sensitive nick.
