@@ -14,7 +14,8 @@ import importlib
 import subprocess
 import datetime
 
-logging.basicConfig(level=logging.DEBUG)
+loggingFormat = '%(asctime)s %(levelname)s:%(name)s: %(message)s'
+logging.basicConfig(level=logging.DEBUG, format=loggingFormat)
 
 config = json.load(open("config.json"))
 
