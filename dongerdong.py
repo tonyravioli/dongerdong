@@ -668,9 +668,12 @@ class Donger(BaseClient):
         self.currentTurn = -1
     
     def ascii(self, key, font='smslant', lineformat=""):
-        if not config['show-ascii-art-text']:
-            self.message(self.channel, key)
-            return
+        try:
+            if not config['show-ascii-art-text']:
+                self.message(self.channel, key)
+                return
+        except KeyError:
+            logging.warning("Plz set the show-ascii-art-text config. kthx")
         lines = [lineformat + name for name in Figlet(font).renderText(key).split("\n")[:-1] if name.strip()]
         self.message(self.channel, "\n".join(lines))
 
@@ -814,7 +817,7 @@ class Donger(BaseClient):
         nick = self.users[nick]['account']
         try:
             stat = Statsv2.get(Statsv2.nick == nick)
-        except:
+        except Statsv2.DoesNotExist:
             stat = Statsv2.create(nick=nick, losses=0, quits=0, wins=0, idleouts=0,
                                            accepts=0, fights=0, joins=0,
                                            praises=0, kills=0, savage=0, brutal=0,
