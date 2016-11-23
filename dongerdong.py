@@ -671,7 +671,7 @@ class Donger(BaseClient):
         try:
             if not config['show-ascii-art-text']:
                 self.message(self.channel, key)
-                return
+                return ''
         except KeyError:
             logging.warning("Plz set the show-ascii-art-text config. kthx")
         lines = [lineformat + name for name in Figlet(font).renderText(key).split("\n")[:-1] if name.strip()]
