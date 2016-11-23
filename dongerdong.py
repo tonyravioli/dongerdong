@@ -162,6 +162,8 @@ class Donger(BaseClient):
                     
                     self.heal(source)
                 elif command == "ascii" and not self.gameRunning:
+                    if not args:
+                        return self.message(self.channel, "Please use some text, like !ascii fuck you")
                     if args and len(' '.join(args)) < 16:
                         self.message(target, self.ascii(' '.join(args)))
                     else:
