@@ -1,6 +1,6 @@
 DongerDong
 =================
-What started as *"A simple IRC bot for fighting, written in Python"*, has grown to become the most comprehensive and flexible collection of code ever written.
+What started as *"A simple IRC bot for fighting, written in Python"* has grown to become the most comprehensive and flexible collection of code ever written.
 
 Official IRC Channel: **#donger** on Freenode  
 Development Channel: **#donger-dev** on Freenode
@@ -29,7 +29,7 @@ Configuration Notes
  * `auxchans` are additional, non-fighting channels the bot joins on connect. These channels have access to fewer commands, and messages to them are limited by a (basic) flood control system. Enter channels in the format `["#channel1","#channel2"]`, etc.
  * `extendedcommands` references files of the same name in the "extcmd" folder. Try adding `"update"` to enable the update.py extended command.
  * `topmodifier` changes the way players are ranked depending on how many fights they've participated in. Defaults to 0.05.
- * `admins` specifies the usernames of people with additional permissions - like !join, !part, and (if enabled through extcmds) !update.
+ * `admins` specifies the usernames of people with additional permissions - like !join, !part, and (if enabled through extended commands) !update.
  * `stats-url` is optional and can be removed entirely if you don't have a URL where statistics are displayed (the Supreme Dongerdong's statistics page is set as default, but will *not* display statistics from your instance).
  * `show-ascii-art-text` is an accessibility feature. When set to false, it does not send ASCII text art to channels, instead printing the text normally.
 
