@@ -14,7 +14,8 @@ import importlib
 import subprocess
 import datetime
 
-logging.basicConfig(level=logging.DEBUG)
+loggingFormat = '%(asctime)s %(levelname)s:%(name)s: %(message)s'
+logging.basicConfig(level=logging.DEBUG, format=loggingFormat)
 
 config = json.load(open("config.json"))
 
@@ -30,14 +31,14 @@ class Donger(BaseClient):
         self.pendingFights = {} # Pending (not !accepted) fights. ({'player': {'ts': 123, 'deathmatch': False, 'versusone': False, 'players': [...], 'pendingaccept': [...]}, ...}
         
         # Game vars (Reset these in self.win)
-        # Alrighty then, let's try adding defense
         self.deathmatch = False
         self.gameRunning = False
         self.turnStart = 0
-        self.players = {} # Players. {'polsaker': {'hp': 100, 'heals': 5, 'zombie': False, 'praised': False, 'gdr': 1}, ...}
+	self.players = {} # Players. {'polsaker': {'hp': 100, 'heals': 5, 'zombie': False, 'praised': False, 'gdr': 1}, ...}
+	gdrmodifier = 1 #Modifier for damage reduction adjustment, increase for higher defense, decrease for lower defense
         self.turnlist = [] # Same as self.players, but only the player nicks. Shuffled when the game starts (used to decide turn orders)
         self.currentTurn = -1 # current turn = turnlist[currentTurn]
-        self.gdrmodifier = 1 #Modifier for damage reduction adjustment, increase for higher defense, decrease for lower defense
+        
         self.channel = config['channel'] # Main fight channel
         self.currentchannels = [] # List of current channels the bot is in
         self.lastheardfrom = {} # lastheardfrom['Polsaker'] = time.time()
@@ -162,6 +163,8 @@ class Donger(BaseClient):
                     
                     self.heal(source)
                 elif command == "ascii" and not self.gameRunning:
+                    if not args:
+                        return self.message(self.channel, "Please use some text, like !ascii fuck you")
                     if args and len(' '.join(args)) < 16:
                         self.message(target, self.ascii(' '.join(args)))
                     else:
@@ -318,7 +321,7 @@ class Donger(BaseClient):
                     health = int(sum(alivePlayers) / len(alivePlayers))
                     self.countStat(source, "joins")
                     self.turnlist.append(source)
-                    self.players[source.lower()] = {'hp': health, 'heals': 4, 'zombie': False, 'nick': source, 'praised': False, 'gdr': 1}
+		    self.players[source.lower()] = {'hp': health, 'heals': 4, 'zombie': False, 'nick': source, 'praised': False, 'gdr': 1}
                     self.message(self.channel, "\002{0}\002 JOINS THE FIGHT (\002{1}\002HP)".format(source.upper(), health))
                     self.set_mode(self.channel, "+v", source)
 
@@ -501,13 +504,15 @@ class Donger(BaseClient):
             if not critical: # if it isn't an artificial crit, shout
                 self.ascii("CRITICAL")
         else:
-            if not self.players[target.lower()]['gdr'] == 1:
-                damage = int(damage/(self.players[target.lower()]['gdr'] * self.gdrmodifier))
+             if not self.players[target.lower()]['gdr'] == 1:
+                 damage = int(damage/(self.players[target.lower()]['gdr'] * self.gdrmodifier))
+        
         # In case player is hitting themselves
         sourcehealth = self.players[source.lower()]['hp']
+        
         self.players[source.lower()]['heals'] = 5
         self.players[target.lower()]['hp'] -= damage
-        self.players[target.lower()]['gdr'] += 1
+	self.players[target.lower()]['gdr'] += 1
 
         self.message(self.channel, "\002{0}\002 (\002{1}\002HP) deals \002{2}\002 damage to \002{3}\002 (\002{4}\002HP)".format(
                     source, sourcehealth, damage, target, self.players[target.lower()]['hp']))
@@ -566,15 +571,15 @@ class Donger(BaseClient):
                 self.message(self.channel, "Use !praise [nick] to praise to the donger gods (once per game).")
 
         self.message(self.channel, " ")
-        
-        self.countStat(pendingFight['players'][0], "fights")
+        if (pendingFight['players'][1] != config['nick'] and len(pendingFight['players']) != 2):
+            self.countStat(pendingFight['players'][0], "fights")
         [self.countStat(pl, "accepts") for pl in pendingFight['players'][1:]]
         
         # Set up the fight
         for player in pendingFight['players']:
             if self.deathmatch:
                 self.countStat(player, "deathmatches")
-            self.players[player.lower()] = {'hp': 100, 'heals': 4, 'zombie': False, 'nick': player, 'praised': False, 'gdr': 1}
+	    self.players[player.lower()] = {'hp': 100, 'heals': 4, 'zombie': False, 'nick': player, 'praised': False, 'gdr': 1}
             self.turnlist.append(player)
         
         random.shuffle(self.turnlist)
@@ -610,7 +615,6 @@ class Donger(BaseClient):
             self.turnStart = time.time()
             self.poke = False
             self.message(self.channel, "It's \002{0}\002's turn.".format(self.turnlist[self.currentTurn]))
-            self.players[self.turnlist[self.currentTurn].lower()]['gdr'] = 1
             if self.turnlist[self.currentTurn] == config['nick']:
                 self.processAI()
         else: # It's dead, try again.
@@ -671,9 +675,12 @@ class Donger(BaseClient):
         self.currentTurn = -1
     
     def ascii(self, key, font='smslant', lineformat=""):
-        if not config['show-ascii-art-text']:
-            self.message(self.channel, key)
-            return
+        try:
+            if not config['show-ascii-art-text']:
+                self.message(self.channel, key)
+                return ''
+        except KeyError:
+            logging.warning("Plz set the show-ascii-art-text config. kthx")
         lines = [lineformat + name for name in Figlet(font).renderText(key).split("\n")[:-1] if name.strip()]
         self.message(self.channel, "\n".join(lines))
 
@@ -793,14 +800,20 @@ class Donger(BaseClient):
             elif (time.time() - self.turnStart > 40) and len(self.turnlist) >= (self.currentTurn + 1) and not self.poke:
                 self.poke = True
                 self.message(self.channel, "Wake up, \002{0}\002!".format(self.turnlist[self.currentTurn]))
-
+    
+    def _send(self, input):
+        super()._send(input)
+        if not isinstance(input, str):
+            input = input.decode(self.encoding)
+        self.logger.debug('>> %s', input.replace('\r\n', ''))
 
     def _create_user(self, nickname):
         super()._create_user(nickname)
         
         if not self.is_same_nick(self.nickname, nickname):
             if not 'WHOX' in self._isupport:
-                self.whois(nickname)
+                if not '.' in nickname:
+                    self.whois(nickname)
     
     # Saves information in the stats database.
     # nick = case-sensitive nick.
@@ -811,7 +824,7 @@ class Donger(BaseClient):
         nick = self.users[nick]['account']
         try:
             stat = Statsv2.get(Statsv2.nick == nick)
-        except:
+        except Statsv2.DoesNotExist:
             stat = Statsv2.create(nick=nick, losses=0, quits=0, wins=0, idleouts=0,
                                            accepts=0, fights=0, joins=0,
                                            praises=0, kills=0, savage=0, brutal=0,
