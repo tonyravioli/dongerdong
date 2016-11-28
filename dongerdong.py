@@ -34,8 +34,8 @@ class Donger(BaseClient):
         self.deathmatch = False
         self.gameRunning = False
         self.turnStart = 0
-	self.players = {} # Players. {'polsaker': {'hp': 100, 'heals': 5, 'zombie': False, 'praised': False, 'gdr': 1}, ...}
-	gdrmodifier = 1 #Modifier for damage reduction adjustment, increase for higher defense, decrease for lower defense
+        self.players = {} # Players. {'polsaker': {'hp': 100, 'heals': 5, 'zombie': False, 'praised': False, 'gdr': 1}, ...}
+        gdrmodifier = 1 #Modifier for damage reduction adjustment, increase for higher defense, decrease for lower defense
         self.turnlist = [] # Same as self.players, but only the player nicks. Shuffled when the game starts (used to decide turn orders)
         self.currentTurn = -1 # current turn = turnlist[currentTurn]
         
@@ -321,7 +321,7 @@ class Donger(BaseClient):
                     health = int(sum(alivePlayers) / len(alivePlayers))
                     self.countStat(source, "joins")
                     self.turnlist.append(source)
-		    self.players[source.lower()] = {'hp': health, 'heals': 4, 'zombie': False, 'nick': source, 'praised': False, 'gdr': 1}
+                    self.players[source.lower()] = {'hp': health, 'heals': 4, 'zombie': False, 'nick': source, 'praised': False, 'gdr': 1}
                     self.message(self.channel, "\002{0}\002 JOINS THE FIGHT (\002{1}\002HP)".format(source.upper(), health))
                     self.set_mode(self.channel, "+v", source)
 
@@ -512,7 +512,7 @@ class Donger(BaseClient):
         
         self.players[source.lower()]['heals'] = 5
         self.players[target.lower()]['hp'] -= damage
-	self.players[target.lower()]['gdr'] += 1
+        self.players[target.lower()]['gdr'] += 1
 
         self.message(self.channel, "\002{0}\002 (\002{1}\002HP) deals \002{2}\002 damage to \002{3}\002 (\002{4}\002HP)".format(
                     source, sourcehealth, damage, target, self.players[target.lower()]['hp']))
@@ -579,7 +579,7 @@ class Donger(BaseClient):
         for player in pendingFight['players']:
             if self.deathmatch:
                 self.countStat(player, "deathmatches")
-	    self.players[player.lower()] = {'hp': 100, 'heals': 4, 'zombie': False, 'nick': player, 'praised': False, 'gdr': 1}
+            self.players[player.lower()] = {'hp': 100, 'heals': 4, 'zombie': False, 'nick': player, 'praised': False, 'gdr': 1}
             self.turnlist.append(player)
         
         random.shuffle(self.turnlist)
