@@ -35,7 +35,7 @@ class Donger(BaseClient):
         self.gameRunning = False
         self.turnStart = 0
         self.players = {} # Players. {'polsaker': {'hp': 100, 'heals': 5, 'zombie': False, 'praised': False, 'gdr': 1}, ...}
-        gdrmodifier = 1 #Modifier for damage reduction adjustment, increase for higher defense, decrease for lower defense
+        self.gdrmodifier = 1 #Modifier for damage reduction adjustment, increase for higher defense, decrease for lower defense
         self.turnlist = [] # Same as self.players, but only the player nicks. Shuffled when the game starts (used to decide turn orders)
         self.currentTurn = -1 # current turn = turnlist[currentTurn]
         
