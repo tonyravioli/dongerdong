@@ -615,6 +615,7 @@ class Donger(BaseClient):
             self.turnStart = time.time()
             self.poke = False
             self.message(self.channel, "It's \002{0}\002's turn.".format(self.turnlist[self.currentTurn]))
+            self.players[self.turnlist[self.currentTurn].lower()]['gdr'] = 1
             if self.turnlist[self.currentTurn] == config['nick']:
                 self.processAI()
         else: # It's dead, try again.
