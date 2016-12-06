@@ -571,7 +571,7 @@ class Donger(BaseClient):
                 self.message(self.channel, "Use !praise [nick] to praise to the donger gods (once per game).")
 
         self.message(self.channel, " ")
-        if (pendingFight['players'][1] != config['nick'] and len(pendingFight['players']) != 2):
+        if not (pendingFight['players'][1] == config['nick'] and len(pendingFight['players']) == 2):
             self.countStat(pendingFight['players'][0], "fights")
         [self.countStat(pl, "accepts") for pl in pendingFight['players'][1:]]
         
