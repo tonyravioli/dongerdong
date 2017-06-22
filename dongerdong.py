@@ -712,7 +712,7 @@ class Donger(BaseClient):
                 openSpots += 1
                 continue
             
-            if player not in self.channels[self.channel]['users']:
+            if player.lower() not in map(str.lower, self.channels[self.channel]['users']):
                 self.message(self.channel, "\002{0}\002 is not in the channel.".format(player))
                 return
 
