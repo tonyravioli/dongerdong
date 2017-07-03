@@ -555,7 +555,7 @@ class Donger(BaseClient):
         
         self.set_mode(self.channel, "+m")
         if self.deathmatch:
-            self.ascii("DEATHMATCH", lineformat="\00304")
+            self.ascii("DEATHMATCH", font="fire_font-s", lineformat="\00304")
             
         if len(pendingFight['players']) == 2:
             self.ascii(" V. ".join(pendingFight['players']).upper(), "straight")
