@@ -212,10 +212,10 @@ class Donger(BaseClient):
                 elif command == "cancel" and not self.gameRunning:
                     try:
                         del self.pendingFights[source.lower()]
+                        self.message(target, "Fight cancelled.")
                     except KeyError:
                         self.message(target, "You can only !cancel if you started a fight.")
-                    finally:
-                        self.message(target, "Fight cancelled.")
+                        return
                 elif command == "reject" and not self.gameRunning:
                     if not args:
                         self.message(target, "Can you read? It's !reject <nick>")
