@@ -287,9 +287,8 @@ class Donger(BaseClient):
                                     stats.losses, balance, stats.quits, stats.idleouts, stats.praises, 
                                     stats.fights, stats.accepts, stats.joins, 
                                     (stats.fights + stats.accepts + stats.joins), stats.kills, score, ranking))
-                elif command == "top" and not self.gameRunning:
-                    p = self.top_dongers()
-                    
+                elif command in ("top", "shame") and not self.gameRunning:
+                    p = self.top_dongers((command == "shame"))
                     if not p:
                         return self.message(target, "No top dongers.")
                     c = 1
@@ -404,7 +403,7 @@ class Donger(BaseClient):
         if self.gameRunning and channel == self.channel:
             self.cowardQuit(user)
     
-    def top_dongers(self):
+    def top_dongers(self, bottom=False):
         players = Statsv2.select()
         p = {}
 
@@ -420,9 +419,9 @@ class Donger(BaseClient):
                 p[player.nick][1] = (player.fights + player.accepts + player.joins) * config['topmodifier']
                 p[player.nick][1] += (player.brutal + player.savage) * 0.15
                 p[player.nick][1] = round(p[player.nick][1], 2)
-        
         p = sorted(p.items(), key=lambda x: x[1][0] + x[1][1])
-        p.reverse()
+        if not bottom:
+            p.reverse()
         return p
 
     
