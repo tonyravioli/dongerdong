@@ -469,12 +469,14 @@ class Donger(BaseClient):
             self.message(self.channel, "You can't heal this turn (but it's still your turn)")
             return
         
+        # The max amount of HP you can recover in a single turn depends on how many times you've
+        # healed since !hitting. The max number goes down, until you're forced to hit.
         healing = random.randint(22, 44 - (5-self.players[target.lower()]['heals'])*4)
         
         if critical: # If critical heal, override upper healing limit (re roll)
             healing = random.randint(44, 88) # (regular healing*2)
         
-        if (healing + self.players[target.lower()]['hp']) > 100:
+        if (healing + self.players[target.lower()]['hp']) > 100: # If healing would bring the player over 100 HP, just set it to 100 HP
             self.players[target.lower()]['hp'] = 100
         else:
             self.players[target.lower()]['hp'] += healing
@@ -501,7 +503,7 @@ class Donger(BaseClient):
             return
         if critroll == 1:
             damage *= 2 
-            if not critical: # if it isn't an artificial crit, shout
+            if not critical: # If it's not a forced critical hit (via !praise), then announce the critical
                 self.ascii("CRITICAL")
         else:
              if not self.players[target.lower()]['gdr'] == 1:
