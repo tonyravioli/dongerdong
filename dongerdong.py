@@ -288,7 +288,7 @@ class Donger(BaseClient):
                                     stats.fights, stats.accepts, stats.joins, 
                                     (stats.fights + stats.accepts + stats.joins), stats.kills, score, ranking))
                 elif command in ("top", "shame") and not self.gameRunning:
-                    p = self.top_dongers((command == "shame"))
+                    p = self.top_dongers((command == "shame")) # If command == shame, then we're passing "True" into the top_dongers function below (in the "bottom" argument), overriding the default False
                     if not p:
                         return self.message(target, "No top dongers.")
                     c = 1
@@ -531,6 +531,7 @@ class Donger(BaseClient):
         if self.players[victim.lower()]['hp'] <= -40:
             self.ascii("SAVAGE")
             self.countStat(slayer, "savage")
+
         self.ascii("REKT" if random.randint(0, 39) else "RELT") # Because 0 is false. The most beautiful line ever written.
 
         self.players[victim.lower()]['hp'] = -1
@@ -737,10 +738,10 @@ class Donger(BaseClient):
                 'players': [players[0]]
             }
         
-        if config['nick'] in players:
-            if versusone:
+        if config['nick'] in players: # If a user is requesting the bot participate in a fight...
+            if versusone: # If it's a duel or deathmatch, refuse
                 return self.message(self.channel, "{0} is not available for duels or deathmatches".format(config['nick']))
-            if (time.time() - self.lastbotfight < 30):
+            if (time.time() - self.lastbotfight < 30): # Prevent the bot from fighting with someone within 30 seconds of its last fight with someone. Trying to stop people from taking over the channel
                 return self.message(self.channel, "{0} needs a 30 second break before participating in a fight.".format(config['nick']))
             self.message(self.channel, "YOU WILL SEE")
             self.pendingFights[players[0].lower()]['pendingaccept'].remove(config['nick'].lower())
@@ -751,7 +752,8 @@ class Donger(BaseClient):
                 return
             players.remove(config['nick'])
             
-        players[:] = [x for x in players if x != '*']
+        players[:] = [x for x in players if x != '*'] # This magically makes it so you can issue a wildcard challenge to anyone. No one knows how this works but we stopped asking questions long ago.
+
         if len(players) > 1:
             if deathmatch:
                 self.message(self.channel, "{0}: \002{1}\002 challenged you to a deathmatch. The loser will be bant for 20 minutes. To accept, use '!accept {1}'.".format(", ".join(players[1:]), players[0]))
