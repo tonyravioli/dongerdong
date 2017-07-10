@@ -308,7 +308,7 @@ class Donger(BaseClient):
 
             elif target == config['nick']: # private message
                 if command == "join" and self.gameRunning and not self.deathmatch:
-                    if self.players.get(source):
+                    if self.players.get(source.lower()):
                         self.notice(source, "You already played in this game.")
                         return
                     
