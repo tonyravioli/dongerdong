@@ -193,8 +193,8 @@ class Donger(BaseClient):
                     praiseroll = random.randint(1, 3)
                     self.players[source.lower()]['praised'] = True
                     
-                    if ptarget.lower() == config['nick'].lower():
-                        self.message(target, "You try and suckle my donger while fighting me?")
+                    if config['nick'] in self.turnlist:
+                        self.message(target, "You DARE try and suckle my donger while fighting me?!")
                         praiseroll = 2
                         ptarget = self.players[source.lower()]['nick']
 
