@@ -37,6 +37,7 @@ class Donger(BaseClient):
         self.players = {} # Players. {'polsaker': {'hp': 100, 'heals': 5, 'zombie': False, 'praised': False, 'gdr': 1}, ...}
         self.gdrmodifier = 1 #Modifier for damage reduction adjustment, increase for higher defense, decrease for lower defense
         self.turnlist = [] # Same as self.players, but only the player nicks. Shuffled when the game starts (used to decide turn orders)
+        self.accountlist = []  # list of accounts of every player that joined the current fight
         self.currentTurn = -1 # current turn = turnlist[currentTurn]
         
         self.channel = config['channel'] # Main fight channel
@@ -308,14 +309,18 @@ class Donger(BaseClient):
 
             elif target == config['nick']: # private message
                 if command == "join" and self.gameRunning and not self.deathmatch:
-                    if self.players.get(source.lower()):
+                    try:
+                        self.users[source]['account']
+                    except KeyError:  # ????
+                        return self.notice(source, "You don't exist. Try leaving and joining the channel again.")
+                    if self.users[source]['account'] in self.accountlist:
                         self.notice(source, "You already played in this game.")
                         return
                     
                     if self.versusone:
                         self.notice(source, "You can't join this fight")
                         return
-                    
+                    self.accountlist.append(self.users[source]['account'])
                     alivePlayers = [self.players[player]['hp'] for player in self.players if self.players[player]['hp'] > 0]
                     health = int(sum(alivePlayers) / len(alivePlayers))
                     self.countStat(source, "joins")
@@ -582,6 +587,7 @@ class Donger(BaseClient):
         for player in pendingFight['players']:
             if self.deathmatch:
                 self.countStat(player, "deathmatches")
+            self.accountlist.append(self.users[player.lower()]['account'])
             self.players[player.lower()] = {'hp': 100, 'heals': 4, 'zombie': False, 'nick': player, 'praised': False, 'gdr': 1}
             self.turnlist.append(player)
         
@@ -737,7 +743,7 @@ class Donger(BaseClient):
                 'deathmatch': deathmatch,
                 'versusone': versusone,
                 'pendingaccept': [x.lower() for x in players[1:]],
-                'players': [players[0]]
+                'players': [players[0]],
             }
         
         if config['nick'] in players: # If a user is requesting the bot participate in a fight...
@@ -826,7 +832,10 @@ class Donger(BaseClient):
     #         fights/accepts/joins
     #         praises
     def countStat(self, nick, stype):
-        nick = self.users[nick]['account']
+        try:
+            nick = self.users[nick]['account']
+        except KeyError: # User vanished from earth
+            return
         try:
             stat = Statsv2.get(Statsv2.nick == nick)
         except Statsv2.DoesNotExist:
