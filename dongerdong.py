@@ -565,7 +565,7 @@ class Donger(BaseClient):
             self.ascii("DEATHMATCH", font="fire_font-s", lineformat="\00304")
             
         if len(pendingFight['players']) == 2:
-            self.ascii(" V. ".join(pendingFight['players']).upper(), "straight")
+            self.ascii(" VS ".join(pendingFight['players']).upper(), "straight")
         
         self.message(self.channel, "RULES:")
         self.message(self.channel, "1. Wait your turn. One person at a time.")
