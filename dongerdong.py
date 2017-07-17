@@ -576,7 +576,7 @@ class Donger(BaseClient):
         if not self.deathmatch:
             self.message(self.channel, "Use '/msg {0} !join' to join a game mid-fight.".format(config['nick']))
             if config['nick'] not in pendingFight['players'] or len(pendingFight['players']) > 2:
-                self.message(self.channel, "Use !praise [nick] to praise to the donger gods (once per game).")
+                self.message(self.channel, "Use !praise [nick] to praise the donger gods (once per game).")
 
         self.message(self.channel, " ")
         if not (pendingFight['players'][1] == config['nick'] and len(pendingFight['players']) == 2):
