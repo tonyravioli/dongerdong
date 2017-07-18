@@ -573,7 +573,7 @@ class Donger(BaseClient):
         self.message(self.channel, " ")
         self.message(self.channel, "Use !hit [nick] to strike.")
         self.message(self.channel, "Use !heal to heal yourself.")
-        if not self.deathmatch:
+        if not self.versusone: # Users can't join a fight if it's versusone (duel or deathmatch)
             self.message(self.channel, "Use '/msg {0} !join' to join a game mid-fight.".format(config['nick']))
             if config['nick'] not in pendingFight['players'] or len(pendingFight['players']) > 2:
                 self.message(self.channel, "Use !praise [nick] to praise the donger gods (once per game).")
