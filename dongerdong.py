@@ -308,7 +308,7 @@ class Donger(BaseClient):
                         pass
 
             elif target == config['nick']: # private message
-                if command == "join" and self.gameRunning and not self.deathmatch:
+                if command == "join" and self.gameRunning and not self.versusone:
                     try:
                         self.users[source]['account']
                     except KeyError:  # ????
@@ -317,9 +317,6 @@ class Donger(BaseClient):
                         self.notice(source, "You already played in this game.")
                         return
                     
-                    if self.versusone:
-                        self.notice(source, "You can't join this fight")
-                        return
                     self.accountlist.append(self.users[source]['account'])
                     alivePlayers = [self.players[player]['hp'] for player in self.players if self.players[player]['hp'] > 0]
                     health = int(sum(alivePlayers) / len(alivePlayers))
@@ -328,6 +325,9 @@ class Donger(BaseClient):
                     self.players[source.lower()] = {'hp': health, 'heals': 4, 'zombie': False, 'nick': source, 'praised': False, 'gdr': 1}
                     self.message(self.channel, "\002{0}\002 JOINS THE FIGHT (\002{1}\002HP)".format(source.upper(), health))
                     self.set_mode(self.channel, "+v", source)
+                elif self.versusone:
+                    self.notice(source, "You can't join this fight")
+                    return
 
             #Rate limiting
             try:
@@ -499,7 +499,7 @@ class Donger(BaseClient):
         critroll = random.randint(1, 12) if not critical else 1
         
         damage = random.randint(18, 35)
-        
+
         if instaroll == 1:
             self.ascii("INSTAKILL", lineformat="\00304")
             # remove player
