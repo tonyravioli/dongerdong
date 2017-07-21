@@ -325,7 +325,7 @@ class Donger(BaseClient):
                     self.players[source.lower()] = {'hp': health, 'heals': 4, 'zombie': False, 'nick': source, 'praised': False, 'gdr': 1}
                     self.message(self.channel, "\002{0}\002 JOINS THE FIGHT (\002{1}\002HP)".format(source.upper(), health))
                     self.set_mode(self.channel, "+v", source)
-                elif self.versusone:
+                elif command == "join" and self.versusone:
                     self.notice(source, "You can't join this fight")
                     return
 
@@ -349,13 +349,14 @@ class Donger(BaseClient):
                 self.message(target, "┌༼ຈل͜ຈ༽┐ ʟᴏᴡᴇʀ ʏᴏᴜʀ ᴅᴏɴɢᴇʀs ┌༼ຈل͜ຈ༽┐")
             elif command == "help":
                 self.message(target, "PM'd you my commands.")
+                self.message(source, "  More commands available at http://bit.ly/1pG2Hay")
                 self.message(source, "Commands available only in {0}:".format(self.channel))
                 self.message(source, "  !fight <nickname> [othernicknames]: Challenge another player")
                 self.message(source, "  !duel <nickname>: Same as fight, but only 1v1.")
                 self.message(source, "  !deathmatch <nickname>: Same as duel, but the loser is bant for 20 minutes.")
-                self.message(source, "  !ascii <text>: Turns any text 13 characters or less into ascii art")
+                self.message(source, "  !ascii <text>: Turns any text 15 characters or less into ascii art")
                 self.message(source, "  !cancel: Cancels a !fight")
-                self.message(source, "  !reject <nick>: Cowardly rejects a !fight")
+                self.message(source, "  !reject <nick>: Rejects a !fight")
                 self.message(source, "  !stats [player]: Outputs player's game stats (or your own stats)")
                 self.message(source, "  !top: Shows the three players with most wins")
                 self.message(source, "Commands available everywhere:")
