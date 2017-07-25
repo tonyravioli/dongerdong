@@ -793,7 +793,7 @@ class Donger(BaseClient):
                         del self.pendingFights[i]
                 continue
             
-            if (time.time() - self.turnStart > 60) and len(self.turnlist) >= (self.currentTurn + 1):
+            if (time.time() - self.turnStart > 50) and len(self.turnlist) >= (self.currentTurn + 1):
                 self.message(self.channel, "\002{0}\002 forfeits due to idle.".format(self.turnlist[self.currentTurn]))
                 self.players[self.turnlist[self.currentTurn].lower()]['hp'] = -1
                 self.countStat(self.turnlist[self.currentTurn], "idleouts")
@@ -810,7 +810,7 @@ class Donger(BaseClient):
                     self.win(survivor, False)
                 else:
                     self.getTurn()
-            elif (time.time() - self.turnStart > 40) and len(self.turnlist) >= (self.currentTurn + 1) and not self.poke:
+            elif (time.time() - self.turnStart > 30) and len(self.turnlist) >= (self.currentTurn + 1) and not self.poke:
                 self.poke = True
                 self.message(self.channel, "Wake up, \002{0}\002!".format(self.turnlist[self.currentTurn]))
     
