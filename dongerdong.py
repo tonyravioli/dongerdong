@@ -684,6 +684,7 @@ class Donger(BaseClient):
         self.turnStart = 0
         self.players = {}
         self.turnlist = []
+        self.accountlist = []
         self.currentTurn = -1
     
     def ascii(self, key, font='smslant', lineformat=""):
