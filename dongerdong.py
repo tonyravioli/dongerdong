@@ -590,7 +590,7 @@ class Donger(BaseClient):
             if self.deathmatch:
                 self.countStat(player, "deathmatches")
             self.accountlist.append(self.users[player.lower()]['account'])
-            self.players[player.lower()] = {'hp': 100, 'heals': 4, 'zombie': False, 'nick': player, 'praised': False, 'gdr': 1}
+            self.players[player.lower()] = {'hp': 100, 'heals': 5, 'zombie': False, 'nick': player, 'praised': False, 'gdr': 1}
             self.turnlist.append(player)
         
         random.shuffle(self.turnlist)
