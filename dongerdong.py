@@ -881,7 +881,7 @@ class Donger(BaseClient):
     def countStat(self, nick, stype, add=1):
         if not self.deathmatch and not self.versusone:
             return
-            
+
         try:
             nick = self.users[nick]['account']
         except KeyError:  # User vanished from earth
@@ -1007,6 +1007,12 @@ class GameStats(BaseModel):
 
 PlayerStats.create_table(True)
 GameStats.create_table(True)
+
+try:
+    PlayerStats.custom_init()
+    GameStats.custom_init()
+except:
+    pass
 
 
 client = Donger(config['nick'], sasl_username=config['nickserv_username'],
