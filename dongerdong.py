@@ -879,6 +879,9 @@ class Donger(BaseClient):
     #         fights/accepts/joins
     #         praises
     def countStat(self, nick, stype, add=1):
+        if not self.deathmatch and not self.versusone:
+            return
+            
         try:
             nick = self.users[nick]['account']
         except KeyError:  # User vanished from earth
