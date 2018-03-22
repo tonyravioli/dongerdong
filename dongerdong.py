@@ -937,7 +937,7 @@ class BaseModel(peewee.Model):
 
 
 class PlayerStats(BaseModel):
-    name = peewee.CharField(unique=True)
+    name = peewee.CharField()
 
     turns = peewee.IntegerField(default=0)
     hits = peewee.IntegerField(default=0)
@@ -1001,7 +1001,7 @@ class GameStats(BaseModel):
 
     @classmethod
     def custom_init(cls):
-        database.execute_sql('create unique index if not exists gamestats_unique '
+        database.execute_sql('create index if not exists gamestats_unique '
                              'on gamestats(player1 collate nocase, player2 collate nocase)', {})
 
 
