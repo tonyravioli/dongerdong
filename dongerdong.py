@@ -701,8 +701,8 @@ class Donger(BaseClient):
         if self.deathmatch or self.versusone:
             self.currgamerecord.save()
             # calculate ELO
-            player1 = PlayerStats.get(PlayerStats.name ** winner.lower())
-            player2 = PlayerStats.get(PlayerStats.name ** losers[0].lower())
+            player1 = PlayerStats.get(PlayerStats.name == winner)
+            player2 = PlayerStats.get(PlayerStats.name == losers[0])
 
             r1 = 10 ** (player1.elo / 400)
             r2 = 10 ** (player2.elo / 400)
@@ -961,6 +961,11 @@ class PlayerStats(BaseModel):
         self.lastplayed = datetime.datetime.now()
         return super(PlayerStats, self).save(*args, **kwargs)
 
+    @classmethod
+    def custom_init(cls):
+        database.execute_sql('create unique index if not exists playerstats_unique '
+                             'on playerstats(name collate nocase)', {})
+
 
 class GameStats(BaseModel):
     time = peewee.DateTimeField(default=datetime.datetime.now)
@@ -990,6 +995,11 @@ class GameStats(BaseModel):
 
     player1_crits = peewee.IntegerField(default=0)
     player2_crits = peewee.IntegerField(default=0)
+
+    @classmethod
+    def custom_init(cls):
+        database.execute_sql('create unique index if not exists gamestats_unique '
+                             'on gamestats(player1 collate nocase, player2 collate nocase)', {})
 
 
 PlayerStats.create_table(True)
