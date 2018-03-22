@@ -701,8 +701,8 @@ class Donger(BaseClient):
         if self.deathmatch or self.versusone:
             self.currgamerecord.save()
             # calculate ELO
-            player1 = PlayerStats.get(PlayerStats.name == winner)
-            player2 = PlayerStats.get(PlayerStats.name == losers[0])
+            player1 = PlayerStats.get(PlayerStats.name == self.users[winner]['account'])
+            player2 = PlayerStats.get(PlayerStats.name == self.users[losers[0]]['account'])
 
             r1 = 10 ** (player1.elo / 400)
             r2 = 10 ** (player2.elo / 400)
