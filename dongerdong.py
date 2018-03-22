@@ -401,7 +401,7 @@ class Donger(BaseClient):
             self.cowardQuit(user)
 
     def top_dongers(self, bottom=False):
-        players = PlayerStats.select().where((PlayerStats.matches + PlayerStats.deathmatches) >= 5)
+        players = PlayerStats.select().where((PlayerStats.matches + PlayerStats.deathmatches) >= 15)
 
         if bottom:
             players = players.order_by(PlayerStats.elo.asc())
@@ -717,8 +717,8 @@ class Donger(BaseClient):
                 k1 += 5
                 k2 += 5
 
-            player1.elo = player1.elo + k1 * (1 - e1)
-            player2.elo = player2.elo + k2 * (0 - e2)
+            player1.elo = int(round(player1.elo + k1 * (1 - e1), 0))
+            player2.elo = int(round(player2.elo + k2 * (0 - e2), 0))
             player1.save()
             player2.save()
 
