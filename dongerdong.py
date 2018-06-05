@@ -280,12 +280,22 @@ class Donger(BaseClient):
                         ranking = "Ranked \002\003063rd\003\002"
                     else:
                         ranking = "Ranked \002{}th\002".format(ranking)
+                    try:
+                        d0 = stats.lastplayed.date()
+                        today = datetime.datetime.now().date()
+                        delta = today - d0
+                        #self.message(target, "the days are {}".format(delta.days))
+                        aelo = stats.elo - (int(delta.days)*2)
+                    except:
+                        self.message(target, "exception 1331589151jvlhjv")
+
+
 
                     self.message(target, "\002{0}\002's stats: \002{1}\002 wins, \002{2}\002 losses, \002{4}\002 coward quits, \002{5}\002 idle-outs (\002{3}\002), "
                                          "\002{6}\002 !praises, \002{7}\002 matches, \002{8}\002 deathmatches (\002{9}\002 total). "
                                          "{11} (\002{10}\002 points)"
                                          .format(stats.name, stats.wins, stats.losses, balance, stats.quits, stats.idleouts, stats.praises,
-                                                 stats.matches, stats.deathmatches, (stats.matches + stats.deathmatches), stats.elo, ranking))
+                                                 stats.matches, stats.deathmatches, (stats.matches + stats.deathmatches), aelo, ranking))
                 elif command in ("top", "shame") and not self.gameRunning:
                     p = self.top_dongers((command == "shame")).limit(5)  # If command == shame, then we're passing "True" into the top_dongers function below (in the "bottom" argument), overriding the default False
                     if not p:
@@ -402,7 +412,6 @@ class Donger(BaseClient):
 
     def top_dongers(self, bottom=False):
         players = PlayerStats.select().where((PlayerStats.matches + PlayerStats.deathmatches) >= 15)
-
         if bottom:
             players = players.order_by(PlayerStats.elo.asc())
         else:
@@ -490,8 +499,7 @@ class Donger(BaseClient):
     def hit(self, source, target, critical=False):
         # Rolls.
         instaroll = random.randint(1, 75) if not self.versusone else 666
-        critroll = random.randint(1, 12) if not critical else 1
-
+        critroll = random.randint(1, 12) if not critical else 5
         damage = random.randint(18, 35)
 
         if instaroll == 1:
@@ -500,7 +508,7 @@ class Donger(BaseClient):
             self.death(target, source)
             self.getTurn()
             return
-        if critroll == 1:
+        if critroll == 5:
             damage *= 2
             if not critical:  # If it's not a forced critical hit (via !praise), then announce the critical
                 self.ascii("CRITICAL")
