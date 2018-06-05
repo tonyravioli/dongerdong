@@ -499,7 +499,7 @@ class Donger(BaseClient):
     def hit(self, source, target, critical=False):
         # Rolls.
         instaroll = random.randint(1, 75) if not self.versusone else 666
-        critroll = random.randint(1, 12) if not critical else 5
+        critroll = random.randint(1, 12) if not critical else 1
         damage = random.randint(18, 35)
 
         if instaroll == 1:
@@ -508,7 +508,7 @@ class Donger(BaseClient):
             self.death(target, source)
             self.getTurn()
             return
-        if critroll == 5:
+        if critroll == 1:
             damage *= 2
             if not critical:  # If it's not a forced critical hit (via !praise), then announce the critical
                 self.ascii("CRITICAL")
