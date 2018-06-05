@@ -284,8 +284,7 @@ class Donger(BaseClient):
                         d0 = stats.lastplayed.date()
                         today = datetime.datetime.now().date()
                         delta = today - d0
-                        #self.message(target, "the days are {}".format(delta.days))
-                        aelo = stats.elo - (int(delta.days)*2)
+                        aelo = stats.elo - (int(delta.days)*2) #aelo (adjusted ELO) is equal to normal ELO minus (days since last played times two)
                     except:
                         self.message(target, "exception 1331589151jvlhjv")
 
