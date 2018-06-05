@@ -286,9 +286,7 @@ class Donger(BaseClient):
                         delta = today - d0
                         aelo = stats.elo - (int(delta.days)*2) #aelo (adjusted ELO) is equal to normal ELO minus (days since last played times two)
                     except:
-                        self.message(target, "exception 1331589151jvlhjv")
-
-
+                        self.message(target, "You activated the special secret 1331589151jvlhjv feature!")
 
                     self.message(target, "\002{0}\002's stats: \002{1}\002 wins, \002{2}\002 losses, \002{4}\002 coward quits, \002{5}\002 idle-outs (\002{3}\002), "
                                          "\002{6}\002 !praises, \002{7}\002 matches, \002{8}\002 deathmatches (\002{9}\002 total). "
