@@ -74,7 +74,7 @@ class Donger(BaseClient):
                 if (command == "fight" or command == "deathmatch" or command == "duel") and not self.gameRunning:
                     # Check for proper command usage
                     if not args:
-                        self.message(target, "Can you read? It is !{0} <nick> [othernick] ...".format(command))
+                        self.message(target, "Can you read? It is !{0} <nick>{1}".format(command, " [othernick] [...] " if command == "fight" else ""))
                         return
 
                     if not self.users[source]['account']:
@@ -280,19 +280,19 @@ class Donger(BaseClient):
                         ranking = "Ranked \002\003063rd\003\002"
                     else:
                         ranking = "Ranked \002{}th\002".format(ranking)
-                    try:
-                        d0 = stats.lastplayed.date()
-                        today = datetime.datetime.now().date()
-                        delta = today - d0
-                        aelo = stats.elo - (int(delta.days)*2) #aelo (adjusted ELO) is equal to normal ELO minus (days since last played times two)
-                    except:
-                        self.message(target, "You activated the special secret 1331589151jvlhjv feature!")
+                    #try:
+                    #    d0 = stats.lastplayed.date()
+                    #    today = datetime.datetime.now().date()
+                    #    delta = today - d0
+                    #    aelo = stats.elo - (int(delta.days)*2) #aelo (adjusted ELO) is equal to normal ELO minus (days since last played times two)
+                    #except:
+                    #    self.message(target, "You activated the special secret 1331589151jvlhjv feature!")
 
                     self.message(target, "\002{0}\002's stats: \002{1}\002 wins, \002{2}\002 losses, \002{4}\002 coward quits, \002{5}\002 idle-outs (\002{3}\002), "
                                          "\002{6}\002 !praises, \002{7}\002 matches, \002{8}\002 deathmatches (\002{9}\002 total). "
                                          "{11} (\002{10}\002 points)"
                                          .format(stats.name, stats.wins, stats.losses, balance, stats.quits, stats.idleouts, stats.praises,
-                                                 stats.matches, stats.deathmatches, (stats.matches + stats.deathmatches), aelo, ranking))
+                                                 stats.matches, stats.deathmatches, (stats.matches + stats.deathmatches), stats.elo, ranking))
                 elif command in ("top", "shame") and not self.gameRunning:
                     p = self.top_dongers((command == "shame")).limit(5)  # If command == shame, then we're passing "True" into the top_dongers function below (in the "bottom" argument), overriding the default False
                     if not p:
