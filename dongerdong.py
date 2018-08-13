@@ -352,7 +352,7 @@ class Donger(BaseClient):
                 self.message(source, "Commands available only in {0}:".format(self.channel))
                 self.message(source, "  !fight <nickname> [othernicknames]: Challenge another player, or multiple players.")
                 self.message(source, "  !duel <nickname>: Same as fight, but only 1v1.")
-                self.message(source, "  !deathmatch <nickname>: Same as duel, but the loser is bant for 20 minutes.")
+                self.message(source, "  !deathmatch <nickname>: Same as duel, but the loser is banned for 20 minutes.")
                 self.message(source, "  !ascii <text>: Turns any text 15 characters or less into ascii art")
                 self.message(source, "  !cancel: Cancels a !fight")
                 self.message(source, "  !reject <nick>: Rejects a !fight")
