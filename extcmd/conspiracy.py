@@ -7,7 +7,7 @@ with open(logfile) as f:
     text = f.read()
 model = markovify.text.NewlineText(text, state_size=3)
 
-def doit(irc, target, source, sentences=2):
+async def doit(irc, target, source, sentences=2):
     #Maybe we'll replace this with a server-side thing on donger.org that provides a
     #response in the form of something like "donger.org/conspiracy.php?sentences=2".
     #That would make it so we don't have to put a 1MB text file in a repo.
@@ -27,5 +27,5 @@ def doit(irc, target, source, sentences=2):
         except AttributeError:
             continue
     print(longstring)
-    irc.message(target, longstring.strip())
+    await irc.message(target, longstring.strip())
 
