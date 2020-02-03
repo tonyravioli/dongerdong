@@ -17,7 +17,7 @@ async def doit(irc, target, source):
         (out, err) = child.communicate()
         ret = child.returncode
         
-        async irc.message(source, "{0} returned code {1}".format(command, ret))
+        await irc.message(source, "{0} returned code {1}".format(command, ret))
         for line in (out + err).splitlines():
             async irc.message(source, line.decode("utf-8"))
     
