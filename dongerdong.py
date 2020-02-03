@@ -842,14 +842,14 @@ class Donger(BaseClient):
                 continue
 
             if (time.time() - self.turnStart > 60) and len(self.turnlist) >= (self.currentTurn + 1):
-                self.message(self.channel, "\002{0}\002 forfeits due to idle.".format(self.turnlist[self.currentTurn]))
+                await self.message(self.channel, "\002{0}\002 forfeits due to idle.".format(self.turnlist[self.currentTurn]))
                 self.players[self.turnlist[self.currentTurn].lower()]['hp'] = -1
                 self.countStat(self.turnlist[self.currentTurn], "idleouts")
                 #self.kick(self.channel, self.turnlist[self.currentTurn], "WAKE UP SHEEPLE")
                 try:
-                    self.akick(self.turnlist[self.currentTurn], "3", "3 MINUTES FOR IDLE OUT")
+                    await self.akick(self.turnlist[self.currentTurn], "3", "3 MINUTES FOR IDLE OUT")
                 except:
-                    self.kick(self.channel, self.turnlist[self.currentTurn], "WAKE UP SHEEPLE")
+                    await self.kick(self.channel, self.turnlist[self.currentTurn], "WAKE UP SHEEPLE")
                     raise
                 aliveplayers = 0
                 # TODO: Do this in a neater way
