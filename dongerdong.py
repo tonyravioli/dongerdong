@@ -742,7 +742,13 @@ class Donger(BaseClient):
                 return ''
         except KeyError:
             logging.warning("Plz set the show-ascii-art-text config. kthx")
-        lines = [lineformat + name for name in Figlet(font).renderText(key).split("\n")[:-1] if name.strip()]
+        try:
+          lines = [lineformat + name for name in Figlet(font).renderText(key).split("\n")[:-1] if name.strip()]
+        except:
+          # We're looking to catch any "pyfiglet.FontNotFound" exceptions
+          logging.error("You need to install extra fonts from http://www.jave.de/figlet/fonts.html by downloading the zipfile and then running pyfiglet -L <NameOfZipFile>")
+          await self.message(self.channel, key)
+          return ''
         await self.message(self.channel, "\n".join(lines))
 
     async def _rename_user(self, user, new):
