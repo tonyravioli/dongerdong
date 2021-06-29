@@ -2,8 +2,8 @@ DongerDong
 =================
 What started as *"A simple IRC bot for fighting, written in Python"* has grown to become the most comprehensive and flexible collection of code ever written.
 
-Official IRC Channel: **#donger** on Freenode  
-Development Channel: **#donger-dev** on Freenode
+Official IRC Channel: **#donger** on Libera (irc.libera.chat)
+Development Channel: **#donger-dev** on Libera (irc.libera.chat)
 
 How to install
 ==============
